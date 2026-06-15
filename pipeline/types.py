@@ -66,4 +66,19 @@ class ModelEstimate(TypedDict):
     co2_kg: RangeDict
     renewable_match_pct: float | None
     co2_kg_market: RangeDict
+    wue: float
+    water_liters: RangeDict
     flags: list[str]
+
+
+class Totals(TypedDict):
+    """Phase 3 output: aggregate statistics over all models."""
+
+    total_tokens: int
+    uncovered_tokens: int
+    modeled_traffic_fraction: float
+    est_output_tokens: int
+    energy_kwh: RangeDict
+    co2_kg: RangeDict
+    co2_kg_market: RangeDict
+    water_liters: RangeDict

@@ -74,36 +74,58 @@ def build_output(
 
     co2_market_list = [m.get("co2_kg_market", m["co2_kg"]) for m in estimates]
     co2_kg_market = _sum_co2(co2_market_list)
+    
+    water_list = [m.get("water_liters", {"low": 0.0, "mid": 0.0, "high": 0.0}) for m in estimates]
+    water_liters = _sum_co2(water_list)
+
+    est_output_tokens = sum(int(m.get("est_output_tokens", 0)) for m in estimates)
+    energy_list = [m.get("energy_kwh", {"low": 0.0, "mid": 0.0, "high": 0.0}) for m in estimates]
+    energy_kwh = _sum_co2(energy_list)
 
     # by_origin and by_open_closed preserve first-appearance order from estimates list
     origin_groups: dict[str, list[dict]] = {}
     origin_groups_market: dict[str, list[dict]] = {}
+    origin_groups_water: dict[str, list[dict]] = {}
     for m in estimates:
         o = m["origin"]
         origin_groups.setdefault(o, []).append(m["co2_kg"])
         origin_groups_market.setdefault(o, []).append(m.get("co2_kg_market", m["co2_kg"]))
+        origin_groups_water.setdefault(o, []).append(m.get("water_liters", {"low": 0.0, "mid": 0.0, "high": 0.0}))
     by_origin = {
-        o: {"co2_kg": _sum_co2(lst), "co2_kg_market": _sum_co2(origin_groups_market[o])}
-        for o, lst in origin_groups.items()
+        o: {
+            "co2_kg": _sum_co2(origin_groups[o]), 
+            "co2_kg_market": _sum_co2(origin_groups_market[o]),
+            "water_liters": _sum_co2(origin_groups_water[o])
+        }
+        for o in origin_groups
     }
 
     oc_groups: dict[str, list[dict]] = {}
     oc_groups_market: dict[str, list[dict]] = {}
+    oc_groups_water: dict[str, list[dict]] = {}
     for m in estimates:
         oc = m["open_or_closed"]
         oc_groups.setdefault(oc, []).append(m["co2_kg"])
         oc_groups_market.setdefault(oc, []).append(m.get("co2_kg_market", m["co2_kg"]))
+        oc_groups_water.setdefault(oc, []).append(m.get("water_liters", {"low": 0.0, "mid": 0.0, "high": 0.0}))
     by_open_closed = {
-        oc: {"co2_kg": _sum_co2(lst), "co2_kg_market": _sum_co2(oc_groups_market[oc])}
-        for oc, lst in oc_groups.items()
+        oc: {
+            "co2_kg": _sum_co2(oc_groups[oc]), 
+            "co2_kg_market": _sum_co2(oc_groups_market[oc]),
+            "water_liters": _sum_co2(oc_groups_water[oc])
+        }
+        for oc in oc_groups
     }
 
     totals = {
         "total_tokens": total_tokens,
         "uncovered_tokens": uncovered_tokens,
         "modeled_traffic_fraction": modeled_traffic_fraction,
+        "est_output_tokens": est_output_tokens,
+        "energy_kwh": energy_kwh,
         "co2_kg": co2_kg,
         "co2_kg_market": co2_kg_market,
+        "water_liters": water_liters,
         "by_origin": by_origin,
         "by_open_closed": by_open_closed,
     }

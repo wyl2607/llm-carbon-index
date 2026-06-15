@@ -134,6 +134,16 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
         market_high = co2_r.high * (1 - (match_pct or 0.0) / 100.0)
         co2_market_r = Range(market_low, market_mid, market_high)
 
+        # 8. Water Footprint (WUE)
+        wue = 1.5  # default ASSUMPTIONS.md global average
+        if open_or_closed == "closed" and assumed_provider and assumed_provider in closed_map:
+            wue = float(closed_map[assumed_provider].get("wue", 1.5))
+            
+        water_low = energy_r.low * wue
+        water_mid = energy_r.mid * wue
+        water_high = energy_r.high * wue
+        water_r = Range(water_low, water_mid, water_high)
+
         # flags assembly
         flags: list[str] = list(eflags)
         if grid_src == "annual_factor":
@@ -165,6 +175,8 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
             "co2_kg": co2_r.to_dict(),
             "renewable_match_pct": match_pct,
             "co2_kg_market": co2_market_r.to_dict(),
+            "wue": wue,
+            "water_liters": water_r.to_dict(),
             "flags": uniq_flags,
         }
         results.append(est)
