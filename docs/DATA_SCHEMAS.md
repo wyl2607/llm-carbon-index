@@ -47,6 +47,10 @@ The single source of truth for every artifact shape. If a phase needs to change 
     "total_tokens": 0,
     "uncovered_tokens": 0,                       // OpenRouter "other" aggregate not individually modeled
     "modeled_traffic_fraction": 0.0,             // (total_tokens - uncovered) / total_tokens; quantifies scope honesty
+    "mapped_traffic_fraction": 0.0,              // Phase 6E: (total - uncovered - unmapped) / total; honest fraction matched to a crosswalk entry
+    "unmapped_tokens": 0,                        // Phase 6E: tokens on top-list slugs absent from model_crosswalk.yaml (flagged UNMAPPED_SLUG, never silently bucketed)
+    "unmapped_traffic_fraction": 0.0,            // Phase 6E: unmapped_tokens / total_tokens
+    "unmapped_slugs": [ { "slug": "vendor/new-x", "total_tokens": 0 } ],  // Phase 6E maintenance to-do: add these to the crosswalk (sorted desc by tokens)
     "co2_kg": { "low": 0, "mid": 0, "high": 0 },
     "by_origin": { "CN": { "co2_kg": {"low":0,"mid":0,"high":0} } },
     "by_open_closed": { "open": { "co2_kg": {"low":0,"mid":0,"high":0} }, "closed": { "co2_kg": {"low":0,"mid":0,"high":0} } }

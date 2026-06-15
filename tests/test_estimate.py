@@ -210,6 +210,10 @@ def test_unknown_model_fallback_no_crash(monkeypatch, tmp_path):
     assert "FALLBACK_ENERGY_CLASS" in m["flags"]
     assert m["energy_source"] == "parameter_class_fallback"
     assert m["energy_kwh"]["mid"] > 0
+    # Phase 6E: absent from the crosswalk → flagged UNMAPPED_SLUG with a neutral identity,
+    # never silently given a real provider/origin.
+    assert "UNMAPPED_SLUG" in m["flags"]
+    assert m["origin"] == "OTHER"
 
 
 def test_grid_fallback_labelled_when_em_raises(monkeypatch, tmp_path):

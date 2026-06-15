@@ -6,6 +6,7 @@ Consumes ModelEstimate list (from estimate) + the full NormalizedRecord list
 from __future__ import annotations
 
 import json
+import logging
 from collections.abc import Iterable
 from datetime import datetime, timezone
 
@@ -14,6 +15,8 @@ import jsonschema
 import pipeline.config as config
 from pipeline import METHODOLOGY_VERSION
 from pipeline.types import ModelEstimate, NormalizedRecord
+
+log = logging.getLogger(__name__)
 
 
 def build_output(
@@ -58,6 +61,35 @@ def build_output(
         modeled_traffic_fraction: float = (total_tokens - uncovered_tokens) / total_tokens
     else:
         modeled_traffic_fraction = 0.0
+
+    # Phase 6E coverage / scope honesty: top-list slugs absent from the crosswalk are
+    # flagged UNMAPPED_SLUG in estimate.py (never silently bucketed). Quantify them here
+    # so modeled_traffic_fraction is not silently overstated by guessed-at unknowns.
+    unmapped = [m for m in estimates if "UNMAPPED_SLUG" in m.get("flags", [])]
+    unmapped_tokens = sum(int(m.get("total_tokens", 0)) for m in unmapped)
+    unmapped_slugs = sorted(
+        ({"slug": m["slug"], "total_tokens": int(m.get("total_tokens", 0))} for m in unmapped),
+        key=lambda d: d["total_tokens"],
+        reverse=True,
+    )
+    if total_tokens > 0:
+        unmapped_traffic_fraction = unmapped_tokens / total_tokens
+        mapped_traffic_fraction = (
+            total_tokens - uncovered_tokens - unmapped_tokens
+        ) / total_tokens
+    else:
+        unmapped_traffic_fraction = 0.0
+        mapped_traffic_fraction = 0.0
+
+    if unmapped_slugs:
+        log.warning(
+            "Phase 6E coverage: %d OpenRouter top-list slug(s) (%.1f%% of traffic) are "
+            "absent from data/crosswalk/model_crosswalk.yaml and were flagged "
+            "UNMAPPED_SLUG (not silently bucketed). Add them with sources: %s",
+            len(unmapped_slugs),
+            unmapped_traffic_fraction * 100.0,
+            ", ".join(d["slug"] for d in unmapped_slugs[:10]),
+        )
 
     def _sum_co2(rs: Iterable[dict]) -> dict:
         rs = list(rs)
@@ -125,6 +157,10 @@ def build_output(
         "total_tokens": total_tokens,
         "uncovered_tokens": uncovered_tokens,
         "modeled_traffic_fraction": modeled_traffic_fraction,
+        "mapped_traffic_fraction": mapped_traffic_fraction,
+        "unmapped_tokens": unmapped_tokens,
+        "unmapped_traffic_fraction": unmapped_traffic_fraction,
+        "unmapped_slugs": unmapped_slugs,
         "est_output_tokens": est_output_tokens,
         "energy_kwh": energy_kwh,
         "co2_kg": co2_kg,
