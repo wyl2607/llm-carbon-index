@@ -64,4 +64,6 @@ class ModelEstimate(TypedDict):
     grid_source: GridSource
     pue: float
     co2_kg: RangeDict
+    renewable_match_pct: float | None
+    co2_kg_market: RangeDict
     flags: list[str]

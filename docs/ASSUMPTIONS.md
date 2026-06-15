@@ -99,6 +99,15 @@ These feed `data/assumptions/closed_models.yaml`. Every closed model row receive
 
 ---
 
+## V — Vendor Renewable Claims
+
+- **V-GOOGLE** — 100% annual renewable match. *Source:* Google Environmental Report (since 2017). *Uncertainty:* low (for annual matching, but does not imply 24/7 CFE). *Where used:* vendor_claims.yaml.
+- **V-OPENAI** — 100% annual renewable match. *Source:* Microsoft Azure Environmental Sustainability Report (matched since 2014). *Uncertainty:* low. *Where used:* vendor_claims.yaml.
+- **V-ANTHROPIC** — 100% annual renewable match. *Source:* Assumed based on hosting via Google Cloud and AWS, both of which claim 100% renewable matching. *Uncertainty:* medium (assumes all inference infrastructure is covered by host claims). *Where used:* vendor_claims.yaml.
+- **V-META** — 100% annual renewable match. *Source:* Meta Sustainability Report (matched since 2020). *Uncertainty:* low. *Where used:* vendor_claims.yaml.
+
+---
+
 ## L — Licensing / scope notes
 
 - **L-EM-FREE** — Electricity Maps free tier is **non-commercial**. Decision for public deployment (academic/non-commercial use vs. academic access vs. annual-factor-heavy mode) is recorded in `methodology.md` and `README.md` before going live (Phase 5).

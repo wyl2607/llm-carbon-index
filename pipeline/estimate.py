@@ -16,6 +16,7 @@ from pipeline.config import (
     CLOSED_MODELS_PATH,
     CROSSWALK_PATH,
     INTENSITY_PATH,
+    VENDOR_CLAIMS_PATH,
 )
 from pipeline.energy import energy_kwh, wh_per_output_token
 from pipeline.grid import carbon_intensity
@@ -62,6 +63,20 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
         (e.get("provider") or ""): e for e in closed_list if e.get("provider")
     }
 
+    vendor_claims_list: list[dict] = []
+    try:
+        with open(VENDOR_CLAIMS_PATH, encoding="utf-8") as f:
+            loaded = yaml.safe_load(f)
+            if isinstance(loaded, list):
+                vendor_claims_list = [e for e in loaded if isinstance(e, dict)]
+    except Exception:
+        vendor_claims_list = []
+
+    vendor_claims_map: dict[str, float] = {
+        (e.get("provider") or ""): float(e.get("annual_renewable_match_pct", 0))
+        for e in vendor_claims_list if e.get("provider")
+    }
+
     results: list[ModelEstimate] = []
 
     for rec in records:
@@ -105,8 +120,19 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
         if open_or_closed == "closed" and assumed_provider and assumed_provider in closed_map:
             pue = float(closed_map[assumed_provider].get("pue", 1.2))
 
-        # 6. CO2 (pure)
+        # 6. CO2 (pure location-based)
         co2_r = co2_kg(energy_r, gco2, pue)
+
+        # 7. Market-based CO2
+        match_pct = None
+        if assumed_provider and assumed_provider in vendor_claims_map:
+            match_pct = vendor_claims_map[assumed_provider]
+            
+        market_low = co2_r.low * (1 - (match_pct or 0.0) / 100.0)
+        market_mid = co2_r.mid * (1 - (match_pct or 0.0) / 100.0)
+        market_high = co2_r.high * (1 - (match_pct or 0.0) / 100.0)
+        from pipeline.ranges import Range
+        co2_market_r = Range(market_low, market_mid, market_high)
 
         # flags assembly
         flags: list[str] = list(eflags)
@@ -137,6 +163,8 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
             "grid_source": grid_src,
             "pue": pue,
             "co2_kg": co2_r.to_dict(),
+            "renewable_match_pct": match_pct,
+            "co2_kg_market": co2_market_r.to_dict(),
             "flags": uniq_flags,
         }
         results.append(est)

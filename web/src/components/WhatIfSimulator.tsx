@@ -66,6 +66,26 @@ export const WhatIfSimulator: React.FC<Props> = ({
               <span>0% (Current Reality)</span>
               <span>100% (Maximum Optimization)</span>
             </div>
+            
+            <div className="mt-6 flex flex-wrap gap-2">
+              {[
+                { label: 'Current Reality', val: 0 },
+                { label: 'Clean EU Shift', val: 50 },
+                { label: 'Max Green', val: 100 }
+              ].map(preset => (
+                <button
+                  key={preset.val}
+                  onClick={() => setGreenShiftPercent(preset.val)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                    greenShiftPercent === preset.val 
+                      ? 'bg-emerald-500 border-emerald-400 text-white shadow-lg shadow-emerald-900/40' 
+                      : 'bg-slate-800/50 border-emerald-900/50 text-emerald-400/70 hover:border-emerald-700 hover:text-emerald-300'
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

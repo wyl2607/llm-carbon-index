@@ -60,6 +60,8 @@
           "grid_source",
           "pue",
           "co2_kg",
+          "renewable_match_pct",
+          "co2_kg_market",
           "flags"
         ],
         "properties": {
@@ -79,6 +81,8 @@
           "grid_source": { "enum": ["electricity_maps_live", "annual_factor"] },
           "pue": { "type": "number" },
           "co2_kg": { "$ref": "#/definitions/Range" },
+          "renewable_match_pct": { "type": ["number", "null"] },
+          "co2_kg_market": { "$ref": "#/definitions/Range" },
           "flags": {
             "type": "array",
             "items": {
@@ -101,6 +105,7 @@
         "uncovered_tokens",
         "modeled_traffic_fraction",
         "co2_kg",
+        "co2_kg_market",
         "by_origin",
         "by_open_closed"
       ],
@@ -109,13 +114,15 @@
         "uncovered_tokens": { "type": "integer" },
         "modeled_traffic_fraction": { "type": "number" },
         "co2_kg": { "$ref": "#/definitions/Range" },
+        "co2_kg_market": { "$ref": "#/definitions/Range" },
         "by_origin": {
           "type": "object",
           "additionalProperties": {
             "type": "object",
-            "required": ["co2_kg"],
+            "required": ["co2_kg", "co2_kg_market"],
             "properties": {
-              "co2_kg": { "$ref": "#/definitions/Range" }
+              "co2_kg": { "$ref": "#/definitions/Range" },
+              "co2_kg_market": { "$ref": "#/definitions/Range" }
             },
             "additionalProperties": false
           }
@@ -124,9 +131,10 @@
           "type": "object",
           "additionalProperties": {
             "type": "object",
-            "required": ["co2_kg"],
+            "required": ["co2_kg", "co2_kg_market"],
             "properties": {
-              "co2_kg": { "$ref": "#/definitions/Range" }
+              "co2_kg": { "$ref": "#/definitions/Range" },
+              "co2_kg_market": { "$ref": "#/definitions/Range" }
             },
             "additionalProperties": false
           }

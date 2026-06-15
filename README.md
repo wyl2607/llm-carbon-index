@@ -47,11 +47,11 @@ GitHub Actions cron (Phase 5).
 | Phase | Scope | State |
 |---|---|---|
 | 0 | Scaffold + prove the math | ✅ done ([`scratch/prove_math.py`](scratch/prove_math.py)) |
-| 1 | Data ingestion (`fetch_openrouter.py`) | ⬜ planned |
-| 2 | Energy estimation (`estimate_energy.py`) | ⬜ planned |
-| 3 | Carbon + grid + green substitution (`estimate_carbon.py`) | ⬜ planned |
-| 4 | Output assembly + frontend (`build_outputs.py`, `web/`) | ⬜ planned |
-| 5 | Methodology doc + CI + deploy | ⬜ planned |
+| 1 | Data ingestion (`fetch_openrouter.py`) | ✅ done |
+| 2 | Energy estimation (`estimate_energy.py`) | ✅ done |
+| 3 | Carbon + grid + green substitution (`estimate_carbon.py`) | ✅ done |
+| 4 | Output assembly + frontend (`build_outputs.py`, `web/`) | ✅ done |
+| 5 | Methodology doc + CI + deploy | ✅ done |
 
 ## File manifest — what a complete project here needs
 

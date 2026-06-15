@@ -107,7 +107,7 @@ The two can differ by an order of magnitude. Reporting both, and the
 substitution scenarios, is **Phase 6** work; this MVP reports location-based
 only and flags the distinction so it is never misread as physical reality.
 
-## 7. Electricity Maps licensing decision (L-EM-FREE)
+## 9. Electricity Maps licensing decision (L-EM-FREE)
 
 The Electricity Maps free tier is **non-commercial**. Decision for this project:
 operate in **non-commercial academic / portfolio mode**, and degrade gracefully
@@ -117,7 +117,7 @@ per row. If the project were ever used commercially, a paid Electricity Maps
 plan (or annual-factor-only mode) would be required. This decision is restated
 in `README.md`.
 
-## 8. Required attributions
+## 10. Required attributions
 
 - `Source: OpenRouter (openrouter.ai/rankings), as of {data_date}` — stored in
   `source_citation` and shown in the UI (L-OR-CITATION).

@@ -211,7 +211,10 @@ function App() {
             <div className="my-10 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white">CO₂ Footprint by Model</h2>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    CO₂ Footprint by Model
+                    <span className="text-sm font-normal text-slate-400">/ 各模型碳足迹</span>
+                  </h2>
                   <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Estimates with uncertainty ranges (mid + range)</p>
                 </div>
                 <GroupToggle groupBy={groupBy} onChange={setGroupBy} />
@@ -230,7 +233,10 @@ function App() {
 
             <div className="my-10 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 overflow-hidden">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Emissions Directory</h2>
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  Emissions Directory
+                  <span className="text-sm font-normal text-slate-400">/ 详细排放目录</span>
+                </h2>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Detailed breakdown of modeled OpenRouter traffic</p>
               </div>
               
