@@ -1,7 +1,7 @@
 """Slug normalization for crosswalk / intensity lookup.
 
 OpenRouter model_permaslug values carry date suffixes (e.g.
-minimax/minimax-m3-20260531) and pricing tags (:free, :beta, :extended).
+vendor/model-name-20260531) and pricing tags (:free, :beta, :extended).
 Crosswalk + intensity YAML are keyed by base slug. This module bridges them.
 """
 

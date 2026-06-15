@@ -41,7 +41,7 @@ CROSSWALK_YAML = """
   energy_source: "parameter_class_fallback"
   assumed_provider: "openai"
   assumed_region: "us-east"
-- openrouter_slug: "anthropic/claude-3.5-sonnet-20241022"
+- openrouter_slug: "anthropic/claude-3.5-sonnet"
   display_name: "Claude 3.5 Sonnet"
   origin: "US"
   open_or_closed: "closed"
@@ -171,6 +171,8 @@ def test_estimate_end_to_end_with_temp_data_and_fallback_labels(monkeypatch, tmp
     assert gpt["pue"] == 1.2
 
     claude = next(m for m in out if "claude" in m["slug"])
+    # slug in output retains original dated form from OpenRouter
+    assert claude["slug"] == "anthropic/claude-3.5-sonnet-20241022"
     assert "CLOSED_MODEL_ASSUMED" in claude["flags"]
     # temp intensity has no row for claude -> class fallback
     assert claude["energy_source"] == "parameter_class_fallback"

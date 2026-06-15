@@ -8,54 +8,8 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-import types
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
-# Shim to provide pipeline.slugs (and the normalize_slug impl) without
-# touching pipeline/ dir (per subtask constraints). The real module will be
-# added in the implementation subtask; this lets the unit tests import and
-# pass in isolation. The impl below satisfies every assertion in this file.
-if "pipeline" not in sys.modules:
-    pipeline_mod = types.ModuleType("pipeline")
-    sys.modules["pipeline"] = pipeline_mod
-slugs_mod = types.ModuleType("pipeline.slugs")
-
-def normalize_slug(s: str) -> str:
-    """Strip :free/:beta/:extended tags (after colon) then trailing -YYYYMMDD
-    date suffix (only when the final -segment after last / is exactly 8 digits
-    and parses as YYYYMMDD in 2000-2100 range). Heuristic per tests.
-    Idempotent; 'other', clean slugs, and non-suffix date-likes are untouched.
-    """
-    if not s:
-        return s
-    if s == "other":
-        return s
-    # Strip tag suffix first (e.g. :free, :beta, :extended)
-    if ":" in s:
-        s = s.split(":", 1)[0]
-    # Strip date suffix only if LAST segment is exactly 8-digit YYYYMMDD
-    if "/" in s:
-        prefix, model = s.rsplit("/", 1)
-        if "-" in model:
-            head, tail = model.rsplit("-", 1)
-            if len(tail) == 8 and tail.isdigit():
-                y, mo, d = int(tail[0:4]), int(tail[4:6]), int(tail[6:8])
-                if 2000 <= y <= 2100 and 1 <= mo <= 12 and 1 <= d <= 31:
-                    model = head
-                    s = f"{prefix}/{model}" if model else prefix
-    else:
-        # bare name (edge)
-        if "-" in s:
-            head, tail = s.rsplit("-", 1)
-            if len(tail) == 8 and tail.isdigit():
-                y, mo, d = int(tail[0:4]), int(tail[4:6]), int(tail[6:8])
-                if 2000 <= y <= 2100 and 1 <= mo <= 12 and 1 <= d <= 31:
-                    s = head
-    return s
-
-slugs_mod.normalize_slug = normalize_slug
-sys.modules["pipeline.slugs"] = slugs_mod
 
 from pipeline.slugs import normalize_slug
 
@@ -68,7 +22,8 @@ def test_strip_date_suffix():
 
 def test_strip_free_tag():
     assert normalize_slug("nex-agi/nex-n2-pro:free") == "nex-agi/nex-n2-pro"
-    assert normalize_slug("nvidia/nemotron-3-ultra-550b-a55b-20260604:free") == "nvidia/nemotron-3-ultra-550b-a55b"
+    result = normalize_slug("nvidia/nemotron-3-ultra-550b-a55b-20260604:free")
+    assert result == "nvidia/nemotron-3-ultra-550b-a55b"
 
 
 def test_strip_beta_extended_tags():
@@ -105,9 +60,9 @@ def test_combined_date_and_free():
 def test_preserves_version_like_dates():
     """Slugs where a date-like string is part of the model version, not a suffix.
     The heuristic: only strip if it's the LAST segment and is exactly YYYYMMDD."""
-    # moonshotai/kimi-k2.5-0127 — "0127" is only 4 digits, not YYYYMMDD → preserved
+    # moonshotai/kimi-k2.5-0127 -- "0127" is only 4 digits, not YYYYMMDD
     assert normalize_slug("moonshotai/kimi-k2.5-0127") == "moonshotai/kimi-k2.5-0127"
-    # qwen/qwen3-235b-a22b-07-25 — "07-25" is not a single YYYYMMDD block → preserved
+    # qwen/qwen3-235b-a22b-07-25 -- "07-25" is not a single YYYYMMDD block
     assert normalize_slug("qwen/qwen3-235b-a22b-07-25") == "qwen/qwen3-235b-a22b-07-25"
 
 
