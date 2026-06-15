@@ -48,8 +48,6 @@ export const WhatIfSimulator: React.FC<Props> = ({
     { label: tt.presetFrNuclear, val: 70 },
     { label: tt.presetDeToday, val: 15 },
     { label: tt.presetCfe247, val: 95 },
-    { label: tt.presetFrankfurt, val: 55 },
-    { label: tt.presetEnergiewende, val: 40 },
   ];
 
   // Climate Neutrality Score (lightweight, no extra deps)
@@ -63,7 +61,6 @@ export const WhatIfSimulator: React.FC<Props> = ({
         {accountingMethod.toUpperCase()}-BASED
       </div>
 
-      {/* subtle green glow orbs */}
       <div className="absolute -top-40 -right-40 w-[520px] h-[520px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute -bottom-40 -left-40 w-[420px] h-[420px] bg-teal-500/5 rounded-full blur-[100px] pointer-events-none" />
 
@@ -81,7 +78,6 @@ export const WhatIfSimulator: React.FC<Props> = ({
         </div>
 
         <div className="mt-7 grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* Controls */}
           <div className="lg:col-span-3">
             <div className="flex justify-between items-baseline mb-2 px-1">
               <label htmlFor="grid-shift" className="text-xs font-semibold tracking-widest text-emerald-300/80 uppercase">
@@ -112,7 +108,6 @@ export const WhatIfSimulator: React.FC<Props> = ({
               <div>100% — MAX GREEN</div>
             </div>
 
-            {/* Presets - premium segmented */}
             <div className="mt-5 flex flex-wrap gap-2">
               {presets.map(p => (
                 <button
@@ -138,7 +133,6 @@ export const WhatIfSimulator: React.FC<Props> = ({
             )}
           </div>
 
-          {/* Big impact readout + equivalents */}
           <div className="lg:col-span-2 space-y-4">
             <div className="rounded-2xl bg-[#0a0c0a] border border-emerald-900/50 p-6 text-center">
               <div className="uppercase tracking-[2px] text-xs font-bold text-emerald-400/70 mb-2 flex items-center justify-center gap-2">
@@ -158,7 +152,6 @@ export const WhatIfSimulator: React.FC<Props> = ({
               )}
             </div>
 
-            {/* Equivalents grid - storytelling heart + DE/EU focus */}
             <div>
               <div className="flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-emerald-300/70 mb-2 px-1">
                 {tt.equivTitle}
@@ -192,7 +185,6 @@ export const WhatIfSimulator: React.FC<Props> = ({
               <p className="text-[10px] text-emerald-300/50 mt-2 px-1 leading-snug">{tt.equivNote}</p>
             </div>
 
-            {/* Climate Neutrality / Substitution Gauge (lightweight CSS) */}
             <div className="pt-2">
               <div className="flex justify-between text-xs text-emerald-300/70 mb-1 px-0.5">
                 <span>{tt.climateScore}</span>
@@ -210,7 +202,6 @@ export const WhatIfSimulator: React.FC<Props> = ({
               <div className="text-[10px] text-[#717771] mt-1">{tt.climateScoreNote}</div>
             </div>
 
-            {/* Interpretation */}
             <div className="text-[13px] leading-relaxed text-emerald-100/80 border-l-2 border-emerald-800/60 pl-3">
               {greenShiftPercent > 0 ? (
                 accountingMethod === 'location' 
