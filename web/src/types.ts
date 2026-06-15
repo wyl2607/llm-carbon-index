@@ -29,6 +29,8 @@ export interface Model {
   grid_source: GridSource | string;
   pue: number;
   co2_kg: Range;
+  co2_kg_market?: Range;
+  renewable_match_pct?: number | null;
   flags: string[];
 }
 
@@ -37,8 +39,9 @@ export interface Totals {
   uncovered_tokens: number;
   modeled_traffic_fraction: number;
   co2_kg: Range;
-  by_origin: Record<string, { co2_kg: Range }>;
-  by_open_closed: Record<string, { co2_kg: Range }>;
+  co2_kg_market?: Range;
+  by_origin: Record<string, { co2_kg: Range, co2_kg_market?: Range }>;
+  by_open_closed: Record<string, { co2_kg: Range, co2_kg_market?: Range }>;
 }
 
 export interface LatestData {

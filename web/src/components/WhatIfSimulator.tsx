@@ -6,13 +6,15 @@ interface Props {
   setGreenShiftPercent: (val: number) => void;
   originalCo2: Range | undefined;
   simulatedCo2: Range | undefined;
+  accountingMethod?: 'location' | 'market';
 }
 
 export const WhatIfSimulator: React.FC<Props> = ({ 
   greenShiftPercent, 
   setGreenShiftPercent,
   originalCo2,
-  simulatedCo2
+  simulatedCo2,
+  accountingMethod = 'location'
 }) => {
   const reductionMid = originalCo2 && simulatedCo2 
     ? originalCo2.mid - simulatedCo2.mid 
@@ -24,6 +26,9 @@ export const WhatIfSimulator: React.FC<Props> = ({
 
   return (
     <div className="my-10 bg-gradient-to-br from-emerald-900 to-slate-900 rounded-2xl shadow-lg border border-emerald-800/50 p-6 sm:p-8 text-white relative overflow-hidden">
+      <div className="absolute top-4 right-4 text-[10px] font-bold uppercase tracking-widest text-emerald-400/40">
+        Method: {accountingMethod}-based
+      </div>
       {/* Decorative background elements */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/3"></div>
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 translate-y-1/3 -translate-x-1/3"></div>
@@ -76,9 +81,14 @@ export const WhatIfSimulator: React.FC<Props> = ({
               <span className="text-xl font-medium text-emerald-400/80">kg CO₂eq</span>
             </div>
             
-            {greenShiftPercent > 0 && (
+            {greenShiftPercent > 0 && accountingMethod === 'location' && (
               <div className="mt-4 pt-4 border-t border-emerald-800/50 text-sm text-emerald-100/90">
                 This spatial workload shifting could reduce total inference emissions by <strong className="text-white bg-emerald-500/20 px-1.5 py-0.5 rounded">{reductionPercent}%</strong> while delivering the same compute.
+              </div>
+            )}
+            {greenShiftPercent > 0 && accountingMethod === 'market' && (
+              <div className="mt-4 pt-4 border-t border-emerald-800/50 text-sm text-emerald-100/90">
+                Under Market-based accounting, matched emissions are already reported as 0. This shift reduces the remaining <strong className="text-white bg-emerald-500/20 px-1.5 py-0.5 rounded">{reductionPercent}%</strong> of physically unaccounted emissions.
               </div>
             )}
             {greenShiftPercent === 0 && (
