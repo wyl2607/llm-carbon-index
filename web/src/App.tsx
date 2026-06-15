@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import type { LatestData, Model } from './types';
 import { ScopeDisclaimerBanner } from './components/ScopeDisclaimerBanner';
 import { GroupToggle, type GroupBy } from './components/GroupToggle';
 import { Co2BarChart } from './components/Co2BarChart';
 import { ModelsTable } from './components/ModelsTable';
 import { KpiCards } from './components/KpiCards';
+import { WhatIfSimulator } from './components/WhatIfSimulator';
 
 const isSampleData = (models: Model[]) =>
   models.length > 0 && models[0].slug.startsWith('example/');
@@ -14,6 +15,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [groupBy, setGroupBy] = useState<GroupBy>('open_or_closed');
   const [loading, setLoading] = useState(true);
+  const [greenShiftPercent, setGreenShiftPercent] = useState<number>(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -39,8 +41,54 @@ function App() {
     };
   }, []);
 
-  const models: Model[] = data?.models ?? [];
-  const totals = data?.totals;
+  // Compute simulated data based on green grid shifting
+  const simulatedData = useMemo(() => {
+    if (!data) return null;
+    if (greenShiftPercent === 0) return data;
+    
+    const shiftRatio = greenShiftPercent / 100;
+    // Target intensity of 50 gCO2/kWh representing a best-case physical grid (e.g., France/Nordics)
+    const targetIntensity = 50; 
+    
+    const simulatedModels = data.models.map(m => {
+      const simulateRange = (val: number) => {
+        const orig = val * m.pue * m.carbon_intensity_gco2_kwh / 1000;
+        const shifted = val * m.pue * targetIntensity / 1000;
+        return orig * (1 - shiftRatio) + shifted * shiftRatio;
+      };
+      
+      return {
+        ...m,
+        co2_kg: {
+          low: simulateRange(m.energy_kwh.low),
+          mid: simulateRange(m.energy_kwh.mid),
+          high: simulateRange(m.energy_kwh.high),
+        }
+      };
+    });
+    
+    // Re-calculate totals based on simulated models
+    const totalCo2 = simulatedModels.reduce(
+      (acc, m) => ({
+        low: acc.low + m.co2_kg.low,
+        mid: acc.mid + m.co2_kg.mid,
+        high: acc.high + m.co2_kg.high,
+      }),
+      { low: 0, mid: 0, high: 0 }
+    );
+    
+    return {
+      ...data,
+      models: simulatedModels,
+      totals: {
+        ...data.totals,
+        co2_kg: totalCo2
+      }
+    };
+  }, [data, greenShiftPercent]);
+
+  const models: Model[] = simulatedData?.models ?? [];
+  const totals = simulatedData?.totals;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 selection:bg-emerald-200 dark:selection:bg-emerald-900">
@@ -75,11 +123,11 @@ function App() {
           </div>
         )}
 
-        {data && (
+        {simulatedData && (
           <main>
             <ScopeDisclaimerBanner
-              scopeNote={data.scope_note}
-              sourceCitation={data.source_citation}
+              scopeNote={simulatedData.scope_note}
+              sourceCitation={simulatedData.source_citation}
             />
 
             {isSampleData(models) && (
@@ -98,6 +146,13 @@ function App() {
                 </div>
               </div>
             )}
+
+            <WhatIfSimulator 
+              greenShiftPercent={greenShiftPercent}
+              setGreenShiftPercent={setGreenShiftPercent}
+              originalCo2={data?.totals?.co2_kg}
+              simulatedCo2={totals?.co2_kg}
+            />
 
             {totals && <KpiCards totals={totals} />}
 
