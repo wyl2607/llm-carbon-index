@@ -5,9 +5,12 @@ description = "Estimates the CO2 footprint of OpenRouter-visible LLM inference (
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
-# Phase 0 uses only the standard library (urllib) for the OpenRouter pull, so
-# there are no runtime deps yet. Later phases add: ecologits, pyyaml, requests.
-dependencies = []
+# Deps pinned up front by the coordinator so parallel lanes never edit this file.
+dependencies = [
+    "requests>=2.31",   # OpenRouter + Electricity Maps HTTP (Phase 1/2)
+    "pyyaml>=6.0",      # data/**/*.yaml loading (Phase 2)
+    "jsonschema>=4.0",  # output validation (Phase 3)
+]
 
 [dependency-groups]
 dev = [
