@@ -162,16 +162,29 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
             />
           </div>
 
-          <div className="flex gap-2.5 w-full md:w-auto text-sm">
-            <select value={originFilter} onChange={e => setOriginFilter(e.target.value)} className="py-2 px-3 border border-[#242924] rounded-xl bg-[#0a0c0a] cursor-pointer">
-              <option value="ALL">{tt.all} {tt.filterOrigin}</option>
-              <option value="CN">CN</option><option value="US">US</option><option value="EU">EU</option><option value="OTHER">OTHER</option>
-            </select>
-            <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="py-2 px-3 border border-[#242924] rounded-xl bg-[#0a0c0a] cursor-pointer">
-              <option value="ALL">{tt.all} {tt.filterType}</option>
-              <option value="open">Open</option>
-              <option value="closed">Closed</option>
-            </select>
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto text-xs">
+            <div className="flex gap-1 bg-[#0a0c0a] p-1 rounded-xl border border-[#242924]">
+              {['ALL', 'CN', 'US', 'EU', 'OTHER'].map(o => (
+                <button 
+                  key={o} 
+                  onClick={() => setOriginFilter(o)}
+                  className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${originFilter === o ? 'bg-emerald-900/60 text-emerald-400' : 'text-gray-400 hover:text-gray-200'}`}
+                >
+                  {o === 'ALL' ? tt.all : o}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-1 bg-[#0a0c0a] p-1 rounded-xl border border-[#242924]">
+              {['ALL', 'open', 'closed'].map(t => (
+                <button 
+                  key={t} 
+                  onClick={() => setTypeFilter(t)}
+                  className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${typeFilter === t ? 'bg-blue-900/40 text-blue-400' : 'text-gray-400 hover:text-gray-200'}`}
+                >
+                  {t === 'ALL' ? tt.all : t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -232,8 +245,8 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
             {sorted.map((m, i) => {
               const effG = co2Per1kOutputTokens(m);
-              const isHighEmission = effG > 2.0; 
-              const isLowEmission = effG < 0.2;
+              const isHighEmission = effG > 5.0; 
+              const isLowEmission = effG < 0.5;
               const originClass = m.origin === 'CN' ? 'badge-cn' : m.origin === 'US' ? 'badge-us' : m.origin === 'EU' ? 'badge-eu' : 'badge';
               
               return (
@@ -247,7 +260,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                   </td>
                   <td className="px-4 py-3.5 whitespace-nowrap">
                     <span className={`font-mono px-2 py-px rounded text-xs font-bold border ${
-                      isHighEmission ? 'bg-red-950/40 text-red-400 border-red-900/40' :
+                      isHighEmission ? 'bg-rose-950/40 text-rose-400 border-rose-900/40' :
                       isLowEmission ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/40' :
                       'bg-[#0a0c0a] text-[#a1a6a1] border-[#242924]'
                     }`}>

@@ -12,6 +12,7 @@ import { AccountingToggle, type AccountingMethod } from './components/Accounting
 import { HistoryViewer } from './components/HistoryViewer';
 import { OriginDonut } from './components/OriginDonut';
 import { ModelDetailModal } from './components/ModelDetailModal';
+import { Cpu, Zap } from 'lucide-react';
 
 const isSampleData = (models: Model[]) =>
   models.length > 0 && models[0].slug.startsWith('example/');
@@ -136,7 +137,7 @@ function App() {
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3 text-sm">
           <div className="flex items-center gap-3">
             <div className="font-black tracking-[-0.5px] text-lg">LLM Carbon Index</div>
-            <div className="text-[10px] px-2 py-px rounded bg-emerald-950 text-emerald-400 border border-emerald-900 font-bold tracking-widest">ALPHA</div>
+            <div className="text-[10px] px-2 py-px rounded bg-emerald-950 text-emerald-400 border border-emerald-900 font-bold tracking-widest">VERSION 1.0</div>
             {data && <div className="hidden sm:block text-[#717771] text-xs font-mono pl-1">v{data.methodology_version} • {data.data_date}</div>}
           </div>
 
@@ -156,90 +157,137 @@ function App() {
       </header>
 
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-16">
-        {/* Compact premium hero with global narrative */}
-        <div className="pt-8 pb-4">
-          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-            <div>
-              <h1 className="font-black tracking-[-1.6px] leading-none">{tt.brand}</h1>
-              <p className="mt-1.5 text-lg text-[#a1a6a1] max-w-3xl">{tt.tagline} <span className="text-sm align-super text-[#717771]">/ {tt.taglineZh}</span></p>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              {data && (
-                <div className="font-mono text-xs px-3 py-1 rounded-full border border-[#242924] text-[#a1a6a1]">
-                  {tt.lastUpdated}: <span className="text-[#e4e7e4]">{data.data_date}</span>
+        {/* Hero Area: Large Title + KPI Cards (Immediate Context) */}
+        <div className="pt-10 pb-8 sm:pt-16 sm:pb-12">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="bg-emerald-500 text-black px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                  Alpha v1.1
                 </div>
-              )}
-              <button onClick={() => {
-                const url = window.location.href;
-                navigator.clipboard.writeText(url);
-              }} className="btn btn-ghost text-xs border border-[#242924]">{tt.share}</button>
+                <div className="text-sm text-[#717771] font-mono">
+                  Methodology v{data ? data.methodology_version : '—'} • {data ? data.data_date : '—'}
+                </div>
+              </div>
+              <h1 className="text-6xl sm:text-8xl font-black tracking-[-3px] text-white mb-6 leading-[0.9]">
+                LLM Carbon Index
+              </h1>
+              <div className="space-y-4">
+                <p className="text-2xl sm:text-3xl text-emerald-400 font-bold tracking-tight leading-tight">
+                  Transparent CO₂ estimation for the AI era.
+                </p>
+                <p className="text-lg text-[#a1a6a1] leading-relaxed max-w-2xl font-medium">
+                  Tracking the environmental footprint of OpenRouter LLM inference with end-to-end uncertainty ranges. 
+                  <span className="block mt-2 opacity-60 font-normal italic">
+                    追踪 OpenRouter 大模型推理的碳足迹，提供端到端的不确定性估算范围。
+                  </span>
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-4 lg:pb-2">
+              <a 
+                href="https://github.com/wyl2607/llm-carbon-index/blob/main/docs/methodology.md" 
+                target="_blank" 
+                rel="noreferrer"
+                className="btn btn-primary px-8 py-4 text-base shadow-xl"
+              >
+                Methodology & Docs
+              </a>
+              <button 
+                onClick={() => {
+                  const url = window.location.href;
+                  navigator.clipboard.writeText(url).then(() => alert(tt.citeCopied));
+                }}
+                className="btn btn-secondary px-8 py-4 text-base"
+              >
+                Share Scenario
+              </button>
             </div>
           </div>
 
-          {/* Global narrative strip (Total + Baseline + Max Avoided) */}
-          {data && totals && (
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-              <div className="card p-3">
-                <div className="text-[#717771] text-xs">Total Modeled Today</div>
-                <div className="font-mono text-2xl font-bold text-white tabular-nums">{(data.totals.total_tokens / 1e12).toFixed(1)} T tokens</div>
-              </div>
-              <div className="card p-3">
-                <div className="text-[#717771] text-xs">Baseline CO₂ (mid)</div>
-                <div className="font-mono text-2xl font-bold text-white tabular-nums">{Math.round(data.totals.co2_kg.mid / 1000)} t</div>
-              </div>
-              <div className="card p-3 border-emerald-900/40">
-                <div className="text-emerald-400 text-xs">Max Green Avoided (100% shift)</div>
-                <div className="font-mono text-2xl font-bold text-emerald-400 tabular-nums">−{Math.round(data.totals.co2_kg.mid * 0.85 / 1000)} t</div>
-                <div className="text-[10px] text-emerald-300/70">~85% mitigation on current slice (target 50 gCO₂/kWh)</div>
-              </div>
-            </div>
+          {/* KPIs — high impact immediate context */}
+          {totals && (
+            <KpiCards 
+              totals={totals} 
+              baselineCo2={baselineCo2} 
+              shift={greenShiftPercent} 
+              lang={lang} 
+              modeledFraction={data?.totals?.modeled_traffic_fraction}
+            />
           )}
         </div>
 
-        {/* For Thesis & ESG Reports / German job market (critical deliverable) */}
+        {/* Scope / Transparency - professional, always visible */}
         {simulatedData && (
-          <div className="card p-5 mb-6 bg-[#0c100c] border border-emerald-900/30">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-              <div>
-                <div className="font-semibold text-emerald-400">{tt.thesisTitle}</div>
-                <div className="text-sm text-[#a1a6a1] mt-0.5">{tt.thesisSubtitle}</div>
+          <div className="mb-6">
+            <ScopeDisclaimerBanner scopeNote={simulatedData.scope_note} sourceCitation={simulatedData.source_citation} />
+          </div>
+        )}
+
+        {/* Thesis & ESG section - Critical for German market (E.ON, Siemens Energy, RWE, etc.) */}
+        {simulatedData && (
+          <div className="card p-6 sm:p-8 mb-12 bg-gradient-to-br from-[#0c100c] to-[#080a08] border-emerald-900/40 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
+              <Cpu size={120} />
+            </div>
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div className="max-w-3xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-4 border border-emerald-500/20">
+                  <Zap size={14} /> For Researchers & ESG Reporting
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">{tt.thesisTitle}</h2>
+                <p className="text-[#a1a6a1] leading-relaxed font-medium">
+                  {tt.thesisSubtitle}
+                </p>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 <button 
                   onClick={() => {
                     if (!data) return;
-                    const citation = `Wyl (2026). LLM Carbon Index — OpenRouter-visible LLM inference CO₂ estimates with uncertainty ranges (data date ${data.data_date}). https://wyl2607.github.io/llm-carbon-index/. Methodology v${data.methodology_version}.`;
-                    navigator.clipboard.writeText(citation).then(() => alert(tt.thesisCopyCitation + ' (APA-style)'));
+                    const citation = tt.citeApa ? tt.citeApa(data.data_date) : '';
+                    navigator.clipboard.writeText(citation).then(() => alert('Citation copied (APA style)'));
                   }}
-                  className="btn btn-secondary text-xs"
+                  className="btn btn-secondary text-xs px-5 py-3 font-bold"
                 >
                   {tt.thesisCopyCitation}
                 </button>
                 <a 
-                  href="https://github.com/wyl2607/llm-carbon-index/blob/main/docs/methodology.md" 
+                  href={`${import.meta.env.BASE_URL}data/latest.json`} 
                   target="_blank" 
-                  className="btn btn-ghost text-xs border border-[#242924]"
+                  className="btn btn-ghost border-[#242924] text-xs px-5 py-3 font-bold"
                 >
-                  {tt.thesisMethodology}
+                  Download JSON
                 </a>
               </div>
             </div>
-            <div className="mt-3 text-xs text-[#a1a6a1] border-t border-[#242924] pt-3 space-y-2">
-              <div>{tt.thesisScopeNote} <span className="text-emerald-400/70">{tt.deEuHint}</span></div>
-              <div className="font-mono text-[10px] bg-[#0a0c0a] p-2 rounded border border-[#242924]">
-                <strong>BibTeX:</strong> {data && tt.citeBibtex(data.data_date, data.methodology_version)}<br/><br/>
-                <strong>APA:</strong> {data && tt.citeApa(data.data_date)}
+            
+            <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6 border-t border-white/5">
+              <div className="space-y-4 text-xs text-[#a1a6a1] leading-relaxed">
+                <div className="p-4 rounded-xl bg-black/40 border border-white/5">
+                  <strong className="text-emerald-400 block mb-1">CSRD / ESRS E1 Alignment</strong>
+                  {tt.csrdExample}
+                </div>
+                <div className="p-4 rounded-xl bg-black/40 border border-white/5">
+                  <strong className="text-emerald-400 block mb-1">EU Taxonomy DNSH</strong>
+                  {tt.euTaxonomy}
+                </div>
               </div>
-              <div className="text-emerald-300/80">{tt.csrdExample}</div>
-              <div className="text-emerald-300/80">{tt.euTaxonomy}</div>
+              <div className="space-y-3">
+                <div className="text-[10px] uppercase font-bold tracking-widest text-[#717771] mb-2 px-1">Academic Citation (BibTeX)</div>
+                <div className="font-mono text-[10px] bg-[#0a0c0a] p-4 rounded-xl border border-[#242924] text-[#a1a6a1] select-all leading-normal shadow-inner">
+                  {data && tt.citeBibtex(data.data_date, data.methodology_version)}
+                </div>
+                <p className="text-[10px] text-[#717771] px-1 italic">
+                  Note: {tt.thesisScopeNote}
+                </p>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Scope / Transparency - professional, always visible */}
-        {simulatedData && (
-          <ScopeDisclaimerBanner scopeNote={simulatedData.scope_note} sourceCitation={simulatedData.source_citation} />
-        )}
+
+
 
         {sample && (
           <div className="my-4 p-3 rounded-xl border border-amber-900/40 bg-amber-950/20 text-amber-300 text-sm">
@@ -268,16 +316,6 @@ function App() {
               lang={lang}
             />
 
-            {/* KPIs — scenario aware */}
-            {totals && (
-              <KpiCards 
-                totals={totals} 
-                baselineCo2={baselineCo2} 
-                shift={greenShiftPercent} 
-                lang={lang} 
-              />
-            )}
-
             {/* Visual Explorer */}
             <section className="card p-6">
               <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
@@ -289,7 +327,7 @@ function App() {
                   <GroupToggle groupBy={groupBy} onChange={setGroupBy} />
                   <select 
                     value="15" 
-                    onChange={() => { /* top-N could be wired if desired; current chart shows all */ }} 
+                    onChange={() => { /* top-N wired if desired */ }} 
                     className="text-xs py-1 px-2 bg-[#0a0c0a] border border-[#242924] rounded-lg"
                   >
                     <option>Top emitters + others</option>
@@ -331,22 +369,16 @@ function App() {
 
             {/* Footer actions + full transparency */}
             <footer className="pt-8 mt-4 border-t border-[#242924] text-xs text-[#717771] flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 justify-between">
-              <div>{tt.footerStatic}</div>
+              <div className="max-w-md">
+                {tt.footerStatic}<br/>
+                <span className="opacity-60">Estimates only. Not global measurement. (c) 2026 Wyl.</span>
+              </div>
               <div className="flex flex-wrap gap-x-4 gap-y-1">
+                <a href="https://linkedin.com/in/wyl2607" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] transition-colors">LinkedIn</a>
+                <a href="https://github.com/wyl2607/llm-carbon-index" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] transition-colors">GitHub</a>
+                <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] transition-colors">CHANGELOG</a>
                 <a href={`${import.meta.env.BASE_URL}data/latest.json`} className="hover:text-[#e4e7e4] underline-offset-2 hover:underline" target="_blank" rel="noreferrer">{tt.rawJson}</a>
                 <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/docs/methodology.md" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] underline-offset-2 hover:underline">{tt.methodologyFull}</a>
-                <button 
-                  onClick={() => {
-                    if (!data) return;
-                    const apa = tt.citeApa ? tt.citeApa(data.data_date) : '';
-                    const bib = tt.citeBibtex ? tt.citeBibtex(data.data_date, data.methodology_version) : '';
-                    const text = `${apa}\n\n${bib}`;
-                    navigator.clipboard.writeText(text).then(() => alert(tt.citeCopied + ' (APA + BibTeX ready for thesis)'));
-                  }}
-                  className="hover:text-[#e4e7e4] underline-offset-2 hover:underline"
-                >
-                  {tt.cite}
-                </button>
               </div>
             </footer>
           </main>

@@ -42,12 +42,10 @@ export const WhatIfSimulator: React.FC<Props> = ({
   // Rich DE/EU-focused presets for German job market & EU reporting
   const presets = [
     { label: tt.presetReality, val: 0 },
-    { label: tt.presetClean, val: 50 },
-    { label: tt.presetMax, val: 100 },
     { label: tt.presetEuAvg, val: 30 },
-    { label: tt.presetFrNuclear, val: 70 },
-    { label: tt.presetDeToday, val: 15 },
-    { label: tt.presetCfe247, val: 95 },
+    { label: tt.presetFrankfurt, val: 20 },
+    { label: tt.presetEnergiewende, val: 70 },
+    { label: tt.presetMax, val: 100 },
   ];
 
   // Climate Neutrality Score (lightweight, no extra deps)

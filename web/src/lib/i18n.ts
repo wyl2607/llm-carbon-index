@@ -11,8 +11,8 @@ export const translations = {
   en: {
     // Header / Brand
     brand: 'LLM Carbon Index',
-    tagline: 'Transparent CO₂ estimation for OpenRouter LLM inference',
-    taglineZh: 'OpenRouter 大模型推理的透明碳排放估算',
+    tagline: 'Estimated Lifecycle Inference Footprint for OpenRouter LLM traffic',
+    taglineZh: 'OpenRouter 大模型推理全生命周期碳足迹估算',
     lastUpdated: 'Data as of',
     methodology: 'Methodology',
     github: 'GitHub',
@@ -38,9 +38,9 @@ export const translations = {
     sourceCitation: 'Source: OpenRouter (openrouter.ai/rankings)',
 
     // Scenario Lab
-    scenarioTitle: 'Grid Substitution Simulator',
-    scenarioSubtitle: 'What if inference workloads were shifted to the cleanest grids (≈50 gCO₂/kWh)? Explore spatial decarbonization potential.',
-    scenarioSubtitleZh: '如果推理负载迁移至最清洁电网（约 50 gCO₂/kWh），碳排放将如何变化？探索空间脱碳潜力。',
+    scenarioTitle: 'Grid Carbon Intensity Scenario Analysis',
+    scenarioSubtitle: 'Scenario analysis: Shifting inference workloads to verified low-carbon grids (≈50 gCO₂e/kWh). Exploring spatial decarbonization potential.',
+    scenarioSubtitleZh: '情景推演分析：将推理负载迁移至验证的低碳电网（约 50 gCO₂e/kWh），探索空间脱碳潜力。',
     shiftLabel: 'Share of modeled traffic shifted to clean grid',
     dailyAvoided: 'Daily Emissions Avoided',
     kgCO2: 'kg CO₂eq',
@@ -89,16 +89,16 @@ export const translations = {
     deEuHint: 'Electricity Maps DE/FR live factors + annual fallbacks from Ember/IEA. EU Taxonomy DNSH alignment requires demonstrating no significant harm — spatial shifting to low-carbon zones (FR, NO, SE) is a documented lever.',
 
     // KPIs
-    kpiTokens: 'Modeled Tokens',
-    kpiTokensSub: 'Daily visible inference',
-    kpiCo2: 'Est. CO₂eq (scenario)',
-    kpiCo2Sub: 'Mid estimate with range',
+    kpiTokens: 'Aggregate Inference Volume',
+    kpiTokensSub: 'Billions of Tokens',
+    kpiCo2: 'Total Estimated Emissions',
+    kpiCo2Sub: 'tCO₂e (Mid estimate with range)',
     kpiAvoided: 'Avoided vs Baseline',
     kpiAvoidedSub: 'From current grid mix',
-    kpiIntensity: 'Intensity (mid)',
-    kpiIntensitySub: 'g CO₂eq per 1k output tokens',
-    kpiWater: 'Est. Water Use',
-    kpiWaterSub: 'Evaporative cooling (kL)',
+    kpiIntensity: 'Weighted Carbon Intensity',
+    kpiIntensitySub: 'gCO₂e per 10k tokens',
+    kpiEnergy: 'Proxy Energy Consumption',
+    kpiEnergySub: 'MWh (Includes PUE overhead)',
 
     // Visual Explorer
     vizTitle: 'Emissions by Model',
@@ -133,8 +133,8 @@ export const translations = {
     historyTitle: 'Historical Trends & Efficiency',
     historyCo2: 'Daily Emissions (kg CO₂ mid)',
     historyEff: 'Ecosystem Efficiency (gCO₂ / M tokens)',
-    jevonsTitle: 'The Jevons Paradox in AI',
-    jevonsBody: 'As models become dramatically more efficient per token, total inference volume often grows faster — increasing aggregate emissions. Tracking both intensity and totals is essential for honest ESG accounting.',
+    jevonsTitle: 'The Jevons Paradox in LLM Inference',
+    jevonsBody: 'While algorithmic and hardware optimizations structurally reduce carbon intensity per token, the subsequent exponential growth in total inference volume frequently outpaces these unit-level efficiency gains. Consequently, aggregate physical emissions expand. Robust ESG reporting (e.g., CSRD/ESRS) mandates the simultaneous tracking of both relative intensity (gCO₂e/token) and absolute environmental impact.',
 
     // Footer
     footerStatic: 'Static site • All numbers are estimates with ranges • Data refreshed daily via GitHub Actions',
@@ -226,16 +226,16 @@ export const translations = {
     // Germany / EU hints
     deEuHint: 'Electricity Maps DE/FR 实时因子 + Ember/IEA 年均回退。EU Taxonomy DNSH 对齐要求证明“无重大危害”——将负载空间迁移至低碳区域（FR、NO、SE）是已记录的杠杆。',
 
-    kpiTokens: '建模 Token 总量',
-    kpiTokensSub: '当日可见推理量',
-    kpiCo2: '估算 CO₂eq（情景后）',
-    kpiCo2Sub: '中位数 + 不确定性范围',
+    kpiTokens: '总计推理量',
+    kpiTokensSub: '十亿 Tokens',
+    kpiCo2: '总计估算碳排放',
+    kpiCo2Sub: 'tCO₂e (中位数 + 范围)',
     kpiAvoided: '相较基线减排',
     kpiAvoidedSub: '较当前电网结构',
-    kpiIntensity: '排放强度（中位）',
-    kpiIntensitySub: '每千输出 token 克 CO₂eq',
-    kpiWater: '估算耗水量',
-    kpiWaterSub: '蒸发冷却（千升）',
+    kpiIntensity: '加权碳排放强度',
+    kpiIntensitySub: 'gCO₂e 每万次 tokens',
+    kpiEnergy: '预估能耗',
+    kpiEnergySub: 'MWh (包含 PUE 损耗)',
 
     vizTitle: '各模型排放量',
     vizBy: '颜色分组',
@@ -267,8 +267,8 @@ export const translations = {
     historyTitle: '历史趋势与效率演进',
     historyCo2: '每日排放（kg CO₂ 中位）',
     historyEff: '系统效率（gCO₂ / 百万 token）',
-    jevonsTitle: 'AI 中的杰文斯悖论',
-    jevonsBody: '模型单 token 效率大幅提升的同时，推理总量增速常超过效率增益，导致总体排放上升。ESG 报告必须同时追踪强度与总量。',
+    jevonsTitle: '大语言模型推理中的杰文斯悖论 (Jevons Paradox)',
+    jevonsBody: '尽管算法创新与硬件优化结构性地降低了单 token 的碳排放强度，但由此诱发的推理总量指数级增长通常会抵消单位效率的提升。因此，整体物理绝对排放量呈扩张趋势。严谨的 ESG 披露体系（如 CSRD/ESRS）要求必须同时审计相对效率指标（gCO₂e/token）与绝对环境影响总量。',
 
     footerStatic: '静态站点 • 所有数字均为带范围的估算值 • 数据每日通过 GitHub Actions 更新',
     cite: '引用此数据集',

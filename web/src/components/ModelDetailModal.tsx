@@ -56,6 +56,14 @@ export const ModelDetailModal: React.FC<Props> = ({ model, onClose }) => {
           </div>
         </div>
 
+        <div className="mt-5 p-4 rounded-xl bg-black/40 border border-white/5 text-sm">
+          <div className="font-semibold text-emerald-400 mb-2">Architectural & Hardware Proxies</div>
+          <div className="text-gray-300 text-xs space-y-2">
+            <p><strong>Hardware Assumption:</strong> Inference emissions model assumes standardized accelerator hardware (e.g., 8x H100 SXM for 70B+ parameter class models).</p>
+            <p><strong>Power Usage Effectiveness (PUE):</strong> Assumed constant at <strong>{model.pue}</strong>, based on reported regional data center averages.</p>
+          </div>
+        </div>
+
         <div className="mt-5 pt-4 border-t border-[#242924] text-xs text-[#a1a6a1]">
           <div className="font-semibold text-[#e4e7e4] mb-1">Energy source:</div> {model.energy_source}<br/>
           <div className="font-semibold text-[#e4e7e4] mt-2 mb-1">Grid source:</div> {model.grid_source} ({model.region})<br/>
