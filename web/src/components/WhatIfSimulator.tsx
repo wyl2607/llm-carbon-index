@@ -1,6 +1,5 @@
 import React from 'react';
 import type { Range } from '../types';
-import { formatCO2Range } from '../lib/format';
 
 interface Props {
   greenShiftPercent: number;
