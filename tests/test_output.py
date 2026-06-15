@@ -235,8 +235,18 @@ def test_validate_accepts_valid_doc_and_rejects_broken_records(monkeypatch, tmp_
             "modeled_traffic_fraction": 1.0,
             "co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6},
             "co2_kg_market": {"low": 91.2, "mid": 182.4, "high": 273.6},
-            "by_origin": {"CN": {"co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6}, "co2_kg_market": {"low": 91.2, "mid": 182.4, "high": 273.6}}},
-            "by_open_closed": {"open": {"co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6}, "co2_kg_market": {"low": 91.2, "mid": 182.4, "high": 273.6}}},
+            "by_origin": {
+                "CN": {
+                    "co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6},
+                    "co2_kg_market": {"low": 91.2, "mid": 182.4, "high": 273.6}
+                }
+            },
+            "by_open_closed": {
+                "open": {
+                    "co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6},
+                    "co2_kg_market": {"low": 91.2, "mid": 182.4, "high": 273.6}
+                }
+            },
         },
     }
     validate(valid_doc)  # should not raise

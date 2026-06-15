@@ -20,6 +20,7 @@ from pipeline.config import (
 )
 from pipeline.energy import energy_kwh, wh_per_output_token
 from pipeline.grid import carbon_intensity
+from pipeline.ranges import Range
 from pipeline.slugs import normalize_slug
 from pipeline.tokens import output_tokens
 from pipeline.types import ModelEstimate, NormalizedRecord
