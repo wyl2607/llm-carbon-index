@@ -85,6 +85,13 @@ ANNUAL_YAML = """
   source: "composite fallback"
 """
 
+VENDOR_CLAIMS_YAML = """
+- provider: "openai"
+  annual_renewable_match_pct: 100
+- provider: "anthropic"
+  annual_renewable_match_pct: 100
+"""
+
 
 def _write_yaml(tmp: Path, name: str, content: str) -> Path:
     p = tmp / name
@@ -146,6 +153,10 @@ EXPECTED_MINIMAX_CO2 = {"low": 469123.2, "mid": 879606.0, "high": 1759212.0}
 EXPECTED_OPENAI_CO2 = {"low": 364800.0, "mid": 912000.0, "high": 2188800.0}
 EXPECTED_ANTHROPIC_CO2 = {"low": 182400.0, "mid": 456000.0, "high": 1094400.0}
 
+EXPECTED_MINIMAX_CO2_MARKET = EXPECTED_MINIMAX_CO2
+EXPECTED_OPENAI_CO2_MARKET = {"low": 0.0, "mid": 0.0, "high": 0.0}
+EXPECTED_ANTHROPIC_CO2_MARKET = {"low": 0.0, "mid": 0.0, "high": 0.0}
+
 TOTAL_TOKENS = 10_000_000_000_000
 UNCOVERED_TOKENS = 2_450_000_000_000
 MODELED_FRACTION = 0.755
@@ -155,13 +166,31 @@ TOTAL_CO2 = {
     "mid": 2247606.0,
     "high": 5042412.0,
 }
+
+TOTAL_CO2_MARKET = {
+    "low": 469123.2,
+    "mid": 879606.0,
+    "high": 1759212.0,
+}
 BY_ORIGIN = {
-    "CN": {"co2_kg": EXPECTED_MINIMAX_CO2},
-    "US": {"co2_kg": {"low": 547200.0, "mid": 1368000.0, "high": 3283200.0}},
+    "CN": {
+        "co2_kg": EXPECTED_MINIMAX_CO2,
+        "co2_kg_market": EXPECTED_MINIMAX_CO2_MARKET,
+    },
+    "US": {
+        "co2_kg": {"low": 547200.0, "mid": 1368000.0, "high": 3283200.0},
+        "co2_kg_market": {"low": 0.0, "mid": 0.0, "high": 0.0},
+    },
 }
 BY_OPEN_CLOSED = {
-    "open": {"co2_kg": EXPECTED_MINIMAX_CO2},
-    "closed": {"co2_kg": {"low": 547200.0, "mid": 1368000.0, "high": 3283200.0}},
+    "open": {
+        "co2_kg": EXPECTED_MINIMAX_CO2,
+        "co2_kg_market": EXPECTED_MINIMAX_CO2_MARKET,
+    },
+    "closed": {
+        "co2_kg": {"low": 547200.0, "mid": 1368000.0, "high": 3283200.0},
+        "co2_kg_market": {"low": 0.0, "mid": 0.0, "high": 0.0},
+    },
 }
 
 
@@ -195,6 +224,8 @@ def test_validate_accepts_valid_doc_and_rejects_broken_records(monkeypatch, tmp_
                 "grid_source": "annual_factor",
                 "pue": 1.2,
                 "co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6},
+                "renewable_match_pct": None,
+                "co2_kg_market": {"low": 91.2, "mid": 182.4, "high": 273.6},
                 "flags": ["FALLBACK_GRID_ANNUAL"],
             }
         ],
@@ -203,8 +234,9 @@ def test_validate_accepts_valid_doc_and_rejects_broken_records(monkeypatch, tmp_
             "uncovered_tokens": 0,
             "modeled_traffic_fraction": 1.0,
             "co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6},
-            "by_origin": {"CN": {"co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6}}},
-            "by_open_closed": {"open": {"co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6}}},
+            "co2_kg_market": {"low": 91.2, "mid": 182.4, "high": 273.6},
+            "by_origin": {"CN": {"co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6}, "co2_kg_market": {"low": 91.2, "mid": 182.4, "high": 273.6}}},
+            "by_open_closed": {"open": {"co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6}, "co2_kg_market": {"low": 91.2, "mid": 182.4, "high": 273.6}}},
         },
     }
     validate(valid_doc)  # should not raise
@@ -297,6 +329,8 @@ def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path)
                 "grid_source": "annual_factor",
                 "pue": 1.2,
                 "co2_kg": EXPECTED_MINIMAX_CO2,
+                "renewable_match_pct": None,
+                "co2_kg_market": EXPECTED_MINIMAX_CO2,
                 "flags": ["FALLBACK_GRID_ANNUAL"],
             },
             {
@@ -314,6 +348,8 @@ def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path)
                 "grid_source": "annual_factor",
                 "pue": 1.2,
                 "co2_kg": EXPECTED_OPENAI_CO2,
+                "renewable_match_pct": 100.0,
+                "co2_kg_market": EXPECTED_OPENAI_CO2_MARKET,
                 "flags": ["FALLBACK_ENERGY_CLASS", "FALLBACK_GRID_ANNUAL", "CLOSED_MODEL_ASSUMED"],
             },
             {
@@ -331,6 +367,8 @@ def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path)
                 "grid_source": "annual_factor",
                 "pue": 1.2,
                 "co2_kg": EXPECTED_ANTHROPIC_CO2,
+                "renewable_match_pct": 100.0,
+                "co2_kg_market": EXPECTED_ANTHROPIC_CO2_MARKET,
                 "flags": ["FALLBACK_ENERGY_CLASS", "FALLBACK_GRID_ANNUAL", "CLOSED_MODEL_ASSUMED"],
             },
         ],
@@ -339,6 +377,7 @@ def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path)
             "uncovered_tokens": UNCOVERED_TOKENS,
             "modeled_traffic_fraction": MODELED_FRACTION,
             "co2_kg": TOTAL_CO2,
+            "co2_kg_market": TOTAL_CO2_MARKET,
             "by_origin": BY_ORIGIN,
             "by_open_closed": BY_OPEN_CLOSED,
         },
@@ -421,6 +460,7 @@ def test_write_outputs_validates_before_write_and_copies_to_history(tmp_path, mo
             "uncovered_tokens": 0,
             "modeled_traffic_fraction": 0.0,
             "co2_kg": {"low": 0.0, "mid": 0.0, "high": 0.0},
+            "co2_kg_market": {"low": 0.0, "mid": 0.0, "high": 0.0},
             "by_origin": {},
             "by_open_closed": {},
         },
