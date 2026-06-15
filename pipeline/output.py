@@ -1,0 +1,142 @@
+"""Phase 3: assemble and persist the validated latest.json + history copy.
+
+Consumes ModelEstimate list (from estimate) + the full NormalizedRecord list
+(for totals incl. the is_other row). All energy/CO2 values remain RangeDicts.
+"""
+from __future__ import annotations
+
+import json
+from collections.abc import Iterable
+from datetime import datetime, timezone
+
+import jsonschema
+
+import pipeline.config as config
+from pipeline import METHODOLOGY_VERSION
+from pipeline.types import ModelEstimate, NormalizedRecord
+
+
+def build_output(
+    estimates: list[ModelEstimate],
+    records: list[NormalizedRecord],
+    data_date: str,
+    generated_at: str | None = None,
+) -> dict:
+    """Assemble the top-level output document per DATA_SCHEMAS.md §1.
+
+    - methodology_version from pipeline.METHODOLOGY_VERSION
+    - generated_at: ISO-8601 UTC Z (caller may supply fixed for determinism)
+    - source_citation uses the exact required attribution string
+    - scope_note is the exact fixed string
+    - assumptions snapshot (input_output_ratio + default_pue)
+    - models: the provided estimates (excludes other aggregate)
+    - totals: total_tokens (all records), uncovered from is_other row,
+      modeled_traffic_fraction, endpoint-wise summed co2_kg ranges for modeled,
+      plus by_origin and by_open_closed breakdowns (sums per group).
+    """
+    if generated_at is None:
+        generated_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+    source_citation = f"Source: OpenRouter (openrouter.ai/rankings), as of {data_date}"
+    scope_note = (
+        "Estimated CO2 footprint of LLM-inference traffic visible through OpenRouter. "
+        "NOT global data-center emissions. All figures are estimates with uncertainty."
+    )
+    assumptions = {
+        "input_output_ratio": "80:20",
+        "default_pue": 1.2,
+    }
+
+    # Totals from ALL records for the day (incl. the other aggregate)
+    total_tokens = sum(int(r.get("total_tokens", 0)) for r in records)
+    uncovered_tokens = 0
+    for r in records:
+        if r.get("is_other"):
+            uncovered_tokens = int(r.get("total_tokens", 0))
+            break
+    if total_tokens > 0:
+        modeled_traffic_fraction: float = (total_tokens - uncovered_tokens) / total_tokens
+    else:
+        modeled_traffic_fraction = 0.0
+
+    def _sum_co2(rs: Iterable[dict]) -> dict:
+        rs = list(rs)
+        if not rs:
+            return {"low": 0.0, "mid": 0.0, "high": 0.0}
+        return {
+            "low": sum(float(r["low"]) for r in rs),
+            "mid": sum(float(r["mid"]) for r in rs),
+            "high": sum(float(r["high"]) for r in rs),
+        }
+
+    co2_list = [m["co2_kg"] for m in estimates]
+    co2_kg = _sum_co2(co2_list)
+
+    # by_origin and by_open_closed preserve first-appearance order from estimates list
+    origin_groups: dict[str, list[dict]] = {}
+    for m in estimates:
+        o = m["origin"]
+        origin_groups.setdefault(o, []).append(m["co2_kg"])
+    by_origin = {o: {"co2_kg": _sum_co2(lst)} for o, lst in origin_groups.items()}
+
+    oc_groups: dict[str, list[dict]] = {}
+    for m in estimates:
+        oc = m["open_or_closed"]
+        oc_groups.setdefault(oc, []).append(m["co2_kg"])
+    by_open_closed = {oc: {"co2_kg": _sum_co2(lst)} for oc, lst in oc_groups.items()}
+
+    totals = {
+        "total_tokens": total_tokens,
+        "uncovered_tokens": uncovered_tokens,
+        "modeled_traffic_fraction": modeled_traffic_fraction,
+        "co2_kg": co2_kg,
+        "by_origin": by_origin,
+        "by_open_closed": by_open_closed,
+    }
+
+    doc: dict = {
+        "methodology_version": METHODOLOGY_VERSION,
+        "generated_at": generated_at,
+        "data_date": data_date,
+        "source_citation": source_citation,
+        "scope_note": scope_note,
+        "assumptions": assumptions,
+        "models": list(estimates),
+        "totals": totals,
+    }
+    return doc
+
+
+def validate(doc: dict) -> None:
+    """Validate doc against schemas/output.schema.json using jsonschema.
+
+    Raises jsonschema.ValidationError (or schema load errors) if invalid.
+    """
+    schema_path = config.SCHEMA_PATH
+    with open(schema_path, "r", encoding="utf-8") as f:
+        schema = json.load(f)
+    jsonschema.validate(instance=doc, schema=schema)
+
+
+def write_outputs(doc: dict) -> None:
+    """Validate first, then write OUTPUT_LATEST_PATH and history/{data_date}.json.
+
+    Never writes an invalid document.
+    """
+    validate(doc)
+    data_date: str = doc["data_date"]
+
+    # latest
+    latest_path = config.OUTPUT_LATEST_PATH
+    latest_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(latest_path, "w", encoding="utf-8") as f:
+        json.dump(doc, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+
+    # history snapshot
+    hist_dir = config.OUTPUT_HISTORY_DIR
+    hist_dir.mkdir(parents=True, exist_ok=True)
+    hist_path = hist_dir / f"{data_date}.json"
+    with open(hist_path, "w", encoding="utf-8") as f:
+        json.dump(doc, f, ensure_ascii=False, indent=2)
+        f.write("\n")

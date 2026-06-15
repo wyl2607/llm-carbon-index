@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "definitions": {
+    "Range": {
+      "type": "object",
+      "required": ["low", "mid", "high"],
+      "properties": {
+        "low": { "type": "number" },
+        "mid": { "type": "number" },
+        "high": { "type": "number" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "methodology_version",
+    "generated_at",
+    "data_date",
+    "source_citation",
+    "scope_note",
+    "assumptions",
+    "models",
+    "totals"
+  ],
+  "properties": {
+    "methodology_version": { "type": "string" },
+    "generated_at": { "type": "string" },
+    "data_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "source_citation": { "type": "string" },
+    "scope_note": { "type": "string" },
+    "assumptions": {
+      "type": "object",
+      "required": ["input_output_ratio", "default_pue"],
+      "properties": {
+        "input_output_ratio": { "type": "string" },
+        "default_pue": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "models": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "slug",
+          "display_name",
+          "origin",
+          "open_or_closed",
+          "total_tokens",
+          "est_output_tokens",
+          "wh_per_output_token",
+          "energy_kwh",
+          "energy_source",
+          "region",
+          "carbon_intensity_gco2_kwh",
+          "grid_source",
+          "pue",
+          "co2_kg",
+          "flags"
+        ],
+        "properties": {
+          "slug": { "type": "string" },
+          "display_name": { "type": "string" },
+          "origin": { "enum": ["CN", "US", "EU", "OTHER"] },
+          "open_or_closed": { "enum": ["open", "closed"] },
+          "total_tokens": { "type": "integer" },
+          "est_output_tokens": { "type": "integer" },
+          "wh_per_output_token": { "$ref": "#/definitions/Range" },
+          "energy_kwh": { "$ref": "#/definitions/Range" },
+          "energy_source": {
+            "enum": ["ai_energy_score", "ecologits", "parameter_class_fallback"]
+          },
+          "region": { "type": "string" },
+          "carbon_intensity_gco2_kwh": { "type": "number" },
+          "grid_source": { "enum": ["electricity_maps_live", "annual_factor"] },
+          "pue": { "type": "number" },
+          "co2_kg": { "$ref": "#/definitions/Range" },
+          "flags": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "UNKNOWN_MODEL",
+                "FALLBACK_ENERGY_CLASS",
+                "FALLBACK_GRID_ANNUAL",
+                "CLOSED_MODEL_ASSUMED"
+              ]
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "totals": {
+      "type": "object",
+      "required": [
+        "total_tokens",
+        "uncovered_tokens",
+        "modeled_traffic_fraction",
+        "co2_kg",
+        "by_origin",
+        "by_open_closed"
+      ],
+      "properties": {
+        "total_tokens": { "type": "integer" },
+        "uncovered_tokens": { "type": "integer" },
+        "modeled_traffic_fraction": { "type": "number" },
+        "co2_kg": { "$ref": "#/definitions/Range" },
+        "by_origin": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["co2_kg"],
+            "properties": {
+              "co2_kg": { "$ref": "#/definitions/Range" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "by_open_closed": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["co2_kg"],
+            "properties": {
+              "co2_kg": { "$ref": "#/definitions/Range" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
