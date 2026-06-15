@@ -154,7 +154,7 @@ function App() {
               </a>
             </div>
             
-            <div className="mt-6 flex flex-col sm:flex-row items-center gap-4 bg-white/50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50">
+            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50">
               <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Accounting Method:</span>
               <AccountingToggle method={accountingMethod} onChange={setAccountingMethod} />
             </div>
