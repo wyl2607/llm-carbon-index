@@ -82,7 +82,20 @@ for closed models). A bare point number anywhere in the JSON or UI is a bug.
   widely by hour/fuel mix. Live Electricity Maps is preferred; the annual table
   is the labelled fallback (`grid_source`).
 
-## 6. Market-based vs location-based (GHG Protocol Scope 2)
+## 6. Sensitivity Analysis (PUE and Load)
+
+Given the uncertainty in hardware deployment, sensitivity analysis is required:
+- **PUE (Power Usage Effectiveness)**: A best-in-class data center (e.g., Google) may operate at PUE ~1.1, while older or less optimized facilities run closer to 1.5. This creates a ~36% variance in total CO₂ estimation.
+- **Utilization/Load**: Servers running at high utilization are more energy-efficient per token. Our base ranges incorporate variations from 50% to 100% load.
+
+## 7. EU Context & ESG Reporting Relevance (CSRD / EU Taxonomy)
+
+This project aligns with emerging European sustainability frameworks:
+- **CSRD / ESRS (E1 Climate Change)**: Estimates here support the calculation of Scope 3 emissions (purchased services/cloud computing) required under the Corporate Sustainability Reporting Directive.
+- **EU Taxonomy (DNSH)**: Evaluating whether AI workloads "Do No Significant Harm" to environmental objectives requires granular, workload-level transparency of energy intensity.
+- **Energiewende & Regional Grids**: By utilizing *Electricity Maps*, the index captures the stark contrast between grid zones. For example, inference routed to France (nuclear-heavy, ~50gCO₂/kWh) versus Germany (coal/renewables mix, ~300gCO₂/kWh) yields vastly different footprints for the exact same LLM query.
+
+## 8. Market-based vs location-based (GHG Protocol Scope 2)
 
 - **Location-based** uses the physical grid intensity of the serving region
   (what this MVP reports).
