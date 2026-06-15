@@ -12,7 +12,6 @@ import { AccountingToggle, type AccountingMethod } from './components/Accounting
 import { HistoryViewer } from './components/HistoryViewer';
 import { OriginDonut } from './components/OriginDonut';
 import { ModelDetailModal } from './components/ModelDetailModal';
-import { Cpu, Zap } from 'lucide-react';
 
 const isSampleData = (models: Model[]) =>
   models.length > 0 && models[0].slug.startsWith('example/');
@@ -225,66 +224,7 @@ function App() {
           </div>
         )}
 
-        {/* Thesis & ESG section - Critical for German market (E.ON, Siemens Energy, RWE, etc.) */}
-        {simulatedData && (
-          <div className="card p-6 sm:p-8 mb-12 bg-gradient-to-br from-[#0c100c] to-[#080a08] border-emerald-900/40 shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.05] transition-opacity">
-              <Cpu size={120} />
-            </div>
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div className="max-w-3xl">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-4 border border-emerald-500/20">
-                  <Zap size={14} /> For Researchers & ESG Reporting
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-2">{tt.thesisTitle}</h2>
-                <p className="text-[#a1a6a1] leading-relaxed font-medium">
-                  {tt.thesisSubtitle}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <button 
-                  onClick={() => {
-                    if (!data) return;
-                    const citation = tt.citeApa ? tt.citeApa(data.data_date) : '';
-                    navigator.clipboard.writeText(citation).then(() => alert('Citation copied (APA style)'));
-                  }}
-                  className="btn btn-secondary text-xs px-5 py-3 font-bold"
-                >
-                  {tt.thesisCopyCitation}
-                </button>
-                <a 
-                  href={`${import.meta.env.BASE_URL}data/latest.json`} 
-                  target="_blank" 
-                  className="btn btn-ghost border-[#242924] text-xs px-5 py-3 font-bold"
-                >
-                  Download JSON
-                </a>
-              </div>
-            </div>
-            
-            <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6 border-t border-white/5">
-              <div className="space-y-4 text-xs text-[#a1a6a1] leading-relaxed">
-                <div className="p-4 rounded-xl bg-black/40 border border-white/5">
-                  <strong className="text-emerald-400 block mb-1">CSRD / ESRS E1 Alignment</strong>
-                  {tt.csrdExample}
-                </div>
-                <div className="p-4 rounded-xl bg-black/40 border border-white/5">
-                  <strong className="text-emerald-400 block mb-1">EU Taxonomy DNSH</strong>
-                  {tt.euTaxonomy}
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="text-[10px] uppercase font-bold tracking-widest text-[#717771] mb-2 px-1">Academic Citation (BibTeX)</div>
-                <div className="font-mono text-[10px] bg-[#0a0c0a] p-4 rounded-xl border border-[#242924] text-[#a1a6a1] select-all leading-normal shadow-inner">
-                  {data && tt.citeBibtex(data.data_date, data.methodology_version)}
-                </div>
-                <p className="text-[10px] text-[#717771] px-1 italic">
-                  Note: {tt.thesisScopeNote}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+
 
 
 
