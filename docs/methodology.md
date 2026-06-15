@@ -1,120 +1,113 @@
 # Methodology & Uncertainty
 
-> This document doubles as the project's thesis methodology section. It is a
-> living draft, filled in phase by phase. Phase 0 establishes scope, the core
-> formula, and the constants used to *prove the math*; later phases add the real
-> energy engine (EcoLogits + AI Energy Score), live grid data (Electricity
-> Maps), and the full constant tables.
+> This document doubles as the project's thesis methodology section. Every number
+> it cites traces to an entry in [`ASSUMPTIONS.md`](ASSUMPTIONS.md); every shape
+> to [`DATA_SCHEMAS.md`](DATA_SCHEMAS.md).
 
 ## 1. Scope (non-negotiable)
 
 This project estimates the CO₂ footprint of **OpenRouter-visible LLM
 inference** — a *representative but partial* slice of global AI usage. Consumer
-apps (ChatGPT, Gemini, Claude) are **not** in it. It is **NOT** a measurement of
-total global data-center emissions. **All figures are estimates with explicit
-uncertainty ranges, not measurements**, especially for closed models whose
-parameters, hardware, and data-center locations are undisclosed.
+apps (ChatGPT, Gemini, Claude apps) are **not** in it. It is **NOT** a
+measurement of total global data-center emissions. **All figures are estimates
+with explicit uncertainty ranges, not measurements**, especially for closed
+models whose parameters, hardware, and data-center locations are undisclosed.
+The published `totals.modeled_traffic_fraction` states exactly how much of each
+day's OpenRouter traffic we actually model.
 
-## 2. The CO₂ chain
-
-```
-tokens (OpenRouter)  ──▶  energy (Wh)  ──▶  facility energy (× PUE)  ──▶  CO₂ (× grid gCO₂/kWh)
-```
-
-### 2.1 Core formula (location-based and market-based)
-
-For one model on one day, carbon is computed per Scope-2 accounting in two
-flavours (absorbed from the parallel Gemini design, see §6):
+## 2. The estimation chain
 
 ```
-energy_Wh        = (I_prompt · T_prompt + I_comp · T_comp) · PUE
-CO₂_location_g   = (energy_Wh / 1000) · C_location      # /1000 = Wh→kWh guard
-CO₂_market_g     = (energy_Wh / 1000) · C_market
-green_substitution_% = (CO₂_location − CO₂_market) / CO₂_location · 100
+total_tokens (OpenRouter rankings-daily)
+   └─ × 0.20  ──────────────▶ est_output_tokens          [A2, 80:20 input:output]
+        └─ × wh_per_output_token (Range) ─▶ energy_Wh     [E-series; AI Energy Score / EcoLogits]
+             └─ / 1000 ─────────────────▶ energy_kWh      [Wh→kWh guard]
+                  └─ × PUE ──────────────▶ facility_kWh   [A4, default 1.2]
+                       └─ × grid_gCO2/kWh ▶ gCO2           [C-GRID-* / Electricity Maps live]
+                            └─ / 1000 ────▶ co2_kg         [g→kg guard]
 ```
 
-- `T_prompt, T_comp` — input/output token counts for the day (OpenRouter rankings).
-- `I_prompt, I_comp` — energy intensity (Wh per token) for input/output. Output
-  (decode) tokens dominate energy; input (prefill) is cheaper per token.
-- `PUE` — data-center Power Usage Effectiveness multiplier.
-- `C_location` — physical grid carbon intensity (gCO₂eq/kWh) of the likely region.
-- `C_market` — grid intensity after PPA/REC green-energy procurement (Scope-2
-  market-based). **Market-based numbers are provider-specific, often
-  undisclosed, and treated as low-confidence assumptions — never invented as
-  fact.**
+Formally, per model per day:
 
-**Uncertainty:** every intensity is carried as a `{min, max}` range, propagated
-through to a `{min, max}` CO₂ — never collapsed to a single number.
+```
+energy_kwh = wh_per_output_token × est_output_tokens / 1000
+co2_kg     = energy_kwh × PUE × carbon_intensity_gco2_kwh / 1000
+```
 
-### 2.2 Phase-0 prover constants (in `scratch/prove_math.py`)
+Output (decode) tokens dominate inference energy, so energy is estimated on the
+output-token estimate; the 80:20 split (A2) is a documented sensitivity axis,
+not a measured ratio.
 
-The Phase-0 prover uses a simplified single output-token intensity purely to
-show the chain is plausible. Sources:
+## 3. Assumptions (full registry in `ASSUMPTIONS.md`)
 
-| Constant | Value | Source |
-|---|---|---|
-| Energy / output token (min) | 2.0e-4 Wh/token | Luccioni, Jernite & Strubell (2024), *Power Hungry Processing*, FAccT'24 — text-gen median ≈ 0.047 kWh/1000 inferences ≈ ~1.8e-4 Wh/token at ~256-token median |
-| Energy / output token (max) | 7.0e-4 Wh/token | de Vries (2023), *The growing energy footprint of AI*, Joule 7(10) — ~0.3 Wh per ChatGPT query ≈ ~6e-4 Wh/token at ~500 tokens, rounded up to bound uncertainty |
-| PUE | 1.2 | Conservative hyperscale figure; Google fleet-wide ~1.10 (Google 2024 Environmental Report); all-DC industry avg ~1.5 (Uptime Institute 2023) |
-| US grid intensity | 375 gCO₂eq/kWh | U.S. EPA eGRID2022 national average output emission rate |
+| ID | What | Value | Source |
+|---|---|---|---|
+| A1 | Model subset (MVP) | OpenRouter top open models w/ AI Energy Score data + 1–2 closed via EcoLogits | `model_crosswalk.yaml` |
+| A2 | Input:output token ratio | 80:20 → `est_output_tokens = total × 0.20` | OpenRouter usage study (refine) |
+| A3 | DC region per model | one assumed region/provider; closed = `CLOSED_MODEL_ASSUMED` | DC-series |
+| A4 | PUE | 1.2 default (band ~1.1–1.6) | Google / Uptime Institute |
+| E-CLASS-* | Param-class fallback Wh/token | small 0.0005–0.0012–0.0025; large 0.002–0.005–0.012 | AI Energy Score v2 + EcoLogits |
+| E-{model} | Per-model Wh/token | e.g. closed Claude-class 0.0025–0.006–0.015 (widest) | per-model entries |
+| C-GRID-* | Annual grid factors (gCO₂/kWh) | us-east 380 (EPA eGRID2022), europe-west 230 (Ember 2024), cn-north 537 (Ember 2023), eu-27 242, default 400 | EPA / Ember |
 
-Sanity target: per-prompt energy ≈ 0.3 Wh to a few Wh (prover yields ~0.12–0.42 Wh
-for a 500-token response — plausible order of magnitude).
+The per-query energy literature spans **~0.3 Wh (Google) to ~1.8–7 Wh
+(EcoLogits)** depending on assumptions (E-METHOD); our ranges are deliberately
+wide to span that disagreement.
 
-## 3. Energy engine (Phase 2 — hybrid)
+## 4. Uncertainty handling (read this before trusting any number)
 
-- **EcoLogits** (LCA-based, ISO 14044; returns `{min,max}` ranges) as the baseline
-  for API LLM calls from token counts + model assumptions.
-- **AI Energy Score** (Hugging Face) measured Wh/1000-queries as a cross-check
-  for open / partially-open models.
-- **Fallback** param-class heuristic for unknowns, flagged `source: fallback`
-  with a `confidence` field (never a silent 0).
+Every energy/CO₂ quantity is a **Range** `{low, mid, high}` with `low ≤ mid ≤
+high`, carried end-to-end (`pipeline/ranges.py`). Propagation is intentionally
+simple: a Range × positive scalar scales each endpoint; a Range × Range
+multiplies endpoint-wise.
 
-All model-specific assumptions (params, active params, hardware, open/closed,
-origin country) live in `data/*.yaml` — never hardcoded in `.py` (constraint #6).
+**This `{low, mid, high}` band is a CONSERVATIVE ENDPOINT BAND, not a
+statistical confidence interval.** It expresses the spread of defensible
+assumptions, not a probability distribution. We do not claim a 95% CI or any
+probabilistic coverage — to do so would imply data we do not have (especially
+for closed models). A bare point number anywhere in the JSON or UI is a bug.
 
-## 4. Grid data (Phase 3)
+## 5. Scope & limitations
 
-- **Electricity Maps** live carbon intensity (gCO₂eq/kWh) + renewable %, by
-  region, with response caching.
-- **Fallback:** annual-average grid factors in `data/grid_fallback_factors.yaml`
-  (Ember / IEA / national operators). Each output row records which source was used.
+- **Coverage is partial.** Only OpenRouter-visible API traffic;
+  `modeled_traffic_fraction` quantifies the modeled share each day (the `other`
+  aggregate row is the unmodeled denominator, never dropped or merged).
+- **Tokenizer non-comparability (L-TOKENIZER).** Token counts come from each
+  provider's own tokenizer and are **not directly comparable** across rows; any
+  cross-model token sum or per-token efficiency carries this caveat.
+- **Closed-model opacity.** Parameters, hardware, and DC locations are
+  undisclosed; closed rows use EcoLogits-class assumptions, the widest ranges,
+  and the `CLOSED_MODEL_ASSUMED` flag.
+- **Grid timing.** Annual factors are averages; real-time intensity swings
+  widely by hour/fuel mix. Live Electricity Maps is preferred; the annual table
+  is the labelled fallback (`grid_source`).
 
-### 4.1 Annual fallback factors (seed — `data/grid_fallback_factors.yaml`)
+## 6. Market-based vs location-based (GHG Protocol Scope 2)
 
-| Region | gCO₂eq/kWh (location) | Source |
-|---|---|---|
-| US | 369 | Ember, US 2023 annual (cf. EPA eGRID2022 ~375) |
-| CN | 537 | Ember, China 2023 annual |
-| EU-27 | 242 | Ember, EU-27 2023 annual |
-| FR | 56 | Ember, France 2023 (illustrative low-carbon region) |
+- **Location-based** uses the physical grid intensity of the serving region
+  (what this MVP reports).
+- **Market-based** reflects contractual instruments (PPAs/RECs) a provider buys,
+  which can drive reported intensity toward zero — an *accounting* outcome, not a
+  change in the electrons consumed.
 
-> Correction vs the absorbed Gemini draft: Gemini used `EU = 82 gCO₂/kWh`
-> uncited; that is close to a *France-specific* figure, not the EU-27 average
-> (~242). We use Ember EU-27 and keep France as a separate, explicitly-low
-> region. Market-based deductions (PPA) are deferred to Phase 3 as low-confidence
-> per-provider assumptions with sources, not seeded as fact here.
+The two can differ by an order of magnitude. Reporting both, and the
+substitution scenarios, is **Phase 6** work; this MVP reports location-based
+only and flags the distinction so it is never misread as physical reality.
 
-## 5. Scenarios (Phase 3)
+## 7. Electricity Maps licensing decision (L-EM-FREE)
 
-1. **Location-based** — actual current grid.
-2. **Green-X%** — hypothetical X% renewable grid.
-3. **Best-region** — shift to the lowest-carbon supported region.
-4. **Market-based 100% matched** — contrast with location-based (the Scope-2
-   distinction). This is *accounting*, not physics; documented as such.
+The Electricity Maps free tier is **non-commercial**. Decision for this project:
+operate in **non-commercial academic / portfolio mode**, and degrade gracefully
+to the committed annual-factor table (`data/grid/annual_factors.yaml`) whenever
+live data is unavailable or the zone is unsupported — recording `grid_source`
+per row. If the project were ever used commercially, a paid Electricity Maps
+plan (or annual-factor-only mode) would be required. This decision is restated
+in `README.md`.
 
-## 6. Provenance & limitations
+## 8. Required attributions
 
-- Design ideas absorbed from a parallel Gemini effort are documented in
-  [`absorbed-from-gemini.md`](absorbed-from-gemini.md), including which parts
-  were rejected for violating the hard constraints.
-- **Tokenizer caveat:** token counts from different providers use different
-  tokenizers and are not directly comparable; cross-model aggregates note this.
-- **Closed models:** parameters, hardware, and DC locations are undisclosed — their
-  estimates carry the widest ranges and lowest confidence.
-- **Coverage:** OpenRouter-visible traffic only; not total AI emissions.
-
-## 7. Required attributions
-
-- `Source: OpenRouter (openrouter.ai/rankings), as of {date}`
-- Electricity Maps (live) + Ember/IEA (annual fallbacks), per-row source recorded.
+- `Source: OpenRouter (openrouter.ai/rankings), as of {data_date}` — stored in
+  `source_citation` and shown in the UI (L-OR-CITATION).
+- Grid intensity: Electricity Maps (live) + Ember / EPA eGRID (annual fallback),
+  recorded per row via `grid_source`.
+- Energy: Hugging Face **AI Energy Score** + **EcoLogits** (E-METHOD).
