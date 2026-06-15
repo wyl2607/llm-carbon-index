@@ -18,9 +18,22 @@ interface Props {
 export const ModelsTable: React.FC<Props> = ({ models }) => {
   const [sortKey, setSortKey] = useState<SortKey>('co2');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const sorted = useMemo(() => {
-    const arr = [...models];
+    let arr = [...models];
+    
+    // Filter
+    if (searchTerm.trim()) {
+      const lower = searchTerm.toLowerCase();
+      arr = arr.filter(m => 
+        m.display_name.toLowerCase().includes(lower) || 
+        m.origin.toLowerCase().includes(lower) ||
+        m.energy_source.toLowerCase().includes(lower)
+      );
+    }
+    
+    // Sort
     arr.sort((a, b) => {
       let va: number;
       let vb: number;
@@ -34,14 +47,14 @@ export const ModelsTable: React.FC<Props> = ({ models }) => {
       return sortDir === 'desc' ? vb - va : va - vb;
     });
     return arr;
-  }, [models, sortKey, sortDir]);
+  }, [models, sortKey, sortDir, searchTerm]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
       setSortDir(sortDir === 'desc' ? 'asc' : 'desc');
     } else {
       setSortKey(key);
-      setSortDir('desc'); // default new column to largest-first
+      setSortDir('desc');
     }
   };
 
@@ -50,18 +63,18 @@ export const ModelsTable: React.FC<Props> = ({ models }) => {
     return (
       <th
         onClick={key ? () => toggleSort(key) : undefined}
-        style={{
-          cursor: key ? 'pointer' : 'default',
-          userSelect: 'none',
-          padding: '8px 6px',
-          borderBottom: '2px solid #ddd',
-          textAlign: 'left',
-          whiteSpace: 'nowrap',
-        }}
+        className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b-2 border-slate-200 dark:border-slate-700 ${key ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors' : ''} whitespace-nowrap`}
         aria-sort={active ? (sortDir === 'desc' ? 'descending' : 'ascending') : undefined}
       >
-        {label}
-        {active ? (sortDir === 'desc' ? ' ↓' : ' ↑') : key ? ' ↕' : ''}
+        <div className="flex items-center gap-1">
+          {label}
+          {active && (
+            <svg className={`w-3 h-3 transition-transform ${sortDir === 'desc' ? '' : 'rotate-180'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+          )}
+          {key && !active && (
+            <svg className="w-3 h-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg>
+          )}
+        </div>
       </th>
     );
   };
@@ -69,76 +82,102 @@ export const ModelsTable: React.FC<Props> = ({ models }) => {
   const flagBadge = (f: string) => (
     <span
       key={f}
-      style={{
-        display: 'inline-block',
-        fontSize: '10px',
-        background: '#fef3c7',
-        color: '#92400e',
-        padding: '1px 5px',
-        borderRadius: 3,
-        marginRight: 3,
-        border: '1px solid #f59e0b',
-      }}
+      className="inline-block px-2 py-0.5 mr-1 mb-1 text-[10px] font-medium bg-amber-100 text-amber-800 border border-amber-200 rounded dark:bg-amber-900/40 dark:text-amber-200 dark:border-amber-800/50"
     >
       {f}
     </span>
   );
 
   return (
-    <div style={{ overflowX: 'auto', margin: '12px 0' }}>
-      <table
-        style={{
-          width: '100%',
-          minWidth: 820,
-          borderCollapse: 'collapse',
-          fontSize: '13px',
-        }}
-      >
-        <thead>
-          <tr>
-            {header('Model')}
-            {header('CO₂ (kg, range)', 'co2')}
-            {header('CO₂ / 1k output tokens', 'efficiency')}
-            {header('Origin')}
-            {header('Open/Closed')}
-            {header('Energy source')}
-            {header('Grid source')}
-            {header('Flags')}
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.map((m) => {
-            const effG = co2Per1kOutputTokens(m);
-            return (
-              <tr key={m.slug} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '6px 4px', fontWeight: 500 }}>{m.display_name}</td>
-                <td style={{ padding: '6px 4px', whiteSpace: 'nowrap' }}>{formatCO2Range(m.co2_kg)}</td>
-                <td style={{ padding: '6px 4px', whiteSpace: 'nowrap' }}>{formatCO2Per1kG(effG)}</td>
-                <td style={{ padding: '6px 4px' }}>{m.origin}</td>
-                <td style={{ padding: '6px 4px' }}>
-                  <span
-                    style={{
-                      padding: '1px 6px',
-                      borderRadius: 3,
-                      background: m.open_or_closed === 'open' ? '#dcfce7' : '#fee2e2',
-                      color: m.open_or_closed === 'open' ? '#166534' : '#991b1b',
-                    }}
-                  >
-                    {m.open_or_closed}
-                  </span>
-                </td>
-                <td style={{ padding: '6px 4px' }}>{m.energy_source}</td>
-                <td style={{ padding: '6px 4px' }}>{m.grid_source}</td>
-                <td style={{ padding: '6px 4px' }}>
-                  {m.flags.length ? m.flags.map(flagBadge) : <span style={{ color: '#aaa' }}>—</span>}
+    <div className="flex flex-col gap-4">
+      <div className="relative w-full md:w-64">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          className="block w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md leading-5 bg-white dark:bg-slate-800 placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-colors text-slate-900 dark:text-slate-100"
+          placeholder="Filter models, origin, source..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+      
+      <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+        <table className="min-w-[820px] w-full text-sm divide-y divide-slate-200 dark:divide-slate-700">
+          <thead className="bg-slate-50 dark:bg-slate-800/50">
+            <tr>
+              {header('Model')}
+              {header('CO₂ (kg, range)', 'co2')}
+              {header('CO₂ / 1k output tokens', 'efficiency')}
+              {header('Origin')}
+              {header('Open/Closed')}
+              {header('Energy source')}
+              {header('Grid source')}
+              {header('Flags')}
+            </tr>
+          </thead>
+          <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+            {sorted.map((m, i) => {
+              const effG = co2Per1kOutputTokens(m);
+              // Calculate a simple color coding (high vs low relative to avg or arbitrary threshold)
+              const isHighEmission = effG > 2.0; 
+              const isLowEmission = effG < 0.2;
+              
+              return (
+                <tr key={m.slug} className={`hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors ${i % 2 === 0 ? '' : 'bg-slate-50/50 dark:bg-slate-800/50'}`}>
+                  <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{m.display_name}</td>
+                  <td className="px-4 py-3 whitespace-nowrap text-slate-700 dark:text-slate-300">
+                    <span className="font-mono">{formatCO2Range(m.co2_kg)}</span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className={`font-mono px-2 py-1 rounded text-xs font-semibold ${
+                      isHighEmission ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                      isLowEmission ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300' :
+                      'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300'
+                    }`}>
+                      {formatCO2Per1kG(effG)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+                      {m.origin}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
+                        m.open_or_closed === 'open' 
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50' 
+                          : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800/50'
+                      }`}
+                    >
+                      {m.open_or_closed === 'open' ? 'Open' : 'Closed'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-400 max-w-[150px] truncate" title={m.energy_source}>{m.energy_source}</td>
+                  <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-400 max-w-[150px] truncate" title={m.grid_source}>{m.grid_source}</td>
+                  <td className="px-4 py-3 max-w-[200px] flex-wrap">
+                    {m.flags.length ? m.flags.map(flagBadge) : <span className="text-slate-400 italic text-xs">—</span>}
+                  </td>
+                </tr>
+              );
+            })}
+            {sorted.length === 0 && (
+              <tr>
+                <td colSpan={8} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400 italic">
+                  No models found matching your filter.
                 </td>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      <div style={{ fontSize: '11px', color: '#666', marginTop: 4 }}>
-        Click column headers to sort. CO₂ columns always show mid (low–high) range.
+            )}
+          </tbody>
+        </table>
+      </div>
+      <div className="text-xs text-slate-500 dark:text-slate-400 flex justify-between items-center px-1">
+        <span>Click column headers to sort. CO₂ columns always show mid (low–high) range.</span>
+        <span>Showing {sorted.length} model{sorted.length !== 1 ? 's' : ''}</span>
       </div>
     </div>
   );
