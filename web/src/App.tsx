@@ -22,7 +22,7 @@ function App() {
   useEffect(() => {
     // ONLY static fetch of the committed JSON. No other network, no secrets.
     let cancelled = false;
-    fetch('/data/latest.json')
+    fetch(`${import.meta.env.BASE_URL}data/latest.json`)
       .then((r) => {
         if (!r.ok) throw new Error(`Failed to load data: ${r.status}`);
         return r.json();
