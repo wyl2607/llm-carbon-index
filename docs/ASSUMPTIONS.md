@@ -57,6 +57,30 @@ These feed `data/energy/intensity.yaml`. Each model/class entry must cite how it
 ### E-CLAUDE-35-SONNET (Phase 2 A1 seed, closed)
 - **E-CLAUDE-35-SONNET** — 0.0025–0.0060–0.0150 Wh per output token. *Source:* EcoLogits LCA-based estimate for frontier closed model (Claude 3.5 Sonnet); range >2× wider than open 70B to reflect undisclosed parameter count, hardware, and datacenter efficiency. *Uncertainty:* very high. *Where used:* intensity.yaml (ecologits tag); us-east grid + CLOSED_MODEL_ASSUMED. *Last reviewed:* 2026-06-15.
 
+### E-NEMOTRON-ULTRA (Phase 3 expansion)
+- **E-NEMOTRON-ULTRA** — 0.0015–0.0035–0.0080 Wh per output token (NVIDIA Nemotron 3 Ultra 550B, 55B active MoE). *Source:* Parameter-class heuristic for ~55B active MoE; informed by AI Energy Score v2 measurements for similar MoE scales. *Uncertainty:* high (MoE efficiency assumptions). *Where used:* intensity.yaml. *Last reviewed:* 2026-06-15.
+
+### E-NEMOTRON-SUPER (Phase 3 expansion)
+- **E-NEMOTRON-SUPER** — 0.0005–0.0012–0.0025 Wh per output token (NVIDIA Nemotron 3 Super 120B, 12B active MoE). *Source:* Parameter-class heuristic for ~12B active MoE; informed by AI Energy Score v2 measurements for similar MoE scales. *Uncertainty:* high (MoE efficiency assumptions). *Where used:* intensity.yaml. *Last reviewed:* 2026-06-15.
+
+### E-GEMMA4-26B (Phase 3 expansion)
+- **E-GEMMA4-26B** — 0.0003–0.0008–0.0018 Wh per output token (Google Gemma 4 26B, 4B active MoE). *Source:* Parameter-class heuristic for very small 4B active MoE; scaled from small-band measurements with MoE sparsity credit. *Uncertainty:* high. *Where used:* intensity.yaml. *Last reviewed:* 2026-06-15.
+
+### E-GEMMA4-31B (Phase 3 expansion)
+- **E-GEMMA4-31B** — 0.0010–0.0025–0.0055 Wh per output token (Google Gemma 4 31B dense). *Source:* Parameter-class for 31B dense model; positioned between small and large bands per public spec. *Uncertainty:* high. *Where used:* intensity.yaml. *Last reviewed:* 2026-06-15.
+
+### E-QWEN3-235B (Phase 3 expansion)
+- **E-QWEN3-235B** — 0.0008–0.0018–0.0040 Wh per output token (Qwen3 235B MoE, 22B active). *Source:* Parameter-class estimate for 22B active MoE; informed by prior Qwen 72B band and MoE active scaling. *Uncertainty:* high (MoE + closed-weights variant). *Where used:* intensity.yaml. *Last reviewed:* 2026-06-15.
+
+### E-QWEN3-EMB-8B (Phase 3 expansion)
+- **E-QWEN3-EMB-8B** — 0.0004–0.0009–0.0018 Wh per output token (Qwen3 Embedding 8B dense). *Source:* Parameter-class for 8B dense embedding model; lower end of small band due to embedding workload profile. *Uncertainty:* medium-high. *Where used:* intensity.yaml. *Last reviewed:* 2026-06-15.
+
+### E-MISTRAL-NEMO (Phase 3 expansion)
+- **E-MISTRAL-NEMO** — 0.0005–0.0012–0.0024 Wh per output token (Mistral Nemo 12B dense). *Source:* Parameter-class for 12B dense; EU Mistral model, aligned to E-CLASS-SMALL upper. *Uncertainty:* medium. *Where used:* intensity.yaml. *Last reviewed:* 2026-06-15.
+
+### E-GPT-OSS-120B (Phase 3 expansion)
+- **E-GPT-OSS-120B** — 0.002–0.005–0.012 Wh per output token (OpenAI GPT-OSS 120B dense, open weights). *Source:* E-CLASS-LARGE band applied to 120B dense open model; conservative for production inference. *Uncertainty:* high. *Where used:* intensity.yaml. *Last reviewed:* 2026-06-15.
+
 ---
 
 ## C — Physical / grid constants (seeded from Phase 0; keep citing)
@@ -81,6 +105,21 @@ These feed `data/assumptions/closed_models.yaml`. Every closed model row receive
 - **DC-OPENAI** (Phase 2 seed) — provider "openai", assumed_region "us-east", pue 1.2, cloud "azure", GPU H100 (representative). *Source:* public Azure region usage disclosures for OpenAI workloads + hyperscaler PUE reporting (Google 1.10 fleet; we use 1.2 conservative). *Uncertainty:* location undisclosed per request; actual serving region may be US-West, EU, or Asia depending on customer latency. *Where used:* closed_models.yaml; estimate.py pue override + region for gpt-4o. *Last reviewed:* 2026-06-15.
 - **DC-ANTHROPIC** (Phase 2 seed) — provider "anthropic", assumed_region "us-east", pue 1.2, cloud "aws". *Source:* Anthropic AWS Bedrock / direct inference partnerships; conservative East-coast placement. *Uncertainty:* high (no public per-model DC map). *Where used:* closed_models.yaml for claude-3.5-sonnet. *Last reviewed:* 2026-06-15.
 - **DC-GOOGLE** (Phase 2 seed) — provider "google", assumed_region "us-east", pue 1.25, cloud "google". *Source:* Google Cloud US regions for Gemini; Google publishes strong fleet PUE (~1.10) but we apply 1.25 to bound older/partner capacity. *Uncertainty:* high. *Where used:* closed_models.yaml for gemini-1.5-flash. *Last reviewed:* 2026-06-15.
+
+### DC-TENCENT (Phase 3 expansion)
+- **DC-TENCENT** — provider "tencent", assumed_region "cn-north", pue 1.3, cloud "tencent_cloud". *Source:* Public Tencent Cloud / Chinese provider DC characteristics; PUE 1.3 for non-hyperscaler CN cooling efficiency (A4). *Uncertainty:* high (undisclosed exact locations and workload routing). *Where used:* closed_models.yaml. *Last reviewed:* 2026-06-15.
+
+### DC-STEPFUN (Phase 3 expansion)
+- **DC-STEPFUN** — provider "stepfun", assumed_region "cn-north", pue 1.3, cloud "unknown". *Source:* Limited public disclosures for StepFun (CN AI provider); conservative PUE 1.3 applied per CN non-hyperscaler guidance. *Uncertainty:* very high. *Where used:* closed_models.yaml. *Last reviewed:* 2026-06-15.
+
+### DC-OPENROUTER (Phase 3 expansion)
+- **DC-OPENROUTER** — provider "openrouter", assumed_region "us-east", pue 1.2, cloud "unknown". *Source:* OpenRouter acts as inference router/gateway; underlying capacity typically US hyperscaler or partner; default PUE per A4. *Uncertainty:* high (multi-provider backend, customer-selected). *Where used:* closed_models.yaml. *Last reviewed:* 2026-06-15.
+
+### DC-MOONSHOTAI (Phase 3 expansion)
+- **DC-MOONSHOTAI** — provider "moonshotai", assumed_region "cn-north", pue 1.3, cloud "unknown". *Source:* Moonshot AI (CN); sparse public DC / region data; PUE 1.3 for CN provider. *Uncertainty:* high. *Where used:* closed_models.yaml. *Last reviewed:* 2026-06-15.
+
+### DC-ZAI (Phase 3 expansion)
+- **DC-ZAI** — provider "z-ai", assumed_region "cn-north", pue 1.3, cloud "unknown". *Source:* Zhipu AI (GLM family, CN); PUE 1.3 conservative for CN lab-scale / regional provider cooling. *Uncertainty:* high. *Where used:* closed_models.yaml. *Last reviewed:* 2026-06-15.
 
 ---
 
