@@ -19,6 +19,7 @@ from pipeline.config import (
 )
 from pipeline.energy import energy_kwh, wh_per_output_token
 from pipeline.grid import carbon_intensity
+from pipeline.slugs import normalize_slug
 from pipeline.tokens import output_tokens
 from pipeline.types import ModelEstimate, NormalizedRecord
 
@@ -72,7 +73,8 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
         total_tokens: int = int(rec["total_tokens"])
 
         # crosswalk identity (origin / open_or_closed / region / energy_source tag)
-        cw = next((e for e in crosswalk if e.get("openrouter_slug") == slug), None)
+        norm = normalize_slug(slug)
+        cw = next((e for e in crosswalk if e.get("openrouter_slug") == norm), None)
         if cw:
             display_name: str = cw.get("display_name", slug)
             origin = cw.get("origin", "OTHER")

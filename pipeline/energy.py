@@ -7,6 +7,7 @@ No I/O here; callers (estimate) supply parsed data.
 from __future__ import annotations
 
 from pipeline.ranges import Range
+from pipeline.slugs import normalize_slug
 from pipeline.types import EnergySource
 
 
@@ -29,7 +30,7 @@ def wh_per_output_token(
     # 1. crosswalk lookup for identity + declared energy_source tag
     cw_entry: dict | None = None
     for e in crosswalk or []:
-        if e.get("openrouter_slug") == slug:
+        if e.get("openrouter_slug") == normalize_slug(slug):
             cw_entry = e
             break
 
@@ -57,7 +58,7 @@ def wh_per_output_token(
     # 2. specific model intensity
     models = (intensity_table or {}).get("models", [])
     for m in models:
-        if m.get("openrouter_slug") == slug:
+        if m.get("openrouter_slug") == normalize_slug(slug):
             whd = m["wh_per_output_token"]
             # declared_source from cw is canonical for the output field
             return Range(whd["low"], whd["mid"], whd["high"]), declared_source, flags
