@@ -24,25 +24,6 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
   if (loading) return <div className="h-60 card skeleton" />;
   if (data.length === 0) return null;
 
-  // Transform data for recharts
-  const chartData = data.map(day => {
-    const totalTokens = day.totals.total_tokens / 1_000_000_000; // in billions
-    const totalCo2 = day.totals.co2_kg.mid;
-    
-    // Efficiency: gCO2 per million tokens
-    const efficiency = totalTokens > 0 
-      ? (totalCo2 * 1000) / (day.totals.total_tokens / 1_000_000) 
-      : 0;
-
-    return {
-      date: day.data_date,
-      tokensBillion: totalTokens,
-      co2Kg: totalCo2,
-      efficiency: efficiency,
-    };
-  });
-
-  // reuse chartData from outer scope (kept same logic)
   const chartData = data.map(day => {
     const totalTokens = day.totals.total_tokens / 1_000_000_000;
     const totalCo2 = day.totals.co2_kg.mid;

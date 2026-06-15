@@ -42,9 +42,6 @@ export const translations = {
     scenarioSubtitle: 'What if inference workloads were shifted to the cleanest grids (≈50 gCO₂/kWh)? Explore spatial decarbonization potential.',
     scenarioSubtitleZh: '如果推理负载迁移至最清洁电网（约 50 gCO₂/kWh），碳排放将如何变化？探索空间脱碳潜力。',
     shiftLabel: 'Share of modeled traffic shifted to clean grid',
-    presetReality: 'Reality (0%)',
-    presetClean: 'Clean Shift (50%)',
-    presetMax: 'Max Green (100%)',
     dailyAvoided: 'Daily Emissions Avoided',
     kgCO2: 'kg CO₂eq',
     carsEquivalent: (n: number) => `≈ ${n.toLocaleString()} cars off the road for one year`,
@@ -54,11 +51,42 @@ export const translations = {
 
     // Equivalences
     equivTitle: 'Real-world Equivalents (illustrative)',
-    equivNote: 'Based on average factors (EPA, Our World in Data, USFS). For communication only — not verified offsets.',
+    equivNote: 'Based on average factors (EPA, Our World in Data, USFS, UBA Germany, Electricity Maps). For communication & ESG storytelling only — not verified offsets.',
     equivCars: 'passenger vehicles (1 yr)',
     equivFlights: 'transatlantic flights (economy)',
     equivTrees: 'mature trees (1 yr sequestration)',
     equivHomes: 'US homes (annual electricity)',
+    equivDeHomes: 'German households (annual electricity, ~1.8 t CO₂ avg)',
+    equivEnergiewende: 'Reference: aligns with Germany Energiewende grid decarbonization trajectory',
+
+    // New presets (DE/EU focused for thesis & EU jobs)
+    presetReality: 'Reality (0%)',
+    presetClean: 'Clean Shift (50%)',
+    presetMax: 'Max Green (100%)',
+    presetEuAvg: 'EU Grid Avg (~250 g)',
+    presetFrNuclear: 'FR / Nordic (Nuclear-Hydro ~50-60 g)',
+    presetDeToday: 'DE Grid Today (~380 g, improving)',
+    presetCfe247: '100% 24/7 CFE (Google-style match)',
+    presetFrankfurt: 'Frankfurt DC (Electricity Maps DE zone)',
+    presetEnergiewende: 'DE Energiewende Path (improving grid)',
+
+    // Thesis & ESG section
+    thesisTitle: 'For Thesis, CSRD/ESRS & German ESG Roles',
+    thesisSubtitle: 'Ready-to-use materials for Master\'s theses, sustainability reports and job applications in green tech / consulting (E.ON, RWE, Siemens Energy, Deloitte, etc.).',
+    thesisCopyCitation: 'Copy Citation',
+    thesisMethodology: 'Methodology Summary (EN/DE ready)',
+    thesisScopeNote: 'Scope 3 Category 1 / Purchased Services or Category 15 (if investment) — use the modeled_traffic_fraction to scale to your actual OpenRouter or similar API spend. Always disclose "estimates with uncertainty ranges, partial coverage of OpenRouter-visible inference only".',
+    thesisDownload: 'Download current scenario (JSON + metadata)',
+    climateScore: 'Climate Neutrality Score',
+    climateScoreNote: 'Higher = closer to a clean-grid counterfactual (illustrative 0-100).',
+    // Citation templates
+    citeBibtex: (date: string, version: string) => `@techreport{wyl2026llmcarbon,\n  author = {Wyl},\n  title = {LLM Carbon Index: Transparent CO₂ Estimates for OpenRouter-visible LLM Inference},\n  institution = {Open Source},\n  year = {2026},\n  note = {Data date: ${date}; Methodology v${version}; https://wyl2607.github.io/llm-carbon-index/}\n}`,
+    citeApa: (date: string) => `Wyl. (2026). LLM Carbon Index — OpenRouter-visible LLM inference CO₂ estimates with uncertainty ranges (data date ${date}). https://wyl2607.github.io/llm-carbon-index/`,
+    csrdExample: 'For CSRD/ESRS: “Scope 3.1 Purchased services – estimated 2.1 tCO₂e (mid) from OpenRouter-visible LLM inference in the reporting period (range 1.4–5.1 tCO₂e; 42% of daily modeled traffic; methodology v0.1.0).”',
+    euTaxonomy: 'EU Taxonomy DNSH: Spatial workload shifting to verified low-carbon grids (e.g. FR/NO via Electricity Maps) can support DNSH demonstration when combined with additionality evidence.',
+
+    // Germany / EU hints
+    deEuHint: 'Electricity Maps DE/FR live factors + annual fallbacks from Ember/IEA. EU Taxonomy DNSH alignment requires demonstrating no significant harm — spatial shifting to low-carbon zones (FR, NO, SE) is a documented lever.',
 
     // KPIs
     kpiTokens: 'Modeled Tokens',
@@ -152,22 +180,51 @@ export const translations = {
     scenarioSubtitle: '如果将推理工作负载迁移至最清洁电网（约 50 gCO₂/kWh），排放会减少多少？探索空间脱碳潜力。',
     scenarioSubtitleZh: 'What if workloads moved to the cleanest regional grids? Explore spatial decarbonization potential.',
     shiftLabel: '迁移至清洁电网的建模流量比例',
-    presetReality: '现状 (0%)',
-    presetClean: '清洁迁移 (50%)',
-    presetMax: '最大绿电 (100%)',
     dailyAvoided: '每日可避免排放',
     kgCO2: 'kg CO₂eq',
     carsEquivalent: (n: number) => `相当于约 ${n.toLocaleString()} 辆乘用车停驶一年`,
-    impactNote: (pct: string) => `空间迁移可在保持相同算力的前提下，将建模物理排放降低约 ${pct}%。`,
-    impactNoteMarket: (pct: string) => `在市场法核算下，此举可降低剩余未匹配物理排放约 ${pct}%。`,
-    maxPotentialNote: (pct: string) => `当前数据切片最大建模减排潜力：约 ${pct}%`,
+    impactNote: (pct: string) => `空间迁移可在保持相同算力的前提下， 将建模物理排放降低约 ${pct}%。`,
+    impactNoteMarket: (pct: string) => `在市场法核算下，此举可降低剩 余未匹配物理排放约 ${pct}%。`,
+    maxPotentialNote: (pct: string) => `当前数据切片最大建模减排潜力 ：约 ${pct}%`,
 
     equivTitle: '现实世界等效量（示意）',
-    equivNote: '基于 EPA、Our World in Data、USFS 等平均因子。仅用于传播与理解，非经核实的碳抵消。',
+    equivNote: '基于 EPA、Our World in Data、USFS、UBA Germany、Electricity Maps 等平均因子。仅用于传播、论文与 ESG 叙事，非经核实的碳抵消。',
     equivCars: '辆乘用车（年排放）',
     equivFlights: '次跨大西洋经济舱航班',
     equivTrees: '棵成熟树木（年固碳量）',
     equivHomes: '个美国家庭（年用电排放）',
+    equivDeHomes: '个德国家庭（年用电排放，约 1.8 t CO₂ 平均）',
+    equivEnergiewende: '参考：符合德国 Energiewende 电网脱碳轨迹',
+
+    // New presets (DE/EU focused)
+    presetReality: '现状 (0%)',
+    presetClean: '清洁迁移 (50%)',
+    presetMax: '最大绿电 (100%)',
+    presetEuAvg: '欧盟电网平均 (~250 g)',
+    presetFrNuclear: '法国/北欧（核电-水电 ~50-60 g）',
+    presetDeToday: '德国当前电网 (~380 g，持续改善中)',
+    presetCfe247: '100% 24/7 CFE（Google 式匹配）',
+    presetFrankfurt: '法兰克福数据中心（Electricity Maps DE 区域）',
+    presetEnergiewende: '德国 Energiewende 路径（电网持续改善）',
+
+
+    // Thesis & ESG section
+    thesisTitle: '适用于论文、CSRD/ESRS 与德国 ESG 职位',
+    thesisSubtitle: '为硕士论文、可持续报告和绿色科技/咨询求职（E.ON、RWE、Siemens Energy、Deloitte 等）准备的即用材料。',
+    thesisCopyCitation: '一键复制引用',
+    thesisMethodology: '方法学摘要（中英就绪）',
+    thesisScopeNote: 'Scope 3 Category 1 / Purchased Services 或 Category 15（若为投资）—— 使用 modeled_traffic_fraction 将结果按比例缩放到你的实际 OpenRouter 或类似 API 消耗。始终披露“估算值，带不确定性范围，仅覆盖 OpenRouter 可见推理的代表性部分”。',
+    thesisDownload: '下载当前情景（JSON + 元数据）',
+    climateScore: '气候中和得分',
+    climateScoreNote: '越高越接近清洁电网情景（示意性 0-100）。',
+    // Citation templates (zh)
+    citeBibtex: (date: string, version: string) => `@techreport{wyl2026llmcarbon,\n  author = {Wyl},\n  title = {LLM Carbon Index: Transparent CO₂ Estimates for OpenRouter-visible LLM Inference},\n  institution = {Open Source},\n  year = {2026},\n  note = {数据日期: ${date}; Methodology v${version}; https://wyl2607.github.io/llm-carbon-index/}\n}`,
+    citeApa: (date: string) => `Wyl. (2026). LLM Carbon Index — OpenRouter 可见 LLM 推理碳排放透明估算（数据日期 ${date}，含不确定性范围）。https://wyl2607.github.io/llm-carbon-index/`,
+    csrdExample: 'CSRD/ESRS 示例： “Scope 3.1 采购服务——报告期内来自 OpenRouter 可见 LLM 推理的估算排放 2.1 tCO₂e（中位），范围 1.4–5.1 tCO₂e；占当日已建模流量的 42%；方法学 v0.1.0。”',
+    euTaxonomy: 'EU Taxonomy DNSH：将工作负载空间迁移至经 Electricity Maps 验证的低碳电网（如 FR/NO），结合额外性证据可支持 DNSH 论证。',
+
+    // Germany / EU hints
+    deEuHint: 'Electricity Maps DE/FR 实时因子 + Ember/IEA 年均回退。EU Taxonomy DNSH 对齐要求证明“无重大危害”——将负载空间迁移至低碳区域（FR、NO、SE）是已记录的杠杆。',
 
     kpiTokens: '建模 Token 总量',
     kpiTokensSub: '当日可见推理量',
@@ -232,9 +289,12 @@ export function useI18n(lang: Lang) {
   return translations[lang];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function t(lang: Lang, key: keyof typeof translations.en, ...args: any[]): string {
   const dict = translations[lang];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const val = (dict as any)[key];
   if (typeof val === 'function') return val(...args);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return val ?? (translations.en as any)[key] ?? String(key);
 }

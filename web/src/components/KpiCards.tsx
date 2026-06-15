@@ -3,6 +3,7 @@ import type { Totals, Range } from '../types';
 import { formatCO2Range, formatTokens } from '../lib/format';
 import type { Lang } from '../lib/i18n';
 import { useI18n } from '../lib/i18n';
+import { useAnimatedNumber } from '../lib/useAnimatedNumber';
 import { Cpu, Cloud, Droplets, Zap, TrendingDown } from 'lucide-react';
 
 interface Props {
@@ -25,6 +26,10 @@ export const KpiCards: React.FC<Props> = ({ totals, baselineCo2, shift = 0, lang
   const waterKL = totals.water_liters ? (totals.water_liters.mid / 1000).toFixed(1) : '—';
 
   const isActive = shift > 0;
+
+  // Lightweight animated numbers for storytelling (no extra deps)
+  const animatedAvoided = useAnimatedNumber(avoided, 650);
+  const animatedPct = useAnimatedNumber(parseFloat(pctAvoided) || 0, 650);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -54,9 +59,9 @@ export const KpiCards: React.FC<Props> = ({ totals, baselineCo2, shift = 0, lang
           <TrendingDown className="w-3.5 h-3.5" /> {tt.kpiAvoided}
         </div>
         <div className="font-mono text-4xl font-black tracking-[-1.5px] tabular-nums text-emerald-400">
-          −{avoided.toLocaleString()}
+          −{animatedAvoided.toLocaleString()}
         </div>
-        <div className="text-xs mt-0.5 text-emerald-400/70">{pctAvoided}% vs baseline</div>
+        <div className="text-xs mt-0.5 text-emerald-400/70">{animatedPct.toFixed(1)}% vs baseline</div>
         <div className="text-[10px] text-[#717771] mt-auto">{tt.kpiAvoidedSub}</div>
       </div>
 
@@ -74,6 +79,18 @@ export const KpiCards: React.FC<Props> = ({ totals, baselineCo2, shift = 0, lang
         </div>
         <div className="font-mono text-[34px] font-black tracking-[-1.5px] tabular-nums mt-0.5">{waterKL} <span className="text-xl text-[#717771]">kL</span></div>
         <div className="text-[11px] text-[#717771] mt-auto">{tt.kpiWaterSub}</div>
+      </div>
+
+      {/* Green Substitution Potential - prominent for storytelling & thesis */}
+      <div className="card p-5 flex flex-col border-emerald-900/50 bg-[#0a0f0a]">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-400/80 mb-1">
+          <Zap className="w-3.5 h-3.5" /> Green Substitution Potential
+        </div>
+        <div className="font-mono text-4xl font-black tracking-[-1.5px] text-emerald-400 tabular-nums mt-1">
+          {isActive ? animatedPct.toFixed(1) : '0.0'}<span className="text-2xl">%</span>
+        </div>
+        <div className="text-[11px] text-emerald-300/70 mt-1">of modeled footprint movable to ~50 g grids</div>
+        <div className="text-[10px] text-[#717771] mt-auto">Higher = stronger decarbonization lever</div>
       </div>
     </div>
   );

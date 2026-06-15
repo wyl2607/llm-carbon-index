@@ -16,41 +16,30 @@ import { ModelDetailModal } from './components/ModelDetailModal';
 const isSampleData = (models: Model[]) =>
   models.length > 0 && models[0].slug.startsWith('example/');
 
-type FilterState = {
-  origin: string;
-  type: string;
-  search: string;
-};
-
 function App() {
   const [data, setData] = useState<LatestData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Core interactive state
-  const [lang, setLang] = useState<Lang>('en');
-  const [greenShiftPercent, setGreenShiftPercent] = useState<number>(0);
-  const [accountingMethod, setAccountingMethod] = useState<AccountingMethod>('location');
+  const [lang, setLang] = useState<Lang>(() => {
+    const l = new URLSearchParams(window.location.search).get('lang');
+    return (l === 'en' || l === 'zh') ? l : 'en';
+  });
+  const [greenShiftPercent, setGreenShiftPercent] = useState<number>(() => {
+    const s = new URLSearchParams(window.location.search).get('shift');
+    return s ? Math.max(0, Math.min(100, parseInt(s, 10) || 0)) : 0;
+  });
+  const [accountingMethod, setAccountingMethod] = useState<AccountingMethod>(() => {
+    const acc = new URLSearchParams(window.location.search).get('acc');
+    return (acc === 'location' || acc === 'market') ? acc : 'location';
+  });
   const [groupBy, setGroupBy] = useState<GroupBy>('open_or_closed');
+  const [showAllModels, setShowAllModels] = useState(false);
 
-  // Table local filters (do not affect global simulator totals for academic honesty)
-  const [tableFilters, setTableFilters] = useState<FilterState>({ origin: 'ALL', type: 'ALL', search: '' });
+  // Table filters are managed inside ModelsTable for simplicity. Global simulator remains full dataset.
 
   const [inspectModel, setInspectModel] = useState<Model | null>(null);
-
-  // URL state sync (shareable scenarios)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const s = params.get('shift');
-    if (s) {
-      const v = Math.max(0, Math.min(100, parseInt(s, 10) || 0));
-      setGreenShiftPercent(v);
-    }
-    const acc = params.get('acc') as AccountingMethod | null;
-    if (acc === 'location' || acc === 'market') setAccountingMethod(acc);
-    const l = params.get('lang') as Lang | null;
-    if (l === 'en' || l === 'zh') setLang(l);
-  }, []);
 
   // Persist key state to URL (debounced-ish via effect)
   useEffect(() => {
@@ -66,7 +55,6 @@ function App() {
   // Data load (static)
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     fetch(`${import.meta.env.BASE_URL}data/latest.json`)
       .then((r) => {
         if (!r.ok) throw new Error(`Failed to load data: ${r.status}`);
@@ -127,19 +115,6 @@ function App() {
   const baselineCo2 = (accountingMethod === 'market' && data?.totals?.co2_kg_market) ? data.totals.co2_kg_market : data?.totals?.co2_kg;
 
   const isScenario = greenShiftPercent > 0;
-
-  // Filtered view for table (local only)
-  const filteredModels = useMemo(() => {
-    let arr = [...models];
-    if (tableFilters.search.trim()) {
-      const q = tableFilters.search.toLowerCase();
-      arr = arr.filter(m => m.display_name.toLowerCase().includes(q) || m.flags.some(f => f.toLowerCase().includes(q)));
-    }
-    if (tableFilters.origin !== 'ALL') arr = arr.filter(m => m.origin === tableFilters.origin);
-    if (tableFilters.type !== 'ALL') arr = arr.filter(m => m.open_or_closed === tableFilters.type);
-    return arr;
-  }, [models, tableFilters]);
-
   const sample = isSampleData(models);
 
   // Loading skeleton
@@ -181,12 +156,12 @@ function App() {
       </header>
 
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-16">
-        {/* Compact hero */}
-        <div className="pt-8 pb-6">
+        {/* Compact premium hero with global narrative */}
+        <div className="pt-8 pb-4">
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
             <div>
               <h1 className="font-black tracking-[-1.6px] leading-none">{tt.brand}</h1>
-              <p className="mt-1.5 text-xl text-[#a1a6a1] max-w-2xl">{tt.tagline} <span className="text-sm align-super text-[#717771]">/ {tt.taglineZh}</span></p>
+              <p className="mt-1.5 text-lg text-[#a1a6a1] max-w-3xl">{tt.tagline} <span className="text-sm align-super text-[#717771]">/ {tt.taglineZh}</span></p>
             </div>
             <div className="flex items-center gap-2 text-sm">
               {data && (
@@ -200,7 +175,66 @@ function App() {
               }} className="btn btn-ghost text-xs border border-[#242924]">{tt.share}</button>
             </div>
           </div>
+
+          {/* Global narrative strip (Total + Baseline + Max Avoided) */}
+          {data && totals && (
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+              <div className="card p-3">
+                <div className="text-[#717771] text-xs">Total Modeled Today</div>
+                <div className="font-mono text-2xl font-bold text-white tabular-nums">{(data.totals.total_tokens / 1e12).toFixed(1)} T tokens</div>
+              </div>
+              <div className="card p-3">
+                <div className="text-[#717771] text-xs">Baseline CO₂ (mid)</div>
+                <div className="font-mono text-2xl font-bold text-white tabular-nums">{Math.round(data.totals.co2_kg.mid / 1000)} t</div>
+              </div>
+              <div className="card p-3 border-emerald-900/40">
+                <div className="text-emerald-400 text-xs">Max Green Avoided (100% shift)</div>
+                <div className="font-mono text-2xl font-bold text-emerald-400 tabular-nums">−{Math.round(data.totals.co2_kg.mid * 0.85 / 1000)} t</div>
+                <div className="text-[10px] text-emerald-300/70">~85% mitigation on current slice (target 50 gCO₂/kWh)</div>
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* For Thesis & ESG Reports / German job market (critical deliverable) */}
+        {simulatedData && (
+          <div className="card p-5 mb-6 bg-[#0c100c] border border-emerald-900/30">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div>
+                <div className="font-semibold text-emerald-400">{tt.thesisTitle}</div>
+                <div className="text-sm text-[#a1a6a1] mt-0.5">{tt.thesisSubtitle}</div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button 
+                  onClick={() => {
+                    if (!data) return;
+                    const citation = `Wyl (2026). LLM Carbon Index — OpenRouter-visible LLM inference CO₂ estimates with uncertainty ranges (data date ${data.data_date}). https://wyl2607.github.io/llm-carbon-index/. Methodology v${data.methodology_version}.`;
+                    navigator.clipboard.writeText(citation).then(() => alert(tt.thesisCopyCitation + ' (APA-style)'));
+                  }}
+                  className="btn btn-secondary text-xs"
+                >
+                  {tt.thesisCopyCitation}
+                </button>
+                <a 
+                  href="https://github.com/wyl2607/llm-carbon-index/blob/main/docs/methodology.md" 
+                  target="_blank" 
+                  className="btn btn-ghost text-xs border border-[#242924]"
+                >
+                  {tt.thesisMethodology}
+                </a>
+              </div>
+            </div>
+            <div className="mt-3 text-xs text-[#a1a6a1] border-t border-[#242924] pt-3 space-y-2">
+              <div>{tt.thesisScopeNote} <span className="text-emerald-400/70">{tt.deEuHint}</span></div>
+              <div className="font-mono text-[10px] bg-[#0a0c0a] p-2 rounded border border-[#242924]">
+                <strong>BibTeX:</strong> {data && tt.citeBibtex(data.data_date, data.methodology_version)}<br/><br/>
+                <strong>APA:</strong> {data && tt.citeApa(data.data_date)}
+              </div>
+              <div className="text-emerald-300/80">{tt.csrdExample}</div>
+              <div className="text-emerald-300/80">{tt.euTaxonomy}</div>
+            </div>
+          </div>
+        )}
 
         {/* Scope / Transparency - professional, always visible */}
         {simulatedData && (
@@ -265,7 +299,7 @@ function App() {
 
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                 <div className="lg:col-span-3 min-h-[360px]">
-                  <Co2BarChart models={models} groupBy={groupBy} />
+                  <Co2BarChart models={models} groupBy={groupBy} showAll={showAllModels} onToggleShowAll={() => setShowAllModels(!showAllModels)} />
                 </div>
                 <div className="lg:col-span-2 card p-4 border-[#242924]">
                   <div className="text-xs font-bold tracking-widest text-[#a1a6a1] mb-1.5">{tt.vizOriginBreakdown}</div>
@@ -285,7 +319,7 @@ function App() {
               </div>
 
               <ModelsTable 
-                models={filteredModels} 
+                models={models} 
                 lang={lang} 
                 onInspect={setInspectModel}
                 isScenarioActive={isScenario}
@@ -304,8 +338,10 @@ function App() {
                 <button 
                   onClick={() => {
                     if (!data) return;
-                    const cite = `Wyl (2026). LLM Carbon Index — OpenRouter-visible LLM inference CO₂ estimates (data date ${data.data_date}). https://wyl2607.github.io/llm-carbon-index/ (accessed ${new Date().toISOString().slice(0,10)}). Methodology: ${data.methodology_version}.`;
-                    navigator.clipboard.writeText(cite).then(() => alert(tt.citeCopied));
+                    const apa = tt.citeApa ? tt.citeApa(data.data_date) : '';
+                    const bib = tt.citeBibtex ? tt.citeBibtex(data.data_date, data.methodology_version) : '';
+                    const text = `${apa}\n\n${bib}`;
+                    navigator.clipboard.writeText(text).then(() => alert(tt.citeCopied + ' (APA + BibTeX ready for thesis)'));
                   }}
                   className="hover:text-[#e4e7e4] underline-offset-2 hover:underline"
                 >

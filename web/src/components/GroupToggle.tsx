@@ -17,10 +17,10 @@ export const GroupToggle: React.FC<Props> = ({ groupBy, onChange }) => {
       type="button"
       onClick={() => onChange(val)}
       aria-pressed={groupBy === val}
-      className={`px-3 py-1.5 rounded text-sm font-medium transition-colors border ${
+      className={`px-3 py-1 text-xs font-semibold transition border-r border-[#242924] last:border-r-0 ${
         groupBy === val
-          ? 'bg-emerald-100 border-emerald-500 text-emerald-800 dark:bg-emerald-900/50 dark:border-emerald-500 dark:text-emerald-100 shadow-sm'
-          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700'
+          ? 'bg-emerald-600 text-black'
+          : 'bg-[#0a0c0a] hover:bg-[#161916] text-[#a1a6a1]'
       }`}
     >
       {label}
@@ -28,10 +28,10 @@ export const GroupToggle: React.FC<Props> = ({ groupBy, onChange }) => {
   );
 
   return (
-    <div className="flex items-center gap-3 my-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-800">
-      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Colour / Group by:</span>
-      <div className="flex gap-2">
-        {btn('open_or_closed', 'Open vs Closed')}
+    <div className="flex items-center gap-2 text-xs">
+      <span className="font-medium text-[#717771] pr-1">{/* Colour by */}Group:</span>
+      <div className="inline-flex rounded-md overflow-hidden border border-[#242924]">
+        {btn('open_or_closed', 'Open / Closed')}
         {btn('origin', 'Origin')}
       </div>
     </div>

@@ -20,11 +20,16 @@ npx tsc --noEmit
 npm run test -- --run
 ```
 
-## Components implemented (per specs/phase-4-frontend.md + query)
-- `ScopeDisclaimerBanner`: always visible, non-dismissable. Renders `scope_note` + `source_citation` + required scope statement.
-- `ModelsTable`: sortable by `co2_kg.mid` and by CO₂-per-1k-output-tokens (efficiency). Every CO₂ value shows **mid (low–high)** range. Columns include origin, open/closed, energy_source, grid_source, flags as badges. Responsive (overflow scroll on mobile).
-- `Co2BarChart`: Recharts bars of `co2_kg.mid` + `ErrorBar` whiskers from the low/high Range.
-- `GroupToggle`: switches chart colouring between `open_or_closed` and `origin`.
+## Components & UX (post-premium dashboard overhaul)
+- Full dark-first ESG-grade dashboard (emerald accent). Sticky header, URL-shareable scenarios (?shift=35&acc=market&lang=zh).
+- `WhatIfSimulator`: major interactive storytelling panel with live slider (1% steps), 3 presets, before/after avoided kg, real-world equivalents (cars/flights/trees/homes) with cited methodology notes.
+- `KpiCards`: scenario-aware with avoided delta when shift active.
+- `ModelsTable`: search + origin/type filters, CSV export of *scenario values*, inspect modal with full assumptions/flags/PUE/grid, bilingual column headers via i18n.
+- `Co2BarChart` + `OriginDonut`: Recharts with error whiskers, origin breakdown donut.
+- `HistoryViewer`: area trends + Jevons Paradox callout (bilingual support).
+- `ScopeDisclaimerBanner`: toned professional transparency note (always present).
+- Full bilingual (EN / 中文) with instant toggle. All major labels, notes, and UI strings in lib/i18n.ts.
+- Keyboard accessible, high contrast, mobile responsive, skeletons on load, shareable deep links.
 
 ## Honesty rules (ENGINEERING_STANDARDS §2, §6 + phase spec)
 - No bare point numbers for energy/CO₂ anywhere — always mid + range via `formatCO2Range`.

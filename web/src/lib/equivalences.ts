@@ -28,4 +28,17 @@ export function computeEquivalents(avoidedKg: number): Equivalents {
 }
 
 export const EQUIV_SOURCES = 
-  'EPA (vehicles), Our World in Data / DEFRA (flights), USFS (trees), EIA + eGRID averages (homes). Rounded for communication.';
+  'EPA (vehicles), Our World in Data / DEFRA (flights), USFS (trees), UBA Germany / Electricity Maps (homes & DE grid), EIA + eGRID. Rounded for communication & ESG storytelling only.';
+
+/**
+ * Simple illustrative Climate Neutrality / Substitution Score (0-100).
+ * 100 = fully on target clean intensity (50 gCO2/kWh).
+ * Uses mid values. Purely for visual communication.
+ */
+export function computeClimateScore(currentMidKg: number, baselineMidKg: number): number {
+  if (!baselineMidKg || baselineMidKg <= 0) return 0;
+  const avoided = Math.max(0, baselineMidKg - currentMidKg);
+  const pct = (avoided / baselineMidKg) * 100;
+  // Scale to 0-100 with diminishing returns for very high shifts
+  return Math.min(100, Math.round(pct * 1.15));
+}

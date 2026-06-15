@@ -16,22 +16,24 @@ import type { GroupBy } from './GroupToggle';
 interface Props {
   models: Model[];
   groupBy: GroupBy;
+  showAll?: boolean;
+  onToggleShowAll?: () => void;
 }
 
 const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payload: { full: string; co2: number; open_or_closed: string; origin: string; } }[] }) => {
   if (!active || !payload || !payload.length) return null;
   const p = payload[0].payload;
   return (
-    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-lg shadow-lg text-sm text-slate-700 dark:text-slate-200">
-      <div className="font-semibold text-slate-900 dark:text-white mb-1">{p.full}</div>
+    <div className="bg-[#121512] border border-[#242924] p-3 rounded-lg shadow-lg text-sm text-[#e4e7e4]">
+      <div className="font-semibold text-white mb-1">{p.full}</div>
       <div className="mb-1">
         <span className="font-medium">CO₂:</span> {p.co2.toLocaleString()} kg
       </div>
-      <div className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-        <span className="inline-block px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded mr-1">
+      <div className="text-xs text-[#a1a6a1] mt-2">
+        <span className="inline-block px-1.5 py-0.5 bg-[#1a1f1a] rounded mr-1 border border-[#242924]">
           {p.open_or_closed}
         </span>
-        <span className="inline-block px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded">
+        <span className="inline-block px-1.5 py-0.5 bg-[#1a1f1a] rounded border border-[#242924]">
           {p.origin}
         </span>
       </div>
@@ -44,24 +46,45 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payl
  * Colors are driven by the GroupToggle (open/closed or origin).
  * ErrorBar uses deltas for asymmetric ranges.
  */
-export const Co2BarChart: React.FC<Props> = ({ models, groupBy }) => {
-  // Prepare data for Recharts. Keep display_name short for x-axis.
-  const data = models.map((m) => {
+export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false, onToggleShowAll }) => {
+  // Sort by impact and take top 15 by default for readability (50 models is too many on x-axis)
+  const sortedModels = [...models].sort((a, b) => b.co2_kg.mid - a.co2_kg.mid);
+  const displayModels = showAll ? sortedModels : sortedModels.slice(0, 15);
+
+  // Aggregate "others" when not showing all
+  let chartData = displayModels.map((m) => {
     const mid = m.co2_kg.mid;
     const errLow = mid - m.co2_kg.low;
     const errHigh = m.co2_kg.high - mid;
-    const short = m.display_name.length > 22 ? m.display_name.slice(0, 20) + '…' : m.display_name;
+    const short = m.display_name.length > 18 ? m.display_name.slice(0, 16) + '…' : m.display_name;
     return {
       name: short,
       co2: mid,
-      error: [errLow, errHigh], // asymmetric [down, up] for ErrorBar
+      error: [errLow, errHigh],
       origin: m.origin,
       open_or_closed: m.open_or_closed,
       full: m.display_name,
     };
   });
 
-  const getColor = (d: (typeof data)[number]) => {
+  if (!showAll && sortedModels.length > 15) {
+    const othersMid = sortedModels.slice(15).reduce((sum, m) => sum + m.co2_kg.mid, 0);
+    if (othersMid > 0) {
+      chartData = [
+        ...chartData,
+        {
+          name: `+${sortedModels.length - 15} others`,
+          co2: othersMid,
+          error: [0, 0],
+          origin: 'OTHER',
+          open_or_closed: 'open',
+          full: `Remaining ${sortedModels.length - 15} models (aggregated)`,
+        },
+      ];
+    }
+  }
+
+  const getColor = (d: (typeof chartData)[number]) => {
     if (groupBy === 'open_or_closed') {
       return d.open_or_closed === 'open' ? '#10b981' : '#f43f5e'; // tailwind emerald-500, rose-500
     }
@@ -80,14 +103,25 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy }) => {
 
   return (
     <div className="w-full h-full flex flex-col">
+      <div className="flex justify-end mb-1">
+        {onToggleShowAll && (
+          <button
+            onClick={onToggleShowAll}
+            className="text-xs px-3 py-1 rounded-lg border border-[#242924] hover:bg-[#161916] text-[#a1a6a1]"
+          >
+            {showAll ? 'Show Top 15' : `Show All (${models.length})`}
+          </button>
+        )}
+      </div>
+
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 12, bottom: 48, left: 4 }}>
+        <BarChart data={chartData} margin={{ top: 8, right: 12, bottom: 48, left: 4 }}>
           <CartesianGrid strokeDasharray="2 2" stroke="#242924" vertical={false} />
           <XAxis
             dataKey="name"
-            angle={-32}
+            angle={-28}
             textAnchor="end"
-            height={56}
+            height={52}
             interval={0}
             tick={{ fontSize: 10, fill: '#717771' }}
             tickLine={{ stroke: '#242924' }}
@@ -101,13 +135,13 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy }) => {
           />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(16,185,129,0.06)' }} />
           <Bar dataKey="co2" radius={[2,2,0,0]}>
-            {data.map((entry, index) => <Cell key={`cell-${index}`} fill={getColor(entry)} />)}
+            {chartData.map((entry, index) => <Cell key={`cell-${index}`} fill={getColor(entry)} />)}
             <ErrorBar dataKey="error" direction="y" strokeWidth={1} stroke="#334155" />
           </Bar>
         </BarChart>
       </ResponsiveContainer>
       <div className="text-[10px] text-[#717771] mt-1 text-center">
-        Mid + low/high whiskers. Grouped by {groupBy.replace('_', ' ')}.
+        Mid + low/high whiskers. Grouped by {groupBy.replace('_', ' ')}. {showAll ? 'All models shown.' : 'Top 15 + others aggregated for readability.'}
       </div>
     </div>
   );

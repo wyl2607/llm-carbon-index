@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import type { Model } from '../types';
 import { co2Per1kOutputTokens, formatCO2Per1kG, formatCO2Range, formatWaterRange } from '../lib/format';
-import { Search, Download, Filter, Eye } from 'lucide-react';
+import { Search, Download, Eye } from 'lucide-react';
 import type { Lang } from '../lib/i18n';
 import { useI18n } from '../lib/i18n';
 
@@ -9,12 +9,12 @@ type SortKey = 'co2' | 'efficiency' | 'water';
 
 interface Props {
   models: Model[];
-  lang: Lang;
+  lang?: Lang;
   onInspect?: (m: Model) => void;
   isScenarioActive?: boolean;
 }
 
-export const ModelsTable: React.FC<Props> = ({ models, lang, onInspect, isScenarioActive = false }) => {
+export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, isScenarioActive = false }) => {
   const tt = useI18n(lang);
   const [sortKey, setSortKey] = useState<SortKey>('co2');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
@@ -175,9 +175,36 @@ export const ModelsTable: React.FC<Props> = ({ models, lang, onInspect, isScenar
           </div>
         </div>
 
-        <button onClick={downloadCSV} className="btn btn-secondary text-sm w-full xl:w-auto">
-          <Download className="w-4 h-4" /> {tt.exportCsv}
-        </button>
+        <div className="flex gap-2">
+          <button onClick={downloadCSV} className="btn btn-secondary text-sm">
+            <Download className="w-4 h-4" /> CSV
+          </button>
+          <button 
+            onClick={() => {
+              const payload = {
+                exported_at: new Date().toISOString(),
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                scenario: { greenShiftPercent: (window as any).__currentShift || 0, accountingMethod: 'location-or-market' },
+                note: 'All values reflect the active grid substitution scenario. Ranges are low/mid/high.',
+                models: sorted.map(m => ({
+                  ...m,
+                  co2_kg: m.co2_kg,
+                  energy_kwh: m.energy_kwh,
+                }))
+              };
+              const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `llm-carbon-index-scenario-${new Date().toISOString().slice(0,10)}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }} 
+            className="btn btn-secondary text-sm"
+          >
+            JSON
+          </button>
+        </div>
       </div>
 
       {isScenario && (

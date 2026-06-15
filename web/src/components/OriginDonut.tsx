@@ -46,7 +46,8 @@ export const OriginDonut: React.FC<Props> = ({ models }) => {
             ))}
           </Pie>
           <Tooltip 
-            formatter={(v: number) => [`${Math.round(v).toLocaleString()} kg`, 'CO₂ mid']}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            formatter={(v: any) => [`${Math.round(Number(v) || 0).toLocaleString()} kg`, 'CO₂ mid'] as [string, string]}
             contentStyle={{ background: '#121512', border: '1px solid #242924', borderRadius: 8, color: '#e4e7e4', fontSize: '12px' }}
           />
         </PieChart>
