@@ -15,11 +15,11 @@ Always-loaded context lives in `/CLAUDE.md` (hard rules) and these three governa
 | Phase | Spec | Output | Status |
 |-------|------|--------|--------|
 | 0 | (done — see scratch/prove_math.py) | end-to-end math proven, magnitude sane | ✅ done |
-| 1 | `phase-1-ingestion.md` | normalized OpenRouter time series | ⬜ pending |
-| 2 | `phase-2-estimation.md` | per-model energy + CO₂ with ranges | ⬜ pending |
-| 3 | `phase-3-output-json.md` | validated `data/output/latest.json` | ⬜ pending |
-| 4 | `phase-4-frontend.md` | static Vite+React dashboard | ⬜ pending |
-| 5 | `phase-5-methodology-deploy.md` | methodology doc + CI + live site | ⬜ pending |
+| 1 | `phase-1-ingestion.md` | normalized OpenRouter time series | ✅ done (f061227) |
+| 2 | `phase-2-estimation.md` | per-model energy + CO₂ with ranges | ✅ done (5a81f9b) |
+| 3 | `phase-3-output-json.md` | validated `data/output/latest.json` | ✅ done (425498d) |
+| 4 | `phase-4-frontend.md` | static Vite+React dashboard | ✅ done (6b5b33e) |
+| 5 | `phase-5-methodology-deploy.md` | methodology doc + CI (site: enable Pages) | ✅ done (fb0c33c) |
 | 6+ | `phase-6plus-roadmap.md` | scenarios, market-vs-location, trends, water, coverage | ⬜ later |
 
 When a phase is finished, update its row to ✅ and note the commit hash.
