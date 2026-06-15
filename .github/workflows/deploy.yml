@@ -8,6 +8,12 @@ on:
       - "web/**"
       - "data/output/**"
       - ".github/workflows/deploy.yml"
+  # The daily pipeline-refresh commits data via GITHUB_TOKEN, which does NOT
+  # re-trigger the push event above. Chain off its completion instead so fresh
+  # data is published automatically.
+  workflow_run:
+    workflows: ["pipeline-refresh"]
+    types: [completed]
   workflow_dispatch: {}
 
 concurrency:
