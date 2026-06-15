@@ -18,6 +18,27 @@ interface Props {
   groupBy: GroupBy;
 }
 
+const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payload: { full: string; co2: number; open_or_closed: string; origin: string; } }[] }) => {
+  if (!active || !payload || !payload.length) return null;
+  const p = payload[0].payload;
+  return (
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-lg shadow-lg text-sm text-slate-700 dark:text-slate-200">
+      <div className="font-semibold text-slate-900 dark:text-white mb-1">{p.full}</div>
+      <div className="mb-1">
+        <span className="font-medium">CO₂:</span> {p.co2.toLocaleString()} kg
+      </div>
+      <div className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+        <span className="inline-block px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded mr-1">
+          {p.open_or_closed}
+        </span>
+        <span className="inline-block px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded">
+          {p.origin}
+        </span>
+      </div>
+    </div>
+  );
+};
+
 /**
  * Co2BarChart — Recharts bar chart of co2_kg.mid with error bars (low/high).
  * Colors are driven by the GroupToggle (open/closed or origin).
@@ -57,60 +78,36 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy }) => {
     }
   };
 
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (!active || !payload || !payload.length) return null;
-    const p = payload[0].payload;
-    return (
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-lg shadow-lg text-sm text-slate-700 dark:text-slate-200">
-        <div className="font-semibold text-slate-900 dark:text-white mb-1">{p.full}</div>
-        <div className="mb-1">
-          <span className="font-medium">CO₂:</span> {p.co2.toLocaleString()} kg
-        </div>
-        <div className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-          <span className="inline-block px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded mr-1">
-            {p.open_or_closed}
-          </span>
-          <span className="inline-block px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded">
-            {p.origin}
-          </span>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="w-full h-full flex flex-col">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 10, right: 20, bottom: 60, left: 10 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#cbd5e1" opacity={0.5} />
+        <BarChart data={data} margin={{ top: 8, right: 12, bottom: 48, left: 4 }}>
+          <CartesianGrid strokeDasharray="2 2" stroke="#242924" vertical={false} />
           <XAxis
             dataKey="name"
-            angle={-35}
+            angle={-32}
             textAnchor="end"
-            height={70}
+            height={56}
             interval={0}
-            tick={{ fontSize: 11, fill: '#64748b' }}
-            tickLine={{ stroke: '#cbd5e1' }}
-            axisLine={{ stroke: '#cbd5e1' }}
+            tick={{ fontSize: 10, fill: '#717771' }}
+            tickLine={{ stroke: '#242924' }}
+            axisLine={{ stroke: '#242924' }}
           />
           <YAxis
             tickFormatter={(v) => (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)}
-            label={{ value: 'CO₂ (kg)', angle: -90, position: 'insideLeft', fontSize: 12, fill: '#64748b' }}
-            tick={{ fontSize: 11, fill: '#64748b' }}
-            tickLine={{ stroke: '#cbd5e1' }}
-            axisLine={{ stroke: '#cbd5e1' }}
+            tick={{ fontSize: 10, fill: '#717771' }}
+            tickLine={{ stroke: '#242924' }}
+            axisLine={{ stroke: '#242924' }}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }} />
-          <Bar dataKey="co2" name="CO₂ mid (kg)" radius={[2, 2, 0, 0]}>
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={getColor(entry)} />
-            ))}
-            <ErrorBar dataKey="error" direction="y" strokeWidth={1.5} stroke="#334155" />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(16,185,129,0.06)' }} />
+          <Bar dataKey="co2" radius={[2,2,0,0]}>
+            {data.map((entry, index) => <Cell key={`cell-${index}`} fill={getColor(entry)} />)}
+            <ErrorBar dataKey="error" direction="y" strokeWidth={1} stroke="#334155" />
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      <div className="text-xs text-slate-500 dark:text-slate-400 mt-2 text-center">
-        Bars = CO₂ mid estimate; whiskers = full range (low–high). Colored by {groupBy.replace('_', ' ')}.
+      <div className="text-[10px] text-[#717771] mt-1 text-center">
+        Mid + low/high whiskers. Grouped by {groupBy.replace('_', ' ')}.
       </div>
     </div>
   );

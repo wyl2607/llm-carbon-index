@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import type { LatestData, Model } from './types';
+import type { Lang } from './lib/i18n';
+import { useI18n } from './lib/i18n';
 import { ScopeDisclaimerBanner } from './components/ScopeDisclaimerBanner';
 import { GroupToggle, type GroupBy } from './components/GroupToggle';
 import { Co2BarChart } from './components/Co2BarChart';
@@ -8,20 +10,63 @@ import { KpiCards } from './components/KpiCards';
 import { WhatIfSimulator } from './components/WhatIfSimulator';
 import { AccountingToggle, type AccountingMethod } from './components/AccountingToggle';
 import { HistoryViewer } from './components/HistoryViewer';
+import { OriginDonut } from './components/OriginDonut';
+import { ModelDetailModal } from './components/ModelDetailModal';
 
 const isSampleData = (models: Model[]) =>
   models.length > 0 && models[0].slug.startsWith('example/');
 
+type FilterState = {
+  origin: string;
+  type: string;
+  search: string;
+};
+
 function App() {
   const [data, setData] = useState<LatestData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [groupBy, setGroupBy] = useState<GroupBy>('open_or_closed');
   const [loading, setLoading] = useState(true);
+
+  // Core interactive state
+  const [lang, setLang] = useState<Lang>('en');
   const [greenShiftPercent, setGreenShiftPercent] = useState<number>(0);
   const [accountingMethod, setAccountingMethod] = useState<AccountingMethod>('location');
+  const [groupBy, setGroupBy] = useState<GroupBy>('open_or_closed');
 
+  // Table local filters (do not affect global simulator totals for academic honesty)
+  const [tableFilters, setTableFilters] = useState<FilterState>({ origin: 'ALL', type: 'ALL', search: '' });
+
+  const [inspectModel, setInspectModel] = useState<Model | null>(null);
+
+  // URL state sync (shareable scenarios)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const s = params.get('shift');
+    if (s) {
+      const v = Math.max(0, Math.min(100, parseInt(s, 10) || 0));
+      setGreenShiftPercent(v);
+    }
+    const acc = params.get('acc') as AccountingMethod | null;
+    if (acc === 'location' || acc === 'market') setAccountingMethod(acc);
+    const l = params.get('lang') as Lang | null;
+    if (l === 'en' || l === 'zh') setLang(l);
+  }, []);
+
+  // Persist key state to URL (debounced-ish via effect)
+  useEffect(() => {
+    const p = new URLSearchParams();
+    if (greenShiftPercent > 0) p.set('shift', String(greenShiftPercent));
+    if (accountingMethod !== 'location') p.set('acc', accountingMethod);
+    if (lang !== 'en') p.set('lang', lang);
+    const qs = p.toString();
+    const url = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+    window.history.replaceState(null, '', url);
+  }, [greenShiftPercent, accountingMethod, lang]);
+
+  // Data load (static)
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     fetch(`${import.meta.env.BASE_URL}data/latest.json`)
       .then((r) => {
         if (!r.ok) throw new Error(`Failed to load data: ${r.status}`);
@@ -33,39 +78,32 @@ function App() {
           setError(null);
         }
       })
-      .catch((e: any) => {
-        if (!cancelled) setError(String(e?.message || e));
+      .catch((e: unknown) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, []);
 
-  // Compute simulated data based on green grid shifting
+  const tt = useI18n(lang);
+
+  // Compute simulated (scenario) data - drives KPIs + main charts
   const simulatedData = useMemo(() => {
     if (!data) return null;
-    
     const useMarket = accountingMethod === 'market';
     const shiftRatio = greenShiftPercent / 100;
-    const targetIntensity = 50; 
-    
+    const targetIntensity = 50;
+
     const simulatedModels = data.models.map(m => {
       const baseCo2 = (useMarket && m.co2_kg_market) ? m.co2_kg_market : m.co2_kg;
-      
-      if (greenShiftPercent === 0) {
-        return { ...m, co2_kg: baseCo2 };
-      }
-      
+      if (greenShiftPercent === 0) return { ...m, co2_kg: baseCo2 };
+
       const simulateRange = (val: number) => {
         if (useMarket && m.renewable_match_pct === 100) return 0;
         const orig = val * m.pue * m.carbon_intensity_gco2_kwh / 1000;
         const shifted = val * m.pue * targetIntensity / 1000;
         return orig * (1 - shiftRatio) + shifted * shiftRatio;
       };
-      
       return {
         ...m,
         co2_kg: {
@@ -75,190 +113,211 @@ function App() {
         }
       };
     });
-    
-    // Re-calculate totals based on simulated models
+
     const totalCo2 = simulatedModels.reduce(
-      (acc, m) => ({
-        low: acc.low + m.co2_kg.low,
-        mid: acc.mid + m.co2_kg.mid,
-        high: acc.high + m.co2_kg.high,
-      }),
+      (acc, m) => ({ low: acc.low + m.co2_kg.low, mid: acc.mid + m.co2_kg.mid, high: acc.high + m.co2_kg.high }),
       { low: 0, mid: 0, high: 0 }
     );
-    
-    return {
-      ...data,
-      models: simulatedModels,
-      totals: {
-        ...data.totals,
-        co2_kg: totalCo2
-      }
-    };
+
+    return { ...data, models: simulatedModels, totals: { ...data.totals, co2_kg: totalCo2 } };
   }, [data, greenShiftPercent, accountingMethod]);
 
-  const models: Model[] = simulatedData?.models ?? [];
+  const models = simulatedData?.models ?? [];
   const totals = simulatedData?.totals;
+  const baselineCo2 = (accountingMethod === 'market' && data?.totals?.co2_kg_market) ? data.totals.co2_kg_market : data?.totals?.co2_kg;
+
+  const isScenario = greenShiftPercent > 0;
+
+  // Filtered view for table (local only)
+  const filteredModels = useMemo(() => {
+    let arr = [...models];
+    if (tableFilters.search.trim()) {
+      const q = tableFilters.search.toLowerCase();
+      arr = arr.filter(m => m.display_name.toLowerCase().includes(q) || m.flags.some(f => f.toLowerCase().includes(q)));
+    }
+    if (tableFilters.origin !== 'ALL') arr = arr.filter(m => m.origin === tableFilters.origin);
+    if (tableFilters.type !== 'ALL') arr = arr.filter(m => m.open_or_closed === tableFilters.type);
+    return arr;
+  }, [models, tableFilters]);
+
+  const sample = isSampleData(models);
+
+  // Loading skeleton
+  const renderSkeleton = () => (
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-10 space-y-8">
+      <div className="h-9 w-72 skeleton" />
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-28 card skeleton" />)}
+      </div>
+      <div className="h-80 card skeleton" />
+      <div className="h-64 card skeleton" />
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 selection:bg-emerald-200 dark:selection:bg-emerald-900">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 md:py-12">
-        <header className="mb-12 border-b border-slate-200 dark:border-slate-800 pb-10">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-sm">
-                  Alpha v1.0
-                </div>
-                <div className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                  Methodology v{data ? data.methodology_version : '—'} • Data Date: {data ? data.data_date : '—'}
-                </div>
-              </div>
-              <h1 className="text-5xl md:text-7xl font-black tracking-tight text-slate-900 dark:text-white mb-4 leading-tight">
-                LLM Carbon Index
-              </h1>
-              <div className="space-y-2">
-                <p className="text-2xl text-slate-600 dark:text-slate-300 font-semibold leading-snug">
-                  Transparent CO₂ estimation for the AI era.
-                </p>
-                <p className="text-lg text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl">
-                  Tracking the environmental footprint of OpenRouter LLM inference with end-to-end uncertainty ranges. 
-                  <span className="block mt-1 opacity-75 font-normal">
-                    追踪 OpenRouter 大模型推理的碳足迹，提供端到端的不确定性估算范围。
-                  </span>
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex flex-wrap gap-4 pb-1">
-              <a 
-                href="https://github.com/wyl2607/llm-carbon-index/blob/main/docs/methodology.md" 
-                target="_blank" 
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none transition-all hover:-translate-y-0.5"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                Methodology & Docs
-              </a>
-              <a 
-                href="https://github.com/wyl2607/llm-carbon-index" 
-                target="_blank" 
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-bold rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:-translate-y-0.5"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
-                </svg>
-                GitHub
-              </a>
-            </div>
-            
-            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700/50">
-              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Accounting Method:</span>
-              <AccountingToggle method={accountingMethod} onChange={setAccountingMethod} />
-            </div>
+    <div className="min-h-screen bg-[#0a0c0a] text-[#e4e7e4] selection:bg-emerald-800/40">
+      {/* Sticky premium header */}
+      <header className="sticky top-0 z-50 border-b border-[#242924] bg-[#0a0c0a]/95 backdrop-blur">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3 text-sm">
+          <div className="flex items-center gap-3">
+            <div className="font-black tracking-[-0.5px] text-lg">LLM Carbon Index</div>
+            <div className="text-[10px] px-2 py-px rounded bg-emerald-950 text-emerald-400 border border-emerald-900 font-bold tracking-widest">ALPHA</div>
+            {data && <div className="hidden sm:block text-[#717771] text-xs font-mono pl-1">v{data.methodology_version} • {data.data_date}</div>}
           </div>
-        </header>
 
-        {loading && (
-          <div className="py-12 text-center animate-pulse text-slate-500">
-            <div className="w-8 h-8 mx-auto mb-4 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-            Loading data...
-          </div>
-        )}
-        
-        {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 p-4 rounded-lg border border-red-200 dark:border-red-800 mb-8">
-            <strong className="font-semibold">Error loading /data/latest.json:</strong> {error}. Run the copy-data script or build first.
-          </div>
-        )}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Lang switch - bilingual professional */}
+            <div className="inline-flex rounded-lg overflow-hidden border border-[#242924] text-xs">
+              <button onClick={() => setLang('en')} className={`px-3 py-1 font-medium transition ${lang === 'en' ? 'bg-emerald-600 text-black' : 'hover:bg-[#161916]'}`}>{tt.langEn}</button>
+              <button onClick={() => setLang('zh')} className={`px-3 py-1 font-medium transition ${lang === 'zh' ? 'bg-emerald-600 text-black' : 'hover:bg-[#161916]'}`}>{tt.langZh}</button>
+            </div>
 
+            <AccountingToggle method={accountingMethod} onChange={setAccountingMethod} />
+
+            <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/docs/methodology.md" target="_blank" rel="noreferrer" className="btn btn-secondary hidden sm:inline-flex text-xs py-1.5 px-4">{tt.methodology}</a>
+            <a href="https://github.com/wyl2607/llm-carbon-index" target="_blank" rel="noreferrer" className="btn btn-secondary text-xs py-1.5 px-4">{tt.github}</a>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-16">
+        {/* Compact hero */}
+        <div className="pt-8 pb-6">
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+            <div>
+              <h1 className="font-black tracking-[-1.6px] leading-none">{tt.brand}</h1>
+              <p className="mt-1.5 text-xl text-[#a1a6a1] max-w-2xl">{tt.tagline} <span className="text-sm align-super text-[#717771]">/ {tt.taglineZh}</span></p>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              {data && (
+                <div className="font-mono text-xs px-3 py-1 rounded-full border border-[#242924] text-[#a1a6a1]">
+                  {tt.lastUpdated}: <span className="text-[#e4e7e4]">{data.data_date}</span>
+                </div>
+              )}
+              <button onClick={() => {
+                const url = window.location.href;
+                navigator.clipboard.writeText(url);
+              }} className="btn btn-ghost text-xs border border-[#242924]">{tt.share}</button>
+            </div>
+          </div>
+        </div>
+
+        {/* Scope / Transparency - professional, always visible */}
         {simulatedData && (
-          <main>
-            <ScopeDisclaimerBanner
-              scopeNote={simulatedData.scope_note}
-              sourceCitation={simulatedData.source_citation}
-            />
+          <ScopeDisclaimerBanner scopeNote={simulatedData.scope_note} sourceCitation={simulatedData.source_citation} />
+        )}
 
-            {isSampleData(models) && (
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-600 p-4 mb-8 rounded-r-lg shadow-sm">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-yellow-400 dark:text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                      <strong className="font-semibold">SAMPLE DATA:</strong> Using placeholder data from tests/fixtures. Real data will replace it once the Phase 3 pipeline runs. All numbers are illustrative.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
+        {sample && (
+          <div className="my-4 p-3 rounded-xl border border-amber-900/40 bg-amber-950/20 text-amber-300 text-sm">
+            {tt.sampleWarning}
+          </div>
+        )}
 
-            <WhatIfSimulator 
+        {loading && renderSkeleton()}
+
+        {error && (
+          <div className="my-6 p-4 border border-red-900/50 bg-red-950/20 text-red-300 rounded-xl text-sm">
+            Error loading data: {error}. Ensure copy-data ran and public/data/latest.json exists.
+          </div>
+        )}
+
+        {simulatedData && !loading && (
+          <main className="space-y-8">
+            {/* SCENARIO LAB - the storytelling centerpiece */}
+            <WhatIfSimulator
               greenShiftPercent={greenShiftPercent}
               setGreenShiftPercent={setGreenShiftPercent}
-              originalCo2={accountingMethod === 'market' && data?.totals?.co2_kg_market ? data.totals.co2_kg_market : data?.totals?.co2_kg}
+              originalCo2={baselineCo2}
               simulatedCo2={totals?.co2_kg}
               accountingMethod={accountingMethod}
+              modeledFraction={data?.totals?.modeled_traffic_fraction}
+              lang={lang}
             />
 
-            {totals && <KpiCards totals={totals} />}
+            {/* KPIs — scenario aware */}
+            {totals && (
+              <KpiCards 
+                totals={totals} 
+                baselineCo2={baselineCo2} 
+                shift={greenShiftPercent} 
+                lang={lang} 
+              />
+            )}
 
-            <div className="my-10 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+            {/* Visual Explorer */}
+            <section className="card p-6">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    CO₂ Footprint by Model
-                    <span className="text-sm font-normal text-slate-400">/ 各模型碳足迹</span>
-                  </h2>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Estimates with uncertainty ranges (mid + range)</p>
+                  <h2 className="font-bold">{tt.vizTitle}</h2>
+                  <p className="text-xs text-[#717771] mt-0.5">{tt.vizAllNote}</p>
                 </div>
-                <GroupToggle groupBy={groupBy} onChange={setGroupBy} />
+                <div className="flex items-center gap-3">
+                  <GroupToggle groupBy={groupBy} onChange={setGroupBy} />
+                  <select 
+                    value="15" 
+                    onChange={() => { /* top-N could be wired if desired; current chart shows all */ }} 
+                    className="text-xs py-1 px-2 bg-[#0a0c0a] border border-[#242924] rounded-lg"
+                  >
+                    <option>Top emitters + others</option>
+                  </select>
+                </div>
               </div>
-              
-              <div className="h-[400px] w-full">
-                {models.length > 0 ? (
+
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div className="lg:col-span-3 min-h-[360px]">
                   <Co2BarChart models={models} groupBy={groupBy} />
-                ) : (
-                  <div className="h-full flex items-center justify-center text-slate-400 italic">No models data available.</div>
-                )}
+                </div>
+                <div className="lg:col-span-2 card p-4 border-[#242924]">
+                  <div className="text-xs font-bold tracking-widest text-[#a1a6a1] mb-1.5">{tt.vizOriginBreakdown}</div>
+                  <OriginDonut models={models} />
+                </div>
               </div>
-            </div>
+            </section>
 
-            <HistoryViewer />
-
-            <div className="my-10 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 overflow-hidden">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  Emissions Directory
-                  <span className="text-sm font-normal text-slate-400">/ 详细排放目录</span>
-                </h2>
-                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Detailed breakdown of modeled OpenRouter traffic</p>
+            {/* Table Directory - full interactive */}
+            <section className="card p-6">
+              <div className="mb-4 flex items-baseline justify-between">
+                <div>
+                  <h2 className="font-bold">{tt.tableTitle}</h2>
+                  <p className="text-xs text-[#717771]">{tt.tableSubtitle}</p>
+                </div>
+                <div className="text-[11px] text-emerald-400/80 font-medium">{isScenario ? 'SCENARIO VALUES ACTIVE' : 'BASELINE VALUES'}</div>
               </div>
-              
-              {models.length > 0 ? (
-                <ModelsTable models={models} />
-              ) : (
-                <div className="py-8 text-center text-slate-400 italic">No models data available.</div>
-              )}
-            </div>
+
+              <ModelsTable 
+                models={filteredModels} 
+                lang={lang} 
+                onInspect={setInspectModel}
+                isScenarioActive={isScenario}
+              />
+            </section>
+
+            {/* Trends */}
+            <HistoryViewer lang={lang} />
+
+            {/* Footer actions + full transparency */}
+            <footer className="pt-8 mt-4 border-t border-[#242924] text-xs text-[#717771] flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 justify-between">
+              <div>{tt.footerStatic}</div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                <a href={`${import.meta.env.BASE_URL}data/latest.json`} className="hover:text-[#e4e7e4] underline-offset-2 hover:underline" target="_blank" rel="noreferrer">{tt.rawJson}</a>
+                <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/docs/methodology.md" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] underline-offset-2 hover:underline">{tt.methodologyFull}</a>
+                <button 
+                  onClick={() => {
+                    if (!data) return;
+                    const cite = `Wyl (2026). LLM Carbon Index — OpenRouter-visible LLM inference CO₂ estimates (data date ${data.data_date}). https://wyl2607.github.io/llm-carbon-index/ (accessed ${new Date().toISOString().slice(0,10)}). Methodology: ${data.methodology_version}.`;
+                    navigator.clipboard.writeText(cite).then(() => alert(tt.citeCopied));
+                  }}
+                  className="hover:text-[#e4e7e4] underline-offset-2 hover:underline"
+                >
+                  {tt.cite}
+                </button>
+              </div>
+            </footer>
           </main>
         )}
-
-        <footer className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800 text-sm text-slate-500 dark:text-slate-400 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div>
-            <p>Static build. Ranges are carried end-to-end (low/mid/high).</p>
-          </div>
-          <div className="flex gap-4">
-            <a href="https://github.com/wyl2607/llm-carbon-index" target="_blank" rel="noreferrer" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">GitHub</a>
-            <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/docs/methodology.md" target="_blank" rel="noreferrer" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Methodology</a>
-          </div>
-        </footer>
       </div>
+
+      <ModelDetailModal model={inspectModel} onClose={() => setInspectModel(null)} />
     </div>
   );
 }

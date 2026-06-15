@@ -1,5 +1,9 @@
 import React from 'react';
 import type { Range } from '../types';
+import type { Lang } from '../lib/i18n';
+import { useI18n } from '../lib/i18n';
+import { Leaf, Zap, Info } from 'lucide-react';
+import { computeEquivalents, EQUIV_SOURCES } from '../lib/equivalences';
 
 interface Props {
   greenShiftPercent: number;
@@ -7,6 +11,8 @@ interface Props {
   originalCo2: Range | undefined;
   simulatedCo2: Range | undefined;
   accountingMethod?: 'location' | 'market';
+  modeledFraction?: number;
+  lang: Lang;
 }
 
 export const WhatIfSimulator: React.FC<Props> = ({ 
@@ -14,108 +20,168 @@ export const WhatIfSimulator: React.FC<Props> = ({
   setGreenShiftPercent,
   originalCo2,
   simulatedCo2,
-  accountingMethod = 'location'
+  accountingMethod = 'location',
+  modeledFraction = 0,
+  lang
 }) => {
+  const tt = useI18n(lang);
+
   const reductionMid = originalCo2 && simulatedCo2 
-    ? originalCo2.mid - simulatedCo2.mid 
+    ? Math.max(0, Math.round(originalCo2.mid - simulatedCo2.mid))
     : 0;
-    
+
   const reductionPercent = originalCo2 && originalCo2.mid > 0
     ? ((reductionMid / originalCo2.mid) * 100).toFixed(1)
-    : 0;
+    : '0';
+
+  const equiv = computeEquivalents(reductionMid);
+
+  const maxPotential = modeledFraction > 0 ? (modeledFraction * 42).toFixed(1) : '0';
+
+  const presets = [
+    { label: tt.presetReality, val: 0 },
+    { label: tt.presetClean, val: 50 },
+    { label: tt.presetMax, val: 100 },
+  ];
 
   return (
-    <div className="my-10 bg-gradient-to-br from-emerald-900 to-slate-900 rounded-2xl shadow-lg border border-emerald-800/50 p-6 sm:p-8 text-white relative overflow-hidden">
-      <div className="absolute top-4 right-4 text-[10px] font-bold uppercase tracking-widest text-emerald-400/40">
-        Method: {accountingMethod}-based
+    <div className="my-8 card p-7 sm:p-9 text-[#e4e7e4] relative overflow-hidden border-emerald-900/40" style={{background: 'linear-gradient(145deg, #0c0f0c, #0a0d0a)'}}>
+      <div className="absolute top-5 right-5 px-3 py-1 rounded-full text-[10px] font-bold tracking-[1.5px] uppercase bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 backdrop-blur z-20">
+        {accountingMethod.toUpperCase()}-BASED
       </div>
-      {/* Decorative background elements */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/3"></div>
-      <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 translate-y-1/3 -translate-x-1/3"></div>
 
-      <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
-        <div className="w-full md:w-1/2">
-          <div className="flex items-center gap-2 mb-2">
-            <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            <h2 className="text-2xl font-bold tracking-tight">Grid Substitution Simulator</h2>
+      {/* subtle green glow orbs */}
+      <div className="absolute -top-40 -right-40 w-[520px] h-[520px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute -bottom-40 -left-40 w-[420px] h-[420px] bg-teal-500/5 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="relative z-10">
+        <div className="flex items-start gap-3 mb-3">
+          <div className="mt-1 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+            <Zap className="w-5 h-5 text-emerald-400" />
           </div>
-          <p className="text-emerald-100/80 text-sm mb-6 leading-relaxed">
-            What if we spatially shifted AI inference workloads to the cleanest regional grids (e.g., France/Nordics at ~50 gCO₂/kWh) instead of the global average? Drag the slider to see the potential carbon reduction.
-          </p>
-
-          <div className="mb-8">
-            <div className="flex justify-between items-end mb-2">
-              <label htmlFor="grid-shift" className="text-sm font-medium text-emerald-50">
-                Workload Shifted to Green Grid:
-              </label>
-              <span className="text-2xl font-bold text-emerald-400">{greenShiftPercent}%</span>
-            </div>
-            <input 
-              id="grid-shift"
-              type="range" 
-              min="0" 
-              max="100" 
-              step="5"
-              value={greenShiftPercent}
-              onChange={(e) => setGreenShiftPercent(Number(e.target.value))}
-              className="w-full h-2 bg-slate-700/50 rounded-lg appearance-none cursor-pointer accent-emerald-400"
-            />
-            <div className="flex justify-between text-xs text-emerald-200/60 mt-2 font-medium">
-              <span>0% (Current Reality)</span>
-              <span>100% (Maximum Optimization)</span>
-            </div>
-            
-            <div className="mt-6 flex flex-wrap gap-2">
-              {[
-                { label: 'Current Reality', val: 0 },
-                { label: 'Clean EU Shift', val: 50 },
-                { label: 'Max Green', val: 100 }
-              ].map(preset => (
-                <button
-                  key={preset.val}
-                  onClick={() => setGreenShiftPercent(preset.val)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
-                    greenShiftPercent === preset.val 
-                      ? 'bg-emerald-500 border-emerald-400 text-white shadow-lg shadow-emerald-900/40' 
-                      : 'bg-slate-800/50 border-emerald-900/50 text-emerald-400/70 hover:border-emerald-700 hover:text-emerald-300'
-                  }`}
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-[-0.02em]">{tt.scenarioTitle}</h2>
+            <p className="mt-1.5 max-w-3xl text-[15px] text-emerald-100/70 leading-relaxed">
+              {tt.scenarioSubtitle}
+            </p>
           </div>
         </div>
 
-        <div className="w-full md:w-1/2 flex flex-col justify-center">
-          <div className="bg-slate-900/60 backdrop-blur-sm border border-emerald-500/20 rounded-xl p-6 text-center">
-            <h3 className="text-sm font-medium text-emerald-200/80 uppercase tracking-widest mb-2">
-              Potential Daily Reduction
-            </h3>
-            <div className="flex items-baseline justify-center gap-2 text-emerald-400">
-              <span className="text-5xl font-extrabold tracking-tighter">
-                -{reductionMid.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+        <div className="mt-7 grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* Controls */}
+          <div className="lg:col-span-3">
+            <div className="flex justify-between items-baseline mb-2 px-1">
+              <label htmlFor="grid-shift" className="text-xs font-semibold tracking-widest text-emerald-300/80 uppercase">
+                {tt.shiftLabel}
+              </label>
+              <span className="font-mono text-4xl font-black text-emerald-400 tabular-nums tracking-[-1.5px] drop-shadow-[0_0_12px_rgba(16,185,129,0.35)]">
+                {greenShiftPercent}<span className="text-2xl font-semibold text-emerald-400/60">%</span>
               </span>
-              <span className="text-xl font-medium text-emerald-400/80">kg CO₂eq</span>
             </div>
-            
-            {greenShiftPercent > 0 && accountingMethod === 'location' && (
-              <div className="mt-4 pt-4 border-t border-emerald-800/50 text-sm text-emerald-100/90">
-                This spatial workload shifting could reduce total inference emissions by <strong className="text-white bg-emerald-500/20 px-1.5 py-0.5 rounded">{reductionPercent}%</strong> while delivering the same compute.
+
+            <input
+              id="grid-shift"
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={greenShiftPercent}
+              onChange={(e) => setGreenShiftPercent(Number(e.target.value))}
+              className="impact-slider w-full accent-emerald-400 cursor-pointer"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={greenShiftPercent}
+              aria-label="Percentage of traffic shifted to clean grid"
+            />
+
+            <div className="flex justify-between text-[10px] text-emerald-300/50 font-medium tracking-widest px-0.5 mt-1.5">
+              <div>0% — {tt.presetReality.split(' ')[0]}</div>
+              <div>100% — MAX GREEN</div>
+            </div>
+
+            {/* Presets - premium segmented */}
+            <div className="mt-5 flex flex-wrap gap-2">
+              {presets.map(p => (
+                <button
+                  key={p.val}
+                  onClick={() => setGreenShiftPercent(p.val)}
+                  className={`btn text-xs py-1.5 px-4 transition-all active:scale-[0.985] ${
+                    greenShiftPercent === p.val 
+                      ? 'btn-primary shadow-[0_0_0_1px_#052e16,0_0_18px_-2px_#10b981]' 
+                      : 'btn-secondary border-[#2a2f2a] hover:border-emerald-800/70'
+                  }`}
+                  aria-pressed={greenShiftPercent === p.val}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            {modeledFraction > 0 && (
+              <div className="mt-4 inline-flex items-center gap-2 text-xs bg-[#0f120f] border border-[#252a25] px-3 py-1.5 rounded-xl text-emerald-300/90">
+                <span className="inline-block w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                {tt.maxPotentialNote(maxPotential)}
               </div>
             )}
-            {greenShiftPercent > 0 && accountingMethod === 'market' && (
-              <div className="mt-4 pt-4 border-t border-emerald-800/50 text-sm text-emerald-100/90">
-                Under Market-based accounting, matched emissions are already reported as 0. This shift reduces the remaining <strong className="text-white bg-emerald-500/20 px-1.5 py-0.5 rounded">{reductionPercent}%</strong> of physically unaccounted emissions.
+          </div>
+
+          {/* Big impact readout + equivalents */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="rounded-2xl bg-[#0a0c0a] border border-emerald-900/50 p-6 text-center">
+              <div className="uppercase tracking-[2px] text-xs font-bold text-emerald-400/70 mb-2 flex items-center justify-center gap-2">
+                <Leaf className="w-3.5 h-3.5" /> {tt.dailyAvoided}
               </div>
-            )}
-            {greenShiftPercent === 0 && (
-              <div className="mt-4 pt-4 border-t border-emerald-800/50 text-sm text-slate-400">
-                Move the slider to simulate emissions reduction.
+              <div className="font-mono text-[56px] leading-none font-black text-emerald-400 tracking-[-3.5px] tabular-nums drop-shadow-[0_0_25px_rgba(16,185,129,.25)]">
+                −{reductionMid.toLocaleString()}
               </div>
-            )}
+              <div className="text-emerald-400/70 text-sm font-medium mt-1">{tt.kgCO2}</div>
+
+              {greenShiftPercent > 0 && (
+                <div className="mt-3 text-sm">
+                  <span className="px-3 py-px bg-emerald-500/10 text-emerald-300 border border-emerald-800/50 rounded-full text-xs font-bold">
+                    −{reductionPercent}%
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Equivalents grid - storytelling heart */}
+            <div>
+              <div className="flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-emerald-300/70 mb-2 px-1">
+                {tt.equivTitle}
+                <span title={EQUIV_SOURCES} className="info-tip"><Info className="w-3.5 h-3.5" /></span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="rounded-xl border border-[#1f2420] bg-[#0c0f0c] px-3 py-2.5">
+                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{equiv.cars.toLocaleString()}</div>
+                  <div className="text-[12px] text-emerald-200/70 leading-tight mt-px">{tt.equivCars}</div>
+                </div>
+                <div className="rounded-xl border border-[#1f2420] bg-[#0c0f0c] px-3 py-2.5">
+                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{equiv.flights.toLocaleString()}</div>
+                  <div className="text-[12px] text-emerald-200/70 leading-tight mt-px">{tt.equivFlights}</div>
+                </div>
+                <div className="rounded-xl border border-[#1f2420] bg-[#0c0f0c] px-3 py-2.5">
+                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{equiv.trees.toLocaleString()}</div>
+                  <div className="text-[12px] text-emerald-200/70 leading-tight mt-px">{tt.equivTrees}</div>
+                </div>
+                <div className="rounded-xl border border-[#1f2420] bg-[#0c0f0c] px-3 py-2.5">
+                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{equiv.homes.toLocaleString()}</div>
+                  <div className="text-[12px] text-emerald-200/70 leading-tight mt-px">{tt.equivHomes}</div>
+                </div>
+              </div>
+              <p className="text-[10px] text-emerald-300/50 mt-2 px-1 leading-snug">{tt.equivNote}</p>
+            </div>
+
+            {/* Interpretation */}
+            <div className="text-[13px] leading-relaxed text-emerald-100/80 border-l-2 border-emerald-800/60 pl-3">
+              {greenShiftPercent > 0 ? (
+                accountingMethod === 'location' 
+                  ? tt.impactNote(reductionPercent)
+                  : tt.impactNoteMarket(reductionPercent)
+              ) : (
+                <span className="text-emerald-300/50 italic">{lang === 'zh' ? '移动滑块探索情景影响。' : 'Move the slider to explore decarbonization impact.'}</span>
+              )}
+            </div>
           </div>
         </div>
       </div>
