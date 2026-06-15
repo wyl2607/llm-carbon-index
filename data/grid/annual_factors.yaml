@@ -1,0 +1,31 @@
+# Annual-average grid carbon intensity fallback (gCO2eq/kWh).
+# Used when Electricity Maps live query fails or is unavailable (no key, unknown
+# zone, rate limit, network error). See DATA_SCHEMAS.md §5.
+#
+# region keys are the canonical identifiers used in crosswalk assumed_region.
+# Every number here has a corresponding entry in docs/ASSUMPTIONS.md (C-GRID-*).
+
+- region: "us-east"
+  gco2_per_kwh: 380
+  year: 2022
+  source: "EPA eGRID2022 (U.S. average output emission rate); see ASSUMPTIONS.md#C-GRID-US-EAST-380 and C-GRID-EGRID"
+
+- region: "europe-west"
+  gco2_per_kwh: 230
+  year: 2024
+  source: "Ember 2024 Europe West annual factor; see ASSUMPTIONS.md#C-GRID-EUROPE-WEST-230"
+
+- region: "cn-north"
+  gco2_per_kwh: 537
+  year: 2023
+  source: "Ember 2023 China national annual; see ASSUMPTIONS.md#C-GRID-CN-NORTH-537"
+
+- region: "eu-27"
+  gco2_per_kwh: 242
+  year: 2023
+  source: "Ember 2023 EU-27 annual; see ASSUMPTIONS.md#C-GRID-EU-27-242"
+
+- region: "default"
+  gco2_per_kwh: 400
+  year: 2023
+  source: "Conservative composite fallback (round order-of-magnitude of US/EU/CN mix informed by Ember global 2023 approx); used only when region key missing from this table. See ASSUMPTIONS.md#C-GRID-DEFAULT"

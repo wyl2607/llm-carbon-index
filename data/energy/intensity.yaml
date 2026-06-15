@@ -1,0 +1,42 @@
+# Wh per output token (primary inference energy driver).
+# Specific models (ai_energy_score or ecologits sourced) + parameter class bands
+# for fallback / unknown. See DATA_SCHEMAS.md §3.
+#
+# All numeric values are recorded with derivation in docs/ASSUMPTIONS.md (E-series).
+# No model-specific numbers are allowed in pipeline/*.py.
+
+models:
+  - openrouter_slug: "minimax/minimax-m2.5"
+    wh_per_output_token: { low: 0.0008, mid: 0.0015, high: 0.003 }
+    source: "AI Energy Score v2 (HF/Salesforce/CMU); cross-checked against EcoLogits ranges for similar active-param scale. See ASSUMPTIONS.md#E-MINIMAX-M2.5"
+
+  - openrouter_slug: "meta-llama/llama-3.1-8b-instruct"
+    wh_per_output_token: { low: 0.0004, mid: 0.0009, high: 0.0018 }
+    source: "AI Energy Score v2 for 7-13B class; range widened for tokenizer variance and benchmark-to-production diff. See ASSUMPTIONS.md#E-LLAMA-31-8B"
+
+  - openrouter_slug: "qwen/qwen2.5-72b-instruct"
+    wh_per_output_token: { low: 0.0018, mid: 0.0040, high: 0.0090 }
+    source: "AI Energy Score v2 informed for 70B dense class (higher than 8B). Range conservative per E-METHOD. See ASSUMPTIONS.md#E-QWEN25-72B"
+
+  - openrouter_slug: "mistralai/mistral-7b-instruct-v0.3"
+    wh_per_output_token: { low: 0.0005, mid: 0.0013, high: 0.0026 }
+    source: "AI Energy Score v2 small-model band; EU origin model. See ASSUMPTIONS.md#E-MISTRAL-7B"
+
+  - openrouter_slug: "deepseek/deepseek-chat"
+    wh_per_output_token: { low: 0.0015, mid: 0.0035, high: 0.0080 }
+    source: "AI Energy Score v2 informed for ~67B MoE-equivalent dense class. See ASSUMPTIONS.md#E-DEEPSEEK-67B"
+
+  - openrouter_slug: "anthropic/claude-3.5-sonnet-20241022"
+    wh_per_output_token: { low: 0.0025, mid: 0.0060, high: 0.0150 }
+    source: "EcoLogits (LCA ISO 14044) estimate for frontier closed model; range substantially widened for undisclosed param/hardware uncertainty. See ASSUMPTIONS.md#E-CLAUDE-35-SONNET"
+
+parameter_class_fallback:
+  # Used when energy_source=parameter_class_fallback in crosswalk OR slug unknown to crosswalk.
+  # Bands keyed by max_active_params_b. Pick largest for unknowns (conservative).
+  - max_active_params_b: 15
+    wh_per_output_token: { low: 0.0005, mid: 0.0012, high: 0.0025 }
+    source: "ASSUMPTIONS.md#E-CLASS-SMALL (informed by AI Energy Score v2 + EcoLogits small-model measurements; widened for variance)"
+
+  - max_active_params_b: 100
+    wh_per_output_token: { low: 0.002, mid: 0.005, high: 0.012 }
+    source: "ASSUMPTIONS.md#E-CLASS-LARGE (informed by AI Energy Score / EcoLogits 30-100B class; upper bound accounts for closed-model opacity)"

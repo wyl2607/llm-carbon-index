@@ -1,0 +1,28 @@
+# Assumptions for closed (opaque) providers: region, PUE, hardware context.
+# Used to override default PUE=1.2 and to record CLOSED_MODEL_ASSUMED flag.
+# Source citations point to ASSUMPTIONS.md (DC-series). See DATA_SCHEMAS.md §4.
+# Regions must resolve in grid (annual_factors or live EM zones).
+
+- provider: "openai"
+  models: ["openai/gpt-4o"]
+  assumed_cloud: "azure"
+  assumed_region: "us-east"
+  assumed_gpu: "H100"
+  pue: 1.2
+  source: "ASSUMPTIONS.md#DC-OPENAI (public Azure region disclosures + OpenAI infrastructure reports; PUE hyperscaler default per A4)"
+
+- provider: "anthropic"
+  models: ["anthropic/claude-3.5-sonnet-20241022"]
+  assumed_cloud: "aws"
+  assumed_region: "us-east"
+  assumed_gpu: "H100"
+  pue: 1.2
+  source: "ASSUMPTIONS.md#DC-ANTHROPIC (Anthropic AWS Bedrock / direct; conservative US-East placement assumption; PUE 1.2)"
+
+- provider: "google"
+  models: ["google/gemini-1.5-flash"]
+  assumed_cloud: "google"
+  assumed_region: "us-east"
+  assumed_gpu: "H100"
+  pue: 1.25
+  source: "ASSUMPTIONS.md#DC-GOOGLE (Google Cloud US regions; Google publishes fleet PUE ~1.10 but we use 1.25 as conservative for mixed/older capacity)"
