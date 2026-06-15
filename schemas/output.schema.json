@@ -92,6 +92,7 @@
             "items": {
               "enum": [
                 "UNKNOWN_MODEL",
+                "UNMAPPED_SLUG",
                 "FALLBACK_ENERGY_CLASS",
                 "FALLBACK_GRID_ANNUAL",
                 "CLOSED_MODEL_ASSUMED"
@@ -108,6 +109,10 @@
         "total_tokens",
         "uncovered_tokens",
         "modeled_traffic_fraction",
+        "mapped_traffic_fraction",
+        "unmapped_tokens",
+        "unmapped_traffic_fraction",
+        "unmapped_slugs",
         "est_output_tokens",
         "energy_kwh",
         "co2_kg",
@@ -120,6 +125,21 @@
         "total_tokens": { "type": "integer" },
         "uncovered_tokens": { "type": "integer" },
         "modeled_traffic_fraction": { "type": "number" },
+        "mapped_traffic_fraction": { "type": "number" },
+        "unmapped_tokens": { "type": "integer" },
+        "unmapped_traffic_fraction": { "type": "number" },
+        "unmapped_slugs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["slug", "total_tokens"],
+            "properties": {
+              "slug": { "type": "string" },
+              "total_tokens": { "type": "integer" }
+            },
+            "additionalProperties": false
+          }
+        },
         "est_output_tokens": { "type": "integer" },
         "energy_kwh": { "$ref": "#/definitions/Range" },
         "co2_kg": { "$ref": "#/definitions/Range" },

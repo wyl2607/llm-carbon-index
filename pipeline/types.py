@@ -20,6 +20,7 @@ GridSource = Literal["electricity_maps_live", "annual_factor"]
 # flags vocabulary (DATA_SCHEMAS §Conventions). ILLUSTRATIVE_SAMPLE is dev-only.
 Flag = Literal[
     "UNKNOWN_MODEL",
+    "UNMAPPED_SLUG",
     "FALLBACK_ENERGY_CLASS",
     "FALLBACK_GRID_ANNUAL",
     "CLOSED_MODEL_ASSUMED",
@@ -71,12 +72,24 @@ class ModelEstimate(TypedDict):
     flags: list[str]
 
 
+class UnmappedSlugEntry(TypedDict):
+    """A top-list slug absent from the crosswalk — the Phase 6E maintenance to-do."""
+
+    slug: str
+    total_tokens: int
+
+
 class Totals(TypedDict):
     """Phase 3 output: aggregate statistics over all models."""
 
     total_tokens: int
     uncovered_tokens: int
     modeled_traffic_fraction: float
+    # Phase 6E coverage / scope honesty:
+    mapped_traffic_fraction: float            # (total - uncovered - unmapped) / total
+    unmapped_tokens: int                      # tokens on top-list slugs absent from crosswalk
+    unmapped_traffic_fraction: float          # unmapped_tokens / total
+    unmapped_slugs: list[UnmappedSlugEntry]   # the maintenance to-do, sorted desc by tokens
     est_output_tokens: int
     energy_kwh: RangeDict
     co2_kg: RangeDict

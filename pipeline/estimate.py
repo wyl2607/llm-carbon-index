@@ -146,6 +146,10 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
 
         # flags assembly
         flags: list[str] = list(eflags)
+        if cw is None:
+            # Phase 6E: top-list slug absent from model_crosswalk.yaml. Flag it so it is
+            # never silently bucketed as "modeled"; output.py quantifies the unmapped %.
+            flags.append("UNMAPPED_SLUG")
         if grid_src == "annual_factor":
             flags.append("FALLBACK_GRID_ANNUAL")
         if open_or_closed == "closed":

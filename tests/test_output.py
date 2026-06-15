@@ -239,6 +239,10 @@ def test_validate_accepts_valid_doc_and_rejects_broken_records(monkeypatch, tmp_
             "total_tokens": 1000000000,
             "uncovered_tokens": 0,
             "modeled_traffic_fraction": 1.0,
+            "mapped_traffic_fraction": 1.0,
+            "unmapped_tokens": 0,
+            "unmapped_traffic_fraction": 0.0,
+            "unmapped_slugs": [],
             "est_output_tokens": 200000000,
             "energy_kwh": {"low": 200, "mid": 400, "high": 600},
             "co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6},
@@ -403,6 +407,10 @@ def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path)
             "total_tokens": TOTAL_TOKENS,
             "uncovered_tokens": UNCOVERED_TOKENS,
             "modeled_traffic_fraction": MODELED_FRACTION,
+            "mapped_traffic_fraction": MODELED_FRACTION,
+            "unmapped_tokens": 0,
+            "unmapped_traffic_fraction": 0.0,
+            "unmapped_slugs": [],
             "est_output_tokens": 1510000000000,
             "energy_kwh": {
                 "low": 728000.0 + 800000.0 + 400000.0,
@@ -466,6 +474,39 @@ def test_scope_source_and_modeled_fraction_always_present(monkeypatch, tmp_path)
     assert 0.0 <= doc["totals"]["modeled_traffic_fraction"] <= 1.0
 
 
+def test_unmapped_slug_quantified_in_totals_not_silently_modeled(monkeypatch, tmp_path):
+    """Phase 6E: a top-list slug absent from the crosswalk is flagged + quantified as
+    unmapped traffic, never silently counted as modeled."""
+    _patch_estimate_paths(monkeypatch, tmp_path)
+
+    records: list[NormalizedRecord] = [
+        {"date": GOLDEN_DATE, "model_slug": "minimax/minimax-m2.5",
+         "total_tokens": 6_000_000_000_000, "is_other": False},
+        {"date": GOLDEN_DATE, "model_slug": "ghostvendor/unlisted-9",
+         "total_tokens": 3_000_000_000_000, "is_other": False},
+        {"date": GOLDEN_DATE, "model_slug": "other",
+         "total_tokens": 1_000_000_000_000, "is_other": True},
+    ]
+    estimates = estimate(records)
+    doc = build_output(estimates, records, GOLDEN_DATE, generated_at="2026-06-15T00:00:00Z")
+    validate(doc)  # new totals fields + UNMAPPED_SLUG flag must pass the schema
+
+    ghost = next(m for m in estimates if m["slug"] == "ghostvendor/unlisted-9")
+    assert "UNMAPPED_SLUG" in ghost["flags"]
+    assert ghost["origin"] == "OTHER"  # neutral identity, not bucketed into a known model
+
+    totals = doc["totals"]
+    assert totals["unmapped_tokens"] == 3_000_000_000_000
+    assert totals["unmapped_slugs"] == [
+        {"slug": "ghostvendor/unlisted-9", "total_tokens": 3_000_000_000_000}
+    ]
+    assert totals["unmapped_traffic_fraction"] == pytest.approx(0.3)
+    # mapped excludes BOTH the is_other uncovered row AND the unmapped slug
+    assert totals["mapped_traffic_fraction"] == pytest.approx(0.6)
+    # legacy modeled fraction still only nets out the is_other row
+    assert totals["modeled_traffic_fraction"] == pytest.approx(0.9)
+
+
 def test_write_outputs_validates_before_write_and_copies_to_history(tmp_path, monkeypatch):
     """write_outputs calls validate; on success writes latest + history copy.
 
@@ -493,6 +534,10 @@ def test_write_outputs_validates_before_write_and_copies_to_history(tmp_path, mo
             "total_tokens": 0,
             "uncovered_tokens": 0,
             "modeled_traffic_fraction": 0.0,
+            "mapped_traffic_fraction": 0.0,
+            "unmapped_tokens": 0,
+            "unmapped_traffic_fraction": 0.0,
+            "unmapped_slugs": [],
             "est_output_tokens": 0,
             "energy_kwh": {"low": 0.0, "mid": 0.0, "high": 0.0},
             "co2_kg": {"low": 0.0, "mid": 0.0, "high": 0.0},
