@@ -57,3 +57,8 @@ export interface LatestData {
   models: Model[];
   totals: Totals;
 }
+
+export interface TimeseriesDay {
+  data_date: string;
+  totals: Totals;
+}

@@ -20,11 +20,13 @@ NORMALIZED_PATH = RAW_DIR / "normalized.jsonl"       # appended, deduped on (dat
 CROSSWALK_PATH = DATA_DIR / "crosswalk" / "model_crosswalk.yaml"
 INTENSITY_PATH = DATA_DIR / "energy" / "intensity.yaml"
 CLOSED_MODELS_PATH = DATA_DIR / "assumptions" / "closed_models.yaml"
+VENDOR_CLAIMS_PATH = DATA_DIR / "assumptions" / "vendor_claims.yaml"
 ANNUAL_FACTORS_PATH = DATA_DIR / "grid" / "annual_factors.yaml"
 
 OUTPUT_DIR = DATA_DIR / "output"
 OUTPUT_LATEST_PATH = OUTPUT_DIR / "latest.json"
 OUTPUT_HISTORY_DIR = OUTPUT_DIR / "history"          # data/output/history/{data_date}.json
+OUTPUT_TIMESERIES_PATH = OUTPUT_DIR / "timeseries.json"
 
 SCHEMA_PATH = REPO_ROOT / "schemas" / "output.schema.json"
 

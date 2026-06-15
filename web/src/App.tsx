@@ -7,6 +7,7 @@ import { ModelsTable } from './components/ModelsTable';
 import { KpiCards } from './components/KpiCards';
 import { WhatIfSimulator } from './components/WhatIfSimulator';
 import { AccountingToggle, type AccountingMethod } from './components/AccountingToggle';
+import { HistoryViewer } from './components/HistoryViewer';
 
 const isSampleData = (models: Model[]) =>
   models.length > 0 && models[0].slug.startsWith('example/');
@@ -224,6 +225,8 @@ function App() {
                 )}
               </div>
             </div>
+
+            <HistoryViewer />
 
             <div className="my-10 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 overflow-hidden">
               <div className="mb-6">

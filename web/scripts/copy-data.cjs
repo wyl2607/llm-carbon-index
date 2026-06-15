@@ -33,3 +33,14 @@ if (fs.existsSync(REAL)) {
   used = 'SAMPLE (tests/fixtures/latest.sample.json) — placeholder until pipeline output exists';
 }
 console.log(`[copy-data] Copied ${used} -> public/data/latest.json`);
+
+const REAL_TS = path.resolve(ROOT, '../data/output/timeseries.json');
+const DEST_TS = path.join(PUBLIC_DATA, 'timeseries.json');
+if (fs.existsSync(REAL_TS)) {
+  fs.copyFileSync(REAL_TS, DEST_TS);
+  console.log(`[copy-data] Copied real timeseries.json -> public/data/timeseries.json`);
+} else {
+  // If no timeseries exists yet (e.g. sample mode), just create a dummy one
+  fs.writeFileSync(DEST_TS, JSON.stringify([]));
+  console.log(`[copy-data] Generated empty timeseries.json -> public/data/timeseries.json`);
+}

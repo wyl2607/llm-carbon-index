@@ -72,24 +72,38 @@ def build_output(
     co2_list = [m["co2_kg"] for m in estimates]
     co2_kg = _sum_co2(co2_list)
 
+    co2_market_list = [m["co2_kg_market"] for m in estimates]
+    co2_kg_market = _sum_co2(co2_market_list)
+
     # by_origin and by_open_closed preserve first-appearance order from estimates list
     origin_groups: dict[str, list[dict]] = {}
+    origin_groups_market: dict[str, list[dict]] = {}
     for m in estimates:
         o = m["origin"]
         origin_groups.setdefault(o, []).append(m["co2_kg"])
-    by_origin = {o: {"co2_kg": _sum_co2(lst)} for o, lst in origin_groups.items()}
+        origin_groups_market.setdefault(o, []).append(m["co2_kg_market"])
+    by_origin = {
+        o: {"co2_kg": _sum_co2(lst), "co2_kg_market": _sum_co2(origin_groups_market[o])}
+        for o, lst in origin_groups.items()
+    }
 
     oc_groups: dict[str, list[dict]] = {}
+    oc_groups_market: dict[str, list[dict]] = {}
     for m in estimates:
         oc = m["open_or_closed"]
         oc_groups.setdefault(oc, []).append(m["co2_kg"])
-    by_open_closed = {oc: {"co2_kg": _sum_co2(lst)} for oc, lst in oc_groups.items()}
+        oc_groups_market.setdefault(oc, []).append(m["co2_kg_market"])
+    by_open_closed = {
+        oc: {"co2_kg": _sum_co2(lst), "co2_kg_market": _sum_co2(oc_groups_market[oc])}
+        for oc, lst in oc_groups.items()
+    }
 
     totals = {
         "total_tokens": total_tokens,
         "uncovered_tokens": uncovered_tokens,
         "modeled_traffic_fraction": modeled_traffic_fraction,
         "co2_kg": co2_kg,
+        "co2_kg_market": co2_kg_market,
         "by_origin": by_origin,
         "by_open_closed": by_open_closed,
     }
@@ -140,3 +154,31 @@ def write_outputs(doc: dict) -> None:
     with open(hist_path, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False, indent=2)
         f.write("\n")
+
+    # Generate timeseries
+    write_timeseries()
+
+def write_timeseries() -> None:
+    """Aggregate data from all history/*.json files into timeseries.json."""
+    hist_dir = config.OUTPUT_HISTORY_DIR
+    if not hist_dir.exists():
+        return
+        
+    timeseries = []
+    
+    for hist_file in sorted(hist_dir.glob("*.json")):
+        with open(hist_file, "r", encoding="utf-8") as f:
+            try:
+                day_data = json.load(f)
+                timeseries.append({
+                    "data_date": day_data["data_date"],
+                    "totals": day_data["totals"]
+                })
+            except (json.JSONDecodeError, KeyError):
+                continue
+                
+    if timeseries:
+        timeseries_path = config.OUTPUT_TIMESERIES_PATH
+        with open(timeseries_path, "w", encoding="utf-8") as f:
+            json.dump(timeseries, f, ensure_ascii=False, indent=2)
+            f.write("\n")
