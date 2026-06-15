@@ -20,7 +20,11 @@ Always-loaded context lives in `/CLAUDE.md` (hard rules) and these three governa
 | 3 | `phase-3-output-json.md` | validated `data/output/latest.json` | ✅ done (425498d) |
 | 4 | `phase-4-frontend.md` | static Vite+React dashboard | ✅ done (6b5b33e) |
 | 5 | `phase-5-methodology-deploy.md` | methodology doc + CI (site: enable Pages) | ✅ done (fb0c33c) |
-| 6+ | `phase-6plus-roadmap.md` | scenarios, market-vs-location, trends, water, coverage | ⬜ later |
+| 6A | `phase-6plus-roadmap.md`         | green-electricity scenario simulator       | ✅ done (e07ec8e)   |
+| 6B | `phase-6b-market-vs-location.md` | market-vs-location accounting              | ✅ done (181fbc9)   |
+| 6C | `phase-6plus-roadmap.md`         | historical trends + Jevons paradox         | ✅ done (6263729)   |
+| 6D | `phase-6plus-roadmap.md`         | water footprint WUE                        | ✅ done (e07ec8e)   |
+| 6E | `phase-6e-coverage-automation.md` | coverage automation / scope honesty (live tracker: `PHASE6E_ORCHESTRATION.md`) | ▶️ in-progress |
 
 When a phase is finished, update its row to ✅ and note the commit hash.
 

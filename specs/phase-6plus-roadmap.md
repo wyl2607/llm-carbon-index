@@ -2,6 +2,9 @@
 
 Each item below is a future phase. Build only after the MVP (Phases 1–5) is live. Same structure and standards apply; these are intentionally lighter and will be expanded into full specs when picked up. **6A and 6B are the differentiators that turn this from a calculator into the niche tool** described in the project's premise.
 
+> **Status as of 2026-06-16** (authoritative status of record is `specs/INDEX.md`, not this stub):
+> **6A ✅ done** (Scenario Lab + 9 DE/EU presets; `feat/scenario-math` 2281962 extracts the green-shift math into a tested pure fn — **unmerged**) · **6B ✅ done** (full spec `phase-6b-market-vs-location.md`) · **6C ✅ done** · **6D ✅ done** · **6E ⬜ in-progress** → promoted to full spec `phase-6e-coverage-automation.md`.
+
 ---
 
 ## 6A — Green-electricity substitution scenarios
