@@ -36,13 +36,13 @@ slice, not global emissions). Static pipeline → committed JSON → static fron
 - Live site verified showing **real** OpenRouter data (50 models, modeled_traffic_fraction ≈ 0.94).
 
 ## Known issues / top next tasks
-1. **Crosswalk vs real slugs (highest value).** Real OpenRouter `model_permaslug`
+1. ~~**Crosswalk vs real slugs (highest value).** Real OpenRouter `model_permaslug`
    values carry date suffixes (e.g. `minimax/minimax-m3-20260531`), so they miss
    the Phase-2 crosswalk seeds → every real model currently resolves to
    `UNKNOWN_MODEL` + `FALLBACK_ENERGY_CLASS` + origin `OTHER` (honest, but not
    insightful). Fix: normalize permaslug→base slug (strip date suffix) and/or
    expand `data/crosswalk/model_crosswalk.yaml` + `data/energy/intensity.yaml`
-   with the current top models (with sources in `ASSUMPTIONS.md`).
+   with the current top models (with sources in `ASSUMPTIONS.md`).~~ **(✅ Fixed)**
 2. **Live grid data.** Set repo secret `ELECTRICITYMAPS_API_KEY` to use live
    intensity; without it `grid.py` falls back to annual factors (`FALLBACK_GRID_ANNUAL`).
 3. **🔑 Rotate the OpenRouter key.** It was shared in plaintext during dev; rotate
