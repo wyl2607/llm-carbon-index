@@ -1,0 +1,79 @@
+{
+  "methodology_version": "0.1.0",
+  "generated_at": "2026-06-15T00:00:00Z",
+  "data_date": "2026-06-14",
+  "source_citation": "Source: OpenRouter (openrouter.ai/rankings), as of 2026-06-14",
+  "scope_note": "Estimated CO2 footprint of LLM-inference traffic visible through OpenRouter. NOT global data-center emissions. All figures are estimates with uncertainty.",
+  "assumptions": {
+    "input_output_ratio": "80:20",
+    "default_pue": 1.2
+  },
+  "models": [
+    {
+      "slug": "example/large-cn-open",
+      "display_name": "Example Large (CN, open)",
+      "origin": "CN",
+      "open_or_closed": "open",
+      "total_tokens": 4550000000000,
+      "est_output_tokens": 910000000000,
+      "wh_per_output_token": { "low": 0.0008, "mid": 0.0015, "high": 0.003 },
+      "energy_kwh": { "low": 728000, "mid": 1365000, "high": 2730000 },
+      "energy_source": "ai_energy_score",
+      "region": "us-east",
+      "carbon_intensity_gco2_kwh": 380,
+      "grid_source": "electricity_maps_live",
+      "pue": 1.2,
+      "co2_kg": { "low": 331968, "mid": 622440, "high": 1244880 },
+      "flags": []
+    },
+    {
+      "slug": "example/closed-us",
+      "display_name": "Example Closed (US)",
+      "origin": "US",
+      "open_or_closed": "closed",
+      "total_tokens": 2000000000000,
+      "est_output_tokens": 400000000000,
+      "wh_per_output_token": { "low": 0.002, "mid": 0.005, "high": 0.012 },
+      "energy_kwh": { "low": 800000, "mid": 2000000, "high": 4800000 },
+      "energy_source": "ecologits",
+      "region": "us-east",
+      "carbon_intensity_gco2_kwh": 380,
+      "grid_source": "electricity_maps_live",
+      "pue": 1.2,
+      "co2_kg": { "low": 364800, "mid": 912000, "high": 2188800 },
+      "flags": ["CLOSED_MODEL_ASSUMED"]
+    },
+    {
+      "slug": "example/small-eu-open",
+      "display_name": "Example Small (EU, open)",
+      "origin": "EU",
+      "open_or_closed": "open",
+      "total_tokens": 1000000000000,
+      "est_output_tokens": 200000000000,
+      "wh_per_output_token": { "low": 0.0005, "mid": 0.0012, "high": 0.0025 },
+      "energy_kwh": { "low": 100000, "mid": 240000, "high": 500000 },
+      "energy_source": "ai_energy_score",
+      "region": "europe-west",
+      "carbon_intensity_gco2_kwh": 230,
+      "grid_source": "annual_factor",
+      "pue": 1.2,
+      "co2_kg": { "low": 27600, "mid": 66240, "high": 138000 },
+      "flags": ["FALLBACK_GRID_ANNUAL"]
+    }
+  ],
+  "totals": {
+    "total_tokens": 10000000000000,
+    "uncovered_tokens": 2450000000000,
+    "modeled_traffic_fraction": 0.755,
+    "co2_kg": { "low": 724368, "mid": 1600680, "high": 3571680 },
+    "by_origin": {
+      "CN": { "co2_kg": { "low": 331968, "mid": 622440, "high": 1244880 } },
+      "US": { "co2_kg": { "low": 364800, "mid": 912000, "high": 2188800 } },
+      "EU": { "co2_kg": { "low": 27600, "mid": 66240, "high": 138000 } }
+    },
+    "by_open_closed": {
+      "open": { "co2_kg": { "low": 359568, "mid": 688680, "high": 1382880 } },
+      "closed": { "co2_kg": { "low": 364800, "mid": 912000, "high": 2188800 } }
+    }
+  }
+}
