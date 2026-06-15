@@ -132,7 +132,6 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
         market_low = co2_r.low * (1 - (match_pct or 0.0) / 100.0)
         market_mid = co2_r.mid * (1 - (match_pct or 0.0) / 100.0)
         market_high = co2_r.high * (1 - (match_pct or 0.0) / 100.0)
-        from pipeline.ranges import Range
         co2_market_r = Range(market_low, market_mid, market_high)
 
         # flags assembly

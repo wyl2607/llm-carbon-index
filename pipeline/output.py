@@ -72,7 +72,7 @@ def build_output(
     co2_list = [m["co2_kg"] for m in estimates]
     co2_kg = _sum_co2(co2_list)
 
-    co2_market_list = [m["co2_kg_market"] for m in estimates]
+    co2_market_list = [m.get("co2_kg_market", m["co2_kg"]) for m in estimates]
     co2_kg_market = _sum_co2(co2_market_list)
 
     # by_origin and by_open_closed preserve first-appearance order from estimates list
@@ -81,7 +81,7 @@ def build_output(
     for m in estimates:
         o = m["origin"]
         origin_groups.setdefault(o, []).append(m["co2_kg"])
-        origin_groups_market.setdefault(o, []).append(m["co2_kg_market"])
+        origin_groups_market.setdefault(o, []).append(m.get("co2_kg_market", m["co2_kg"]))
     by_origin = {
         o: {"co2_kg": _sum_co2(lst), "co2_kg_market": _sum_co2(origin_groups_market[o])}
         for o, lst in origin_groups.items()
@@ -92,7 +92,7 @@ def build_output(
     for m in estimates:
         oc = m["open_or_closed"]
         oc_groups.setdefault(oc, []).append(m["co2_kg"])
-        oc_groups_market.setdefault(oc, []).append(m["co2_kg_market"])
+        oc_groups_market.setdefault(oc, []).append(m.get("co2_kg_market", m["co2_kg"]))
     by_open_closed = {
         oc: {"co2_kg": _sum_co2(lst), "co2_kg_market": _sum_co2(oc_groups_market[oc])}
         for oc, lst in oc_groups.items()
