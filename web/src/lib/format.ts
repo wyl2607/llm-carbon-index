@@ -27,6 +27,20 @@ export function formatCO2Range(r: Range): string {
   return `${fmt(r.mid)} ${unit} (${fmt(r.low)}–${fmt(r.high)} ${unit})`;
 }
 
+export function formatWaterRange(r: Range | undefined): string {
+  if (!r) return "N/A";
+  // Use kL when mid >= 1000 L, else L.
+  const useKL = r.mid >= 1000;
+  const scale = useKL ? 1000 : 1;
+  const unit = useKL ? 'kL' : 'L';
+  const fmt = (v: number) =>
+    (v / scale).toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+  return `${fmt(r.mid)} ${unit} (${fmt(r.low)}–${fmt(r.high)} ${unit})`;
+}
+
 /**
  * CO₂ per 1 000 output tokens (kg CO2 mid / est_output_tokens * 1000)
  * Returned in grams for human scale (typical values << 1 kg).

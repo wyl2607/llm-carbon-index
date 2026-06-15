@@ -176,10 +176,12 @@ BY_ORIGIN = {
     "CN": {
         "co2_kg": EXPECTED_MINIMAX_CO2,
         "co2_kg_market": EXPECTED_MINIMAX_CO2_MARKET,
+        "water_liters": {"low": 1092000.0, "mid": 2047500.0, "high": 4095000.0},
     },
     "US": {
         "co2_kg": {"low": 547200.0, "mid": 1368000.0, "high": 3283200.0},
         "co2_kg_market": {"low": 0.0, "mid": 0.0, "high": 0.0},
+        "water_liters": {"low": 1800000.0, "mid": 4500000.0, "high": 10800000.0},
     },
 }
 BY_OPEN_CLOSED = {
@@ -222,7 +224,7 @@ def test_validate_accepts_valid_doc_and_rejects_broken_records(monkeypatch, tmp_
                 "energy_kwh": {"low": 200, "mid": 400, "high": 600},
                 "energy_source": "ai_energy_score",
                 "region": "us-east",
-                "carbon_intensity_gco2_kwh": 380,
+                "carbon_intensity_gco2_kwh": 380.0,
                 "grid_source": "annual_factor",
                 "pue": 1.2,
                 "co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6},
@@ -245,7 +247,8 @@ def test_validate_accepts_valid_doc_and_rejects_broken_records(monkeypatch, tmp_
             "by_origin": {
                 "CN": {
                     "co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6},
-                    "co2_kg_market": {"low": 91.2, "mid": 182.4, "high": 273.6}
+                    "co2_kg_market": {"low": 91.2, "mid": 182.4, "high": 273.6},
+                    "water_liters": {"low": 300.0, "mid": 600.0, "high": 900.0}
                 }
             },
             "by_open_closed": {

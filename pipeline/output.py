@@ -90,7 +90,9 @@ def build_output(
         o = m["origin"]
         origin_groups.setdefault(o, []).append(m["co2_kg"])
         origin_groups_market.setdefault(o, []).append(m.get("co2_kg_market", m["co2_kg"]))
-        origin_groups_water.setdefault(o, []).append(m.get("water_liters", {"low": 0.0, "mid": 0.0, "high": 0.0}))
+        origin_groups_water.setdefault(o, []).append(
+            m.get("water_liters", {"low": 0.0, "mid": 0.0, "high": 0.0})
+        )
     by_origin = {
         o: {
             "co2_kg": _sum_co2(origin_groups[o]), 
@@ -107,7 +109,9 @@ def build_output(
         oc = m["open_or_closed"]
         oc_groups.setdefault(oc, []).append(m["co2_kg"])
         oc_groups_market.setdefault(oc, []).append(m.get("co2_kg_market", m["co2_kg"]))
-        oc_groups_water.setdefault(oc, []).append(m.get("water_liters", {"low": 0.0, "mid": 0.0, "high": 0.0}))
+        oc_groups_water.setdefault(oc, []).append(
+            m.get("water_liters", {"low": 0.0, "mid": 0.0, "high": 0.0})
+        )
     by_open_closed = {
         oc: {
             "co2_kg": _sum_co2(oc_groups[oc]), 

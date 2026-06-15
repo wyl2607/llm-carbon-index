@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import type { Model } from '../types';
-import { co2Per1kOutputTokens, formatCO2Per1kG, formatCO2Range } from '../lib/format';
+import { co2Per1kOutputTokens, formatCO2Per1kG, formatCO2Range, formatWaterRange } from '../lib/format';
 
-type SortKey = 'co2' | 'efficiency';
+type SortKey = 'co2' | 'efficiency' | 'water';
 
 interface Props {
   models: Model[];
@@ -10,9 +10,9 @@ interface Props {
 
 /**
  * ModelsTable — sortable table.
- * Sortable by co2_kg.mid (total) and by efficiency = co2_kg.mid / est_output_tokens * 1000 (per 1k output tokens).
+ * Sortable by co2_kg.mid (total), water_liters.mid, and by efficiency = co2_kg.mid / est_output_tokens * 1000 (per 1k output tokens).
  * Always renders ranges (mid + low-high), never bare numbers.
- * Columns: display, range CO2, efficiency, origin, open/closed, energy_source, grid_source, flags (badges).
+ * Columns: display, range CO2, range Water, efficiency, origin, open/closed, energy_source, grid_source, flags (badges).
  * Responsive: horizontal scroll container on narrow screens.
  */
 export const ModelsTable: React.FC<Props> = ({ models }) => {
@@ -35,11 +35,14 @@ export const ModelsTable: React.FC<Props> = ({ models }) => {
     
     // Sort
     arr.sort((a, b) => {
-      let va: number;
-      let vb: number;
+      let va: number = 0;
+      let vb: number = 0;
       if (sortKey === 'co2') {
         va = a.co2_kg.mid;
         vb = b.co2_kg.mid;
+      } else if (sortKey === 'water') {
+        va = a.water_liters?.mid || 0;
+        vb = b.water_liters?.mid || 0;
       } else {
         va = co2Per1kOutputTokens(a);
         vb = co2Per1kOutputTokens(b);
@@ -91,6 +94,7 @@ export const ModelsTable: React.FC<Props> = ({ models }) => {
   const downloadCSV = () => {
     const headers = [
       'Model', 'CO2_kg_low', 'CO2_kg_mid', 'CO2_kg_high', 
+      'Water_L_low', 'Water_L_mid', 'Water_L_high',
       'gCO2_per_1k_output_tokens', 'Origin', 'Open_Closed', 
       'Energy_Source', 'Grid_Source', 'Flags'
     ];
@@ -100,6 +104,9 @@ export const ModelsTable: React.FC<Props> = ({ models }) => {
       m.co2_kg.low,
       m.co2_kg.mid,
       m.co2_kg.high,
+      m.water_liters?.low || '',
+      m.water_liters?.mid || '',
+      m.water_liters?.high || '',
       co2Per1kOutputTokens(m).toFixed(4),
       m.origin,
       m.open_or_closed,
@@ -159,6 +166,7 @@ export const ModelsTable: React.FC<Props> = ({ models }) => {
             <tr>
               {header('Model')}
               {header('CO₂ (kg, range)', 'co2')}
+              {header('Water (L, range)', 'water')}
               {header('CO₂ / 1k output tokens', 'efficiency')}
               {header('Origin')}
               {header('Open/Closed')}
@@ -179,6 +187,9 @@ export const ModelsTable: React.FC<Props> = ({ models }) => {
                   <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{m.display_name}</td>
                   <td className="px-4 py-3 whitespace-nowrap text-slate-700 dark:text-slate-300">
                     <span className="font-mono">{formatCO2Range(m.co2_kg)}</span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-slate-700 dark:text-slate-300">
+                    <span className="font-mono">{formatWaterRange(m.water_liters)}</span>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <span className={`font-mono px-2 py-1 rounded text-xs font-semibold ${
@@ -217,7 +228,7 @@ export const ModelsTable: React.FC<Props> = ({ models }) => {
             })}
             {sorted.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400 italic">
+                <td colSpan={9} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400 italic">
                   No models found matching your filter.
                 </td>
               </tr>
@@ -226,7 +237,7 @@ export const ModelsTable: React.FC<Props> = ({ models }) => {
         </table>
       </div>
       <div className="text-xs text-slate-500 dark:text-slate-400 flex justify-between items-center px-1">
-        <span>Click column headers to sort. CO₂ columns always show mid (low–high) range.</span>
+        <span>Click column headers to sort. Range columns always show mid (low–high) ranges.</span>
         <span>Showing {sorted.length} model{sorted.length !== 1 ? 's' : ''}</span>
       </div>
     </div>

@@ -31,6 +31,8 @@ export interface Model {
   co2_kg: Range;
   co2_kg_market?: Range;
   renewable_match_pct?: number | null;
+  wue?: number;
+  water_liters?: Range;
   flags: string[];
 }
 
@@ -38,10 +40,13 @@ export interface Totals {
   total_tokens: number;
   uncovered_tokens: number;
   modeled_traffic_fraction: number;
+  est_output_tokens?: number;
+  energy_kwh?: Range;
   co2_kg: Range;
   co2_kg_market?: Range;
-  by_origin: Record<string, { co2_kg: Range, co2_kg_market?: Range }>;
-  by_open_closed: Record<string, { co2_kg: Range, co2_kg_market?: Range }>;
+  water_liters?: Range;
+  by_origin: Record<string, { co2_kg: Range, co2_kg_market?: Range, water_liters?: Range }>;
+  by_open_closed: Record<string, { co2_kg: Range, co2_kg_market?: Range, water_liters?: Range }>;
 }
 
 export interface LatestData {
