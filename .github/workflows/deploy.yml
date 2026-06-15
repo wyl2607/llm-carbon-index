@@ -8,9 +8,6 @@ on:
       - "web/**"
       - "data/output/**"
       - ".github/workflows/deploy.yml"
-  # The daily pipeline-refresh commits data via GITHUB_TOKEN, which does NOT
-  # re-trigger the push event above. Chain off its completion instead so fresh
-  # data is published automatically.
   workflow_run:
     workflows: ["pipeline-refresh"]
     types: [completed]
@@ -21,12 +18,10 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -39,17 +34,10 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
-      - run: npm run build   # prebuild copies data/output/latest.json (or the sample fallback)
-      - uses: actions/upload-pages-artifact@v3
+      - run: npm run build
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: web/dist
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./web/dist
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
