@@ -220,7 +220,13 @@ function App() {
         {/* Scope / Transparency - professional, always visible */}
         {simulatedData && (
           <div className="mb-6">
-            <ScopeDisclaimerBanner scopeNote={simulatedData.scope_note} sourceCitation={simulatedData.source_citation} />
+            <ScopeDisclaimerBanner
+              scopeNote={simulatedData.scope_note}
+              sourceCitation={simulatedData.source_citation}
+              unmappedTrafficFraction={data?.totals?.unmapped_traffic_fraction}
+              unmappedSlugs={data?.totals?.unmapped_slugs}
+              lang={lang}
+            />
           </div>
         )}
 

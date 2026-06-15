@@ -36,6 +36,9 @@ export const translations = {
     scopeBilingual: '本项目仅估算 OpenRouter 可见 LLM 推理流量（全球 AI 使用量的代表性切片），绝非全球数据中心总排放测量值。所有数据均为带不确定性范围（低/中/高）的估算，非实测值。',
     modeledFraction: (pct: string) => `We model ${pct}% of the day's visible OpenRouter tokens.`,
     sourceCitation: 'Source: OpenRouter (openrouter.ai/rankings)',
+    // Phase 6E: unmapped traffic honesty (non-alarming factual note, matching modeled % messaging)
+    unmappedCoverageNote: (pct: string, n: number) => `${pct}% of tracked traffic runs on ${n} models not yet in our crosswalk — shown as estimates, flagged for maintenance.`,
+    unmappedTopModels: 'Top unmapped models (by token volume):',
 
     // Scenario Lab
     scenarioTitle: 'Grid Carbon Intensity Scenario Analysis',
@@ -175,6 +178,9 @@ export const translations = {
     scopeBilingual: 'Estimated footprint of OpenRouter-visible LLM inference — representative but partial slice. NOT global data-center emissions. All figures are estimates with ranges (low/mid/high), never exact measurements.',
     modeledFraction: (pct: string) => `本日已建模 OpenRouter 可见 token 比例：${pct}%`,
     sourceCitation: '数据来源：OpenRouter (openrouter.ai/rankings)',
+    // Phase 6E: unmapped traffic honesty (non-alarming factual note, matching modeled % messaging)
+    unmappedCoverageNote: (pct: string, n: number) => `追踪流量中约 ${pct}% 来自尚未纳入 crosswalk 的 ${n} 个模型 —— 以估算值呈现，并标记待维护。`,
+    unmappedTopModels: '按 token 量排序的未映射模型（前几位）：',
 
     scenarioTitle: '电网替代情景模拟器',
     scenarioSubtitle: '如果将推理工作负载迁移至最清洁电网（约 50 gCO₂/kWh），排放会减少多少？探索空间脱碳潜力。',

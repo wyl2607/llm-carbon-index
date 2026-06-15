@@ -1,16 +1,26 @@
 import React from 'react';
+import type { Lang } from '../lib/i18n';
+import { useI18n } from '../lib/i18n';
+import { formatTokens } from '../lib/format';
 
 interface Props {
   scopeNote: string;
   sourceCitation: string;
+  unmappedTrafficFraction?: number;
+  unmappedSlugs?: { slug: string; total_tokens: number }[];
+  lang?: Lang;
 }
 
 /**
  * ScopeDisclaimerBanner — always visible, non-dismissable.
  * Renders scope_note + source_citation from latest.json (ENGINEERING_STANDARDS §6 attribution).
  * Per phase-4 spec: must be prominent and permanent.
+ * Extended for 6E: appends coverage/unmapped note (when >0) using emerald styling for factual non-alarming presentation.
  */
-export const ScopeDisclaimerBanner: React.FC<Props> = ({ scopeNote, sourceCitation }) => {
+export const ScopeDisclaimerBanner: React.FC<Props> = ({ scopeNote, sourceCitation, unmappedTrafficFraction, unmappedSlugs, lang = 'en' }) => {
+  const tt = useI18n(lang);
+  const showUnmapped = typeof unmappedTrafficFraction === 'number' && unmappedTrafficFraction > 0;
+
   return (
     <div
       role="note"
@@ -25,6 +35,21 @@ export const ScopeDisclaimerBanner: React.FC<Props> = ({ scopeNote, sourceCitati
       <div className="mt-2 text-[12px] text-amber-300/90 border-l-2 border-amber-800/60 pl-2.5">
         This project estimates the CO₂ footprint of <strong>OpenRouter-visible LLM inference</strong> — a representative but partial slice. It is <strong>NOT</strong> global data-center emissions. All figures are estimates with full low/mid/high ranges.
       </div>
+      {showUnmapped && (
+        <div className="mt-3 text-[12px] text-emerald-300/90 border-l-2 border-emerald-800/60 pl-2.5">
+          {tt.unmappedCoverageNote(
+            (unmappedTrafficFraction * 100).toFixed(1),
+            (unmappedSlugs || []).length
+          )}
+          {unmappedSlugs && unmappedSlugs.length > 0 && (
+            <span className="block mt-0.5 text-[#717771] text-[11px]">
+              {tt.unmappedTopModels} {unmappedSlugs.slice(0, 5).map((s, i) => (
+                <span key={i}>{i > 0 ? ', ' : ''}{s.slug} <span className="opacity-70">({formatTokens(s.total_tokens)})</span></span>
+              ))}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 };

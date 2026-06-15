@@ -40,6 +40,10 @@ export interface Totals {
   total_tokens: number;
   uncovered_tokens: number;
   modeled_traffic_fraction: number;
+  mapped_traffic_fraction: number;
+  unmapped_tokens: number;
+  unmapped_traffic_fraction: number;
+  unmapped_slugs: { slug: string; total_tokens: number }[];
   est_output_tokens?: number;
   energy_kwh?: Range;
   co2_kg: Range;

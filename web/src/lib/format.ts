@@ -56,9 +56,14 @@ export function formatCO2Per1kG(g: number): string {
   return g.toFixed(2) + ' g CO₂ / 1k output tokens';
 }
 
-export function formatModeledFraction(f: number): string {
+export function formatModeledFraction(f: number, unmappedFraction: number = 0): string {
   const pct = (f * 100).toFixed(1);
-  return `We model ${pct}% of the day's tokens (modeled_traffic_fraction).`;
+  let s = `We model ${pct}% of the day's tokens (modeled_traffic_fraction).`;
+  if (unmappedFraction > 0) {
+    const upct = (unmappedFraction * 100).toFixed(1);
+    s += ` ${upct}% of tracked traffic runs on models without crosswalk entries (unmapped_traffic_fraction) — shown as estimates only.`;
+  }
+  return s;
 }
 
 export function formatDate(d: string): string {
