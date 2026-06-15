@@ -43,7 +43,9 @@
 
 - **R0 2026-06-16**：核实真实进度（6A-6D 已做、crosswalk 已存在、6E 缺 unmapped 检测）；建 worktree；写本追踪文件；派 grok（code）/agy（spec）/gemini（doc-sync）。
 - **R1 2026-06-16**：grok `--always-approve` 被分类器拒、gemini 429 → 熔断回落 Claude。**治理/事实文件已对齐**（Claude 落盘）：① 新建正式 spec `phase-6e-coverage-automation.md` ② `specs/INDEX.md` 6A-6E 表（gemini 就地写、Claude 微调 6E 指针）③ `phase-6plus-roadmap.md` 状态横幅 ④ `docs/PROJECT_STATUS.md` 修正 MVP→6A-6D done / 41→51 测试 / **删除过期误导条「grok --always-approve 可靠写盘」** / 记录 App.tsx 删除 + scenario-math 未合并。6E **代码尚未实现**。
-- **R2 2026-06-16**：**6E 后端由 Claude 在 worktree `../llm-carbon-index-6e`（branch `feat/phase-6e-coverage`）实现完成**。发现：未映射 slug 其实已被 energy 路径打 `UNKNOWN_MODEL`，真缺口是 output.py 未把它们汇总成 unmapped 流量 %。实现：`cw is None`→显式 `UNMAPPED_SLUG` flag；totals 新增 `mapped_traffic_fraction`/`unmapped_tokens`/`unmapped_traffic_fraction`/`unmapped_slugs`；非空时 `logging.warning` 维护提示；schema + DATA_SCHEMAS 同步。**门禁绿**：`uv run pytest -q` = **52 passed**（51→+1 聚合测试 + 扩展 unknown-model 测试），`ruff` 干净，schema 验证由测试 `validate(doc)` 覆盖。**尚未 commit**（待用户批准）。
+- **R2 2026-06-16**：**6E 后端由 Claude 在 worktree `../llm-carbon-index-6e`（branch `feat/phase-6e-coverage`）实现完成**。发现：未映射 slug 其实已被 energy 路径打 `UNKNOWN_MODEL`，真缺口是 output.py 未把它们汇总成 unmapped 流量 %。实现：`cw is None`→显式 `UNMAPPED_SLUG` flag；totals 新增 `mapped_traffic_fraction`/`unmapped_tokens`/`unmapped_traffic_fraction`/`unmapped_slugs`；非空时 `logging.warning` 维护提示；schema + DATA_SCHEMAS 同步。**门禁绿**：`uv run pytest -q` = **52 passed**，`ruff` 干净，schema 验证由测试 `validate(doc)` 覆盖。
+- **R3 2026-06-16**：用户批准 → **后端+文档+App.tsx 分组提交并 push 到 origin/main**（`e07ec8e..c40b088`；合并后重跑 ruff+pytest 52 passed 绿）。6E 后端上线。清理 `-6e` worktree + 已合并分支。**6E 前端**：建 worktree `../llm-carbon-index-6e-fe`（off c40b088）+ 任务包 `TASK_6E_FE.md`（types.ts + format.ts + i18n + ScopeDisclaimerBanner，门禁 npm build+lint）；**派 grok 仍被 CC 分类器拦**（引用了 memory 反转记录）→ 交付用户在自己终端跑 grok（命令已给），或 Claude 代做。
+- **R4 2026-06-16**：用户在自己终端跑 grok 完成前端（5 文件）。**Claude 回收自验**：git diff 审 + `npm run build` 绿 + 改动文件 eslint 干净；**协调修正** unmapped 取值 `simulatedData`→`data?.totals`（与 modeledFraction 一致、覆盖率模拟无关）。清 grok 脚手架 → commit `414f06e` → **push origin/main**（`c40b088..414f06e`，ff）。清理前端 worktree+分支。**✅ 6E 全部完成（后端+前端上线 origin/main）**；UI 提示在 pipeline 产出非零 unmapped 前休眠（当前 top 模型全已映射，unmapped=0 正确）。
 
 ## ⚠️ 待用户决定的悬挂项（不阻塞 6E 后端）
 
@@ -53,9 +55,9 @@
 ## NEXT（中断恢复指针）
 
 - [x] 治理/事实文件对齐（spec/INDEX/roadmap/PROJECT_STATUS）— done 2026-06-16
-- [x] **6E 后端代码实现 + 验证**（worktree `feat/phase-6e-coverage`，52 passed + ruff 干净）— done 2026-06-16
-- [x] 沉淀「grok --always-approve 在 CC 内也被拦」→ 已写回 model-routing-decision-table（2026-06-16 反转条）
-- [ ] **待用户批准**：commit `feat/phase-6e-coverage`（项目惯例 phase 末 tests-green + commit）→ 合并 main → push（远程需批准）
-- [ ] 6E 前端诚实度提示（unmapped %/maintenance to-do）：UI 已有 `modeled_traffic_fraction`，加 `unmapped_traffic_fraction`/`unmapped_slugs` 提示；待后端合并后做
-- [ ] App.tsx：保留 Thesis 删除（用户已定）→ 需删 unused import `Cpu, Zap`（否则 web lint 挂）；commit 待批准
-- [ ] `feat/scenario-math`（2281962）合并/丢弃 — 待用户决定
+- [x] 6E 后端实现+验证+**push origin/main**（65463cf；merge c40b088，52 passed+ruff 绿）— done
+- [x] 6E 前端（grok 实现 + Claude 回收修正）+验证+**push origin/main**（414f06e，npm build 绿）— done
+- [x] App.tsx 保留 Thesis 删除 + 清 unused import — committed e56d2a2
+- [x] 沉淀「grok --always-approve 在 CC 内也被拦」→ model-routing-decision-table
+- [ ] **唯一剩余悬挂项**：`feat/scenario-math`（worktree `../llm-carbon-index-6a`，2281962，green-shift 数学抽纯函数+测试，领先 main）合并/丢弃 — 待用户决定
+- [ ] （可选）下次 pipeline 跑出真实 unmapped 模型时，确认维护警告 + UI 提示按预期触发

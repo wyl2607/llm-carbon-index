@@ -23,12 +23,12 @@ slice, not global emissions). Static pipeline → committed JSON → static fron
   `output/latest.json` + `history/{date}.json` (committed by CI). `data/raw/` is cache (gitignored).
 - `web/` — Vite+React+TS dashboard reading `data/output/latest.json`. `scratch/prove_math.py` is the Phase-0 prover.
 
-## Status — MVP (0–5) + Phase 6A–6D done; 6E in progress
+## Status — MVP (0–5) + Phase 6A–6E done
 | Phase | State |
 |---|---|
 | 0 prove-math, 1 ingestion, 2 estimation, 3 output+schema, 4 frontend, 5 methodology+CI | ✅ done, see `specs/INDEX.md` for commit hashes |
 | 6A green-electricity scenarios, 6B market-vs-location, 6C trends+Jevons, 6D water (WUE) | ✅ done (shipped in the premium dashboard; hashes in `specs/INDEX.md`) |
-| 6E coverage automation (scope honesty) | ▶️ in-progress — spec `specs/phase-6e-coverage-automation.md`, live tracker `specs/PHASE6E_ORCHESTRATION.md` |
+| 6E coverage automation (scope honesty) | ✅ done — backend 65463cf + frontend 414f06e; UI note dormant until pipeline emits a non-zero unmapped fraction (all current top models are mapped) |
 
 - Tests: `uv run pytest -q` → 51 collected/green; `uv run ruff check .` clean.
 - `python -m pipeline.run --date latest` produces a schema-valid `latest.json`.
@@ -49,17 +49,14 @@ slice, not global emissions). Static pipeline → committed JSON → static fron
    intensity; without it `grid.py` falls back to annual factors (`FALLBACK_GRID_ANNUAL`).
 3. **🔑 Rotate the OpenRouter key.** It was shared in plaintext during dev; rotate
    it on openrouter.ai and re-set the secret: `gh secret set OPENROUTER_API_KEY --repo wyl2607/llm-carbon-index`.
-4. **Phase 6.** 6A–6D ✅ done (scenarios, market-vs-location, trends/Jevons, water).
-   **6E coverage automation is the one remaining roadmap item** — flag OpenRouter
-   top-list slugs missing from `model_crosswalk.yaml`, emit an unmapped-traffic % +
-   maintenance to-do, and stop silently bucketing unknowns. Spec:
-   `specs/phase-6e-coverage-automation.md`. The gap lives in `pipeline/estimate.py`
-   (~L100, silent defaults when `cw is None`) + `pipeline/output.py` (~L52, uncovered
-   counted only from the `is_other` row → `modeled_traffic_fraction` overstated).
-5. **Loose ends (uncommitted / unmerged) — resolve before the next release:**
-   - `web/src/App.tsx` working tree **deletes the entire Thesis & ESG section** (the
-     CSRD / BibTeX / EU-Taxonomy block built for the German + thesis audience). Not
-     reviewed yet — keep, revert, or intentional? Do not commit blindly.
+4. **Phase 6 — all roadmap items ✅ done.** 6A–6D (scenarios, market-vs-location,
+   trends/Jevons, water) + **6E coverage automation** (flag unmapped top-list slugs,
+   unmapped-traffic % + maintenance to-do, stop silently bucketing unknowns; backend
+   65463cf, frontend 414f06e, spec `specs/phase-6e-coverage-automation.md`). The 6E UI
+   note stays dormant until a top model falls outside `model_crosswalk.yaml` (currently
+   all are mapped → unmapped fraction = 0, which is correct).
+5. **Loose end — unmerged work (decide before next release):** (The App.tsx Thesis & ESG
+   section removal is now committed on main — e56d2a2, per the decision to keep it.)
    - `feat/scenario-math` (worktree `../llm-carbon-index-6a`, commit 2281962) extracts
      the green-shift CO₂ math into a tested pure fn — **ahead of main, unmerged.**
 

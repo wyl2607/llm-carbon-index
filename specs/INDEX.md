@@ -24,7 +24,7 @@ Always-loaded context lives in `/CLAUDE.md` (hard rules) and these three governa
 | 6B | `phase-6b-market-vs-location.md` | market-vs-location accounting              | ✅ done (181fbc9)   |
 | 6C | `phase-6plus-roadmap.md`         | historical trends + Jevons paradox         | ✅ done (6263729)   |
 | 6D | `phase-6plus-roadmap.md`         | water footprint WUE                        | ✅ done (e07ec8e)   |
-| 6E | `phase-6e-coverage-automation.md` | coverage automation / scope honesty (live tracker: `PHASE6E_ORCHESTRATION.md`) | ▶️ in-progress |
+| 6E | `phase-6e-coverage-automation.md` | coverage automation / scope honesty (live tracker: `PHASE6E_ORCHESTRATION.md`) | ✅ done (65463cf backend + 414f06e frontend) |
 
 When a phase is finished, update its row to ✅ and note the commit hash.
 
