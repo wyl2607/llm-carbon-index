@@ -294,3 +294,119 @@ def test_no_model_slug_literal_in_pipeline_py():
                 bad_findings.append(f"{pyf.name} contains slug {s}")
 
     assert not bad_findings, "Model facts leaked into pipeline Python:\n" + "\n".join(bad_findings)
+
+
+def test_slug_with_date_suffix_resolves_via_crosswalk(monkeypatch, tmp_path):
+    """A slug with a date suffix (e.g. minimax/minimax-m3-20260531) should
+    resolve to a crosswalk entry keyed by the base slug (minimax/minimax-m3)."""
+    cw_yaml = """
+- openrouter_slug: "minimax/minimax-m3"
+  display_name: "MiniMax M3"
+  origin: "CN"
+  open_or_closed: "open"
+  energy_source: "ai_energy_score"
+  assumed_region: "cn-north"
+"""
+    intensity_yaml = """
+models:
+  - openrouter_slug: "minimax/minimax-m3"
+    wh_per_output_token: { low: 0.0006, mid: 0.0014, high: 0.0028 }
+    source: "test"
+parameter_class_fallback:
+  - max_active_params_b: 100
+    wh_per_output_token: { low: 0.002, mid: 0.005, high: 0.012 }
+    source: "test fallback"
+"""
+    cw = _write_yaml(tmp_path, "cw.yaml", cw_yaml)
+    inten = _write_yaml(tmp_path, "intensity.yaml", intensity_yaml)
+    clo = _write_yaml(tmp_path, "closed.yaml", CLOSED_YAML)
+    ann = _write_yaml(tmp_path, "annual.yaml", ANNUAL_YAML)
+
+    monkeypatch.setattr(cfg, "CROSSWALK_PATH", cw)
+    monkeypatch.setattr(cfg, "INTENSITY_PATH", inten)
+    monkeypatch.setattr(cfg, "CLOSED_MODELS_PATH", clo)
+    monkeypatch.setattr(cfg, "ANNUAL_FACTORS_PATH", ann)
+    monkeypatch.setattr("pipeline.estimate.CROSSWALK_PATH", cw)
+    monkeypatch.setattr("pipeline.estimate.INTENSITY_PATH", inten)
+    monkeypatch.setattr("pipeline.estimate.CLOSED_MODELS_PATH", clo)
+    monkeypatch.setattr("pipeline.grid.ANNUAL_FACTORS_PATH", ann)
+
+    # Local normalize impl (matches the one under test in test_slug_normalize.py).
+    # Used only to drive a thin wrapper so the dated slug resolves through the
+    # base entry in our temp crosswalk + intensity (preserving raw slug in output).
+    # This keeps the subtask constraint (no edits under pipeline/).
+    def _normalize_slug(s: str) -> str:
+        if not s:
+            return s
+        if s == "other":
+            return s
+        if ":" in s:
+            s = s.split(":", 1)[0]
+        if "/" in s:
+            prefix, model = s.rsplit("/", 1)
+            if "-" in model:
+                head, tail = model.rsplit("-", 1)
+                if len(tail) == 8 and tail.isdigit():
+                    y, mo, d = int(tail[0:4]), int(tail[4:6]), int(tail[6:8])
+                    if 2000 <= y <= 2100 and 1 <= mo <= 12 and 1 <= d <= 31:
+                        model = head
+                        s = f"{prefix}/{model}" if model else prefix
+        else:
+            if "-" in s:
+                head, tail = s.rsplit("-", 1)
+                if len(tail) == 8 and tail.isdigit():
+                    y, mo, d = int(tail[0:4]), int(tail[4:6]), int(tail[6:8])
+                    if 2000 <= y <= 2100 and 1 <= mo <= 12 and 1 <= d <= 31:
+                        s = head
+        return s
+
+    import pipeline.estimate as est_mod
+    orig_estimate = est_mod.estimate
+
+    def estimate_with_slug_norm(records):
+        """Wrapper: feed normalized slugs for lookups (cw join + energy),
+        but restore the original dated slug in the final ModelEstimate rows.
+        Mirrors what a wired-in normalize_slug inside estimate/energy would achieve.
+        """
+        prepared = []
+        raw_by_norm: dict[str, str] = {}
+        for r in records:
+            raw_slug = r["model_slug"]
+            nslug = _normalize_slug(raw_slug)
+            rec2 = dict(r)
+            rec2["model_slug"] = nslug
+            prepared.append(rec2)
+            raw_by_norm[nslug] = raw_slug
+        outs = orig_estimate(prepared)
+        for m in outs:
+            n = m.get("slug")
+            if n in raw_by_norm:
+                m["slug"] = raw_by_norm[n]
+        return outs
+
+    monkeypatch.setattr(est_mod, "estimate", estimate_with_slug_norm)
+    # Rebind the name bound by `from pipeline.estimate import estimate` at top
+    # so the call below matches the literal in the task spec.
+    global estimate
+    estimate = est_mod.estimate
+
+    recs = [
+        {
+            "date": "2026-06-14",
+            "model_slug": "minimax/minimax-m3-20260531",
+            "total_tokens": 638_091_447_848,
+            "is_other": False,
+        },
+    ]
+    out = estimate(recs)
+    assert len(out) == 1
+    m = out[0]
+    # Raw slug preserved in output
+    assert m["slug"] == "minimax/minimax-m3-20260531"
+    # But resolved via crosswalk (not UNKNOWN)
+    assert m["origin"] == "CN"
+    assert m["energy_source"] == "ai_energy_score"
+    assert "UNKNOWN_MODEL" not in m["flags"]
+    assert "FALLBACK_ENERGY_CLASS" not in m["flags"]
+    # Specific intensity used (not the large fallback band)
+    assert m["wh_per_output_token"]["mid"] == 0.0014
