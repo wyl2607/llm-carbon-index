@@ -279,7 +279,11 @@ def test_no_model_slug_literal_in_pipeline_py():
     cw_path = cfg.CROSSWALK_PATH
     data = yaml.safe_load(cw_path.read_text(encoding="utf-8")) or []
     slugs = [e["openrouter_slug"] for e in data if e.get("openrouter_slug")]
-    providers = [e.get("assumed_provider") for e in data if e.get("assumed_provider")]
+    # Only model SLUGS are scanned (phase-2 spec: "no model slug literal in
+    # pipeline/*.py"). Provider ids (e.g. "meta") are intentionally NOT
+    # substring-scanned: they collide with the OpenRouter response envelope field
+    # "meta" and common words like "metadata", causing false positives in the
+    # ingestion I/O modules. Slugs (provider/model form) are unambiguous.
 
     bad_findings: list[str] = []
     pipeline_dir = Path(__file__).resolve().parents[1] / "pipeline"
@@ -288,8 +292,5 @@ def test_no_model_slug_literal_in_pipeline_py():
         for s in slugs:
             if s and s in text:
                 bad_findings.append(f"{pyf.name} contains slug {s}")
-        for p in providers:
-            if p and p in text:
-                bad_findings.append(f"{pyf.name} contains provider {p}")
 
     assert not bad_findings, "Model facts leaked into pipeline Python:\n" + "\n".join(bad_findings)
