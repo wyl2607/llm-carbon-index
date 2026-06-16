@@ -9,17 +9,17 @@ interface Props {
 
 export const AccountingToggle: React.FC<Props> = ({ method, onChange }) => {
   return (
-    <div className="inline-flex  overflow-hidden border border-border text-xs font-medium bg-bg-card">
+    <div className="inline-flex rounded-lg overflow-hidden border border-[#242924] text-xs font-medium bg-[#0a0c0a]">
       <button
         onClick={() => onChange('location')}
-        className={`px-3.5 py-1 transition ${method === 'location' ? 'bg-white text-black' : 'text-text hover:bg-bg-card'}`}
+        className={`px-3.5 py-1 transition ${method === 'location' ? 'bg-white text-black' : 'text-[#a1a6a1] hover:bg-[#111411]'}`}
         title="Physical grid emissions (location of inference)"
       >
         Location
       </button>
       <button
         onClick={() => onChange('market')}
-        className={`px-3.5 py-1 transition border-l border-border ${method === 'market' ? 'bg-white text-black' : 'text-text hover:bg-bg-card'}`}
+        className={`px-3.5 py-1 transition border-l border-[#242924] ${method === 'market' ? 'bg-white text-black' : 'text-[#a1a6a1] hover:bg-[#111411]'}`}
         title="Market-based (incl. RECs / PPAs)"
       >
         Market

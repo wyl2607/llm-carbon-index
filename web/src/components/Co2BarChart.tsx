@@ -24,16 +24,16 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payl
   if (!active || !payload || !payload.length) return null;
   const p = payload[0].payload;
   return (
-    <div className="bg-bg-card border border-border p-3   text-sm text-text">
+    <div className="bg-[#121512] border border-[#242924] p-3 rounded-lg shadow-lg text-sm text-[#e4e7e4]">
       <div className="font-semibold text-white mb-1">{p.full}</div>
       <div className="mb-1">
         <span className="font-medium">CO₂:</span> {p.co2.toLocaleString()} kg
       </div>
-      <div className="text-xs text-text mt-2">
-        <span className="inline-block px-1.5 py-0.5 bg-bg-card rounded mr-1 border border-border">
+      <div className="text-xs text-[#a1a6a1] mt-2">
+        <span className="inline-block px-1.5 py-0.5 bg-[#1a1f1a] rounded mr-1 border border-[#242924]">
           {p.open_or_closed}
         </span>
-        <span className="inline-block px-1.5 py-0.5 bg-bg-card rounded border border-border">
+        <span className="inline-block px-1.5 py-0.5 bg-[#1a1f1a] rounded border border-[#242924]">
           {p.origin}
         </span>
       </div>
@@ -107,7 +107,7 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false,
         {onToggleShowAll && (
           <button
             onClick={onToggleShowAll}
-            className="text-xs px-3 py-1  border border-border hover:bg-bg-card text-text"
+            className="text-xs px-3 py-1 rounded-lg border border-[#242924] hover:bg-[#161916] text-[#a1a6a1]"
           >
             {showAll ? 'Show Top 15' : `Show All (${models.length})`}
           </button>
@@ -140,7 +140,7 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false,
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      <div className="text-[10px] text-text mt-1 text-center">
+      <div className="text-[10px] text-[#717771] mt-1 text-center">
         Mid + low/high whiskers. Grouped by {groupBy.replace('_', ' ')}. {showAll ? 'All models shown.' : 'Top 15 + others aggregated for readability.'}
       </div>
     </div>

@@ -55,9 +55,9 @@ export const OriginDonut: React.FC<Props> = ({ models }) => {
 
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs mt-1">
         {data.map(d => (
-          <div key={d.name} className="flex items-center gap-1.5 text-text">
-            <span className="inline-block w-2.5 h-2.5 " style={{background: COLORS[d.name]}} />
-            {d.name} <span className="font-mono text-text/70">{((d.value / total) * 100).toFixed(0)}%</span>
+          <div key={d.name} className="flex items-center gap-1.5 text-[#a1a6a1]">
+            <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{background: COLORS[d.name]}} />
+            {d.name} <span className="font-mono text-[#e4e7e4]/70">{((d.value / total) * 100).toFixed(0)}%</span>
           </div>
         ))}
       </div>
