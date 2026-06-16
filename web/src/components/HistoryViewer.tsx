@@ -34,17 +34,17 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
       <div className="card p-6">
         <div className="mb-5">
           <h2 className="font-bold">{tt.historyTitle}</h2>
-          <p className="text-xs text-[#717771] mt-0.5">Tracking volume vs. efficiency over time.</p>
+          <p className="text-xs text-text mt-0.5">Tracking volume vs. efficiency over time.</p>
         </div>
-        <div className="rounded-xl border border-dashed border-[#242924] bg-[#0c0f0c] px-6 py-10 text-center">
-          <div className="text-sm font-semibold text-[#a1a6a1]">{tt.historyCollecting}</div>
-          <div className="mt-1.5 text-xs text-[#717771]">
+        <div className=" border border-dashed border-border bg-bg-card px-6 py-10 text-center">
+          <div className="text-sm font-semibold text-text">{tt.historyCollecting}</div>
+          <div className="mt-1.5 text-xs text-text">
             {tt.historyCollectingSub.replace('{n}', String(data.length)).replace('{min}', String(MIN_TREND_DAYS))}
           </div>
         </div>
-        <div className="mt-5 p-4 rounded-xl border border-[#242924] bg-[#0c0f0c] text-sm">
-          <div className="font-semibold mb-1 text-emerald-400">{tt.jevonsTitle}</div>
-          <p className="text-[#a1a6a1] leading-snug text-[13px]">{tt.jevonsBody}</p>
+        <div className="mt-5 p-4  border border-border bg-bg-card text-sm">
+          <div className="font-semibold mb-1 text-accent">{tt.jevonsTitle}</div>
+          <p className="text-text leading-snug text-[13px]">{tt.jevonsBody}</p>
         </div>
       </div>
     );
@@ -61,12 +61,12 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
     <div className="card p-6">
       <div className="mb-5">
         <h2 className="font-bold">{tt.historyTitle}</h2>
-        <p className="text-xs text-[#717771] mt-0.5">Tracking volume vs. efficiency over time.</p>
+        <p className="text-xs text-text mt-0.5">Tracking volume vs. efficiency over time.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
         <div>
-          <div className="text-xs font-semibold text-[#a1a6a1] mb-2">{tt.historyCo2}</div>
+          <div className="text-xs font-semibold text-text mb-2">{tt.historyCo2}</div>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
@@ -86,7 +86,7 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
           </div>
         </div>
         <div>
-          <div className="text-xs font-semibold text-[#a1a6a1] mb-2">{tt.historyEff}</div>
+          <div className="text-xs font-semibold text-text mb-2">{tt.historyEff}</div>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
@@ -107,9 +107,9 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
         </div>
       </div>
 
-      <div className="mt-5 p-4 rounded-xl border border-[#242924] bg-[#0c0f0c] text-sm">
-        <div className="font-semibold mb-1 text-emerald-400">{tt.jevonsTitle}</div>
-        <p className="text-[#a1a6a1] leading-snug text-[13px]">{tt.jevonsBody}</p>
+      <div className="mt-5 p-4  border border-border bg-bg-card text-sm">
+        <div className="font-semibold mb-1 text-accent">{tt.jevonsTitle}</div>
+        <p className="text-text leading-snug text-[13px]">{tt.jevonsBody}</p>
       </div>
     </div>
   );

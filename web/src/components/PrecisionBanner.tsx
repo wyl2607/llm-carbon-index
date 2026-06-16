@@ -27,12 +27,12 @@ export const PrecisionBanner: React.FC<Props> = ({ precision, lang = 'en' }) => 
     <div
       role="note"
       aria-label="Estimation precision note"
-      className="card p-4 text-sm border-sky-900/40 bg-[#0b1014]"
+      className="card p-4 text-sm border-sky-900/40 bg-bg-card"
     >
       <div className="uppercase tracking-[1px] text-sky-400 text-xs font-bold flex items-center gap-2 mb-1.5">
         <span>◷</span> {tt.precisionTitle}
       </div>
-      <p className="text-[#c7c9c3] leading-snug font-medium">
+      <p className="text-text leading-snug font-medium">
         {tt.precisionHeadline(energyPct, gridPct)}
       </p>
       <p className="text-[12px] text-sky-300/80 mt-1.5 border-l-2 border-sky-800/60 pl-2.5">
