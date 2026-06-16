@@ -228,7 +228,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
       )}
 
       <div className="overflow-x-auto rounded-2xl border border-[#242924] bg-[#121512]">
-        <table className={`min-w-[${hasWater ? '980' : '880'}px] w-full text-sm`}>
+        <table className={`${hasWater ? 'min-w-[980px]' : 'min-w-[880px]'} w-full text-sm`}>
           <thead>
             <tr>
               {header(tt.colModel)}
