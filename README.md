@@ -52,7 +52,7 @@ GitHub Actions cron (Phase 5).
 | 3 | Carbon + grid + green substitution (`estimate_carbon.py`) | ✅ done |
 | 4 | Output assembly + frontend (`build_outputs.py`, `web/`) | ✅ done |
 | 5 | Methodology doc + CI + deploy | ✅ done |
-| 6 | Advanced features (6A–6E: green scenarios, coverage; 6G–6K: provenance, reproducibility, fairness, sensitivity) | ✅ 6A–6I done, ✅ 6A–6L done |
+| 6 | Advanced features (6A–6E: green scenarios, coverage; 6G–6L: provenance, reproducibility, fairness, sensitivity, etc) | ✅ 6A–6L done |
 
 ## File manifest — what a complete project here needs
 
@@ -84,8 +84,6 @@ llm-carbon-index/
 │   ├── estimate_carbon.py          ✅ Phase 3
 │   ├── build_outputs.py            ✅ Phase 4
 │   └── sensitivity.py              ✅ Phase 6K
-├── scratch/
-│   └── prove_math.py               ✅ Phase 0 throwaway prover
 ├── tests/
 │   ├── test_prove_math.py          ✅ conversion guards + sanity + ranges
 │   ├── test_energy.py              ✅ Phase 2
@@ -111,19 +109,6 @@ llm-carbon-index/
     └── PULL_REQUEST_TEMPLATE.md    ✅ constraint checklist
 ```
 
-## Reproduce Phase 0 locally
-
-```bash
-cp .env.example .env            # then set OPENROUTER_API_KEY (never committed)
-export $(grep -v '^#' .env | xargs)
-python3 scratch/prove_math.py   # pull 1 day, estimate Wh → gCO2 for one model
-uv run pytest                   # or: pip install pytest && pytest
-uv run ruff check .             # lint (incl. flake8-bandit secret checks)
-```
-
-Without a key or network, the prover prints a clearly-labelled **illustrative
-sample** so the math is demonstrable; it never presents a sample as live data.
-
 ## Reproduce & verify
 
 To reproduce a published daily run from its exact frozen inputs (Phase 6H):
@@ -142,3 +127,4 @@ See `docs/methodology.md` §11 for snapshot layout, `manifest.json` checksums, g
 - Rankings: `Source: OpenRouter (openrouter.ai/rankings), as of {date}`.
 - Grid intensity: Electricity Maps (live, Phase 3) + Ember/IEA annual fallbacks.
 - Energy: EcoLogits + Hugging Face AI Energy Score. See [`docs/methodology.md`](docs/methodology.md).
+Hugging Face AI Energy Score. See [`docs/methodology.md`](docs/methodology.md).
