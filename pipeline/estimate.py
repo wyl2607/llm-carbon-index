@@ -9,6 +9,8 @@ No model facts (slugs, params, regions, intensities) live in this file.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import yaml
 
 from pipeline.carbon import co2_kg, embodied_co2_kg, total_lca_co2_kg
@@ -28,6 +30,42 @@ from pipeline.types import ModelEstimate, NormalizedRecord
 from pipeline.water import water_liters
 
 
+def _load_yaml_list(path: Path) -> list[dict]:
+    """Load a YAML file expected to be a list of dicts.
+
+    Replicates the exact original pattern used for crosswalk, closed_models,
+    vendor_claims etc.:
+      - utf-8 open
+      - yaml.safe_load
+      - if list: keep only dict items
+      - ANY exception (FileNotFound, parse error, etc.) or wrong type -> []
+    This ensures 100% identical fallback behavior and is the direct analogue
+    of the _as_range extraction.
+    """
+    items: list[dict] = []
+    try:
+        with open(path, encoding="utf-8") as f:
+            loaded = yaml.safe_load(f)
+            if isinstance(loaded, list):
+                items = [e for e in loaded if isinstance(e, dict)]
+    except Exception:
+        items = []
+    return items
+
+
+def _load_yaml_dict(path: Path) -> dict:
+    """Same pattern for YAML files expected to be a top-level dict (intensity, factors)."""
+    data: dict = {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            loaded = yaml.safe_load(f)
+            if isinstance(loaded, dict):
+                data = loaded
+    except Exception:
+        data = {}
+    return data
+
+
 def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
     """Compute per-model energy + CO2 estimates for the supplied normalized records.
 
@@ -35,45 +73,16 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
     is handled in totals by Phase 3). Every row carries full ranges; no bare numbers.
     """
     # --- load injected data tables (I/O isolated here; pure funcs receive dicts) ---
-    crosswalk: list[dict] = []
-    try:
-        with open(CROSSWALK_PATH, encoding="utf-8") as f:
-            loaded = yaml.safe_load(f)
-            if isinstance(loaded, list):
-                crosswalk = [e for e in loaded if isinstance(e, dict)]
-    except Exception:
-        crosswalk = []
+    crosswalk: list[dict] = _load_yaml_list(CROSSWALK_PATH)
+    intensity: dict = _load_yaml_dict(INTENSITY_PATH)
 
-    intensity: dict = {}
-    try:
-        with open(INTENSITY_PATH, encoding="utf-8") as f:
-            loaded = yaml.safe_load(f)
-            if isinstance(loaded, dict):
-                intensity = loaded
-    except Exception:
-        intensity = {}
-
-    closed_list: list[dict] = []
-    try:
-        with open(CLOSED_MODELS_PATH, encoding="utf-8") as f:
-            loaded = yaml.safe_load(f)
-            if isinstance(loaded, list):
-                closed_list = [e for e in loaded if isinstance(e, dict)]
-    except Exception:
-        closed_list = []
+    closed_list: list[dict] = _load_yaml_list(CLOSED_MODELS_PATH)
 
     closed_map: dict[str, dict] = {
         (e.get("provider") or ""): e for e in closed_list if e.get("provider")
     }
 
-    vendor_claims_list: list[dict] = []
-    try:
-        with open(VENDOR_CLAIMS_PATH, encoding="utf-8") as f:
-            loaded = yaml.safe_load(f)
-            if isinstance(loaded, list):
-                vendor_claims_list = [e for e in loaded if isinstance(e, dict)]
-    except Exception:
-        vendor_claims_list = []
+    vendor_claims_list: list[dict] = _load_yaml_list(VENDOR_CLAIMS_PATH)
 
     vendor_claims_map: dict[str, float] = {
         (e.get("provider") or ""): float(e.get("annual_renewable_match_pct", 0))
@@ -82,14 +91,7 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
 
     # v0.2 methodology factors (PUE band, prefill alpha, embodied ratio, water split).
     # Loaded here at the I/O boundary; pure math funcs receive Ranges/scalars.
-    factors: dict = {}
-    try:
-        with open(METHODOLOGY_FACTORS_PATH, encoding="utf-8") as f:
-            loaded = yaml.safe_load(f)
-            if isinstance(loaded, dict):
-                factors = loaded
-    except Exception:
-        factors = {}
+    factors: dict = _load_yaml_dict(METHODOLOGY_FACTORS_PATH)
 
     def _range(d: dict | None, lo: float, mi: float, hi: float) -> Range:
         d = d or {}

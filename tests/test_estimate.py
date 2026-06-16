@@ -22,7 +22,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pipeline.config as cfg
-from pipeline.estimate import estimate
+from pipeline.estimate import _load_yaml_dict, _load_yaml_list, estimate
 from pipeline.types import NormalizedRecord
 
 # --- realistic temp data for integration (subset of seeded) ---
@@ -420,3 +420,69 @@ parameter_class_fallback:
     assert "FALLBACK_ENERGY_CLASS" not in m["flags"]
     # Specific intensity used (not the large fallback band)
     assert m["wh_per_output_token"]["mid"] == 0.0014
+
+
+# =============================================================================
+# Direct unit tests for the extracted private YAML loaders
+# (placed here because they are currently used only by estimate;
+#  follows the same pattern as the _as_range tests in test_water.py)
+# =============================================================================
+
+def test_load_yaml_list_success(tmp_path):
+    """Normal load: list of mixed items; only dicts kept (exact original filter logic)."""
+    p = tmp_path / "good_list.yaml"
+    content = """
+- a: 1
+- b: 2
+- not_a_dict
+- 123
+- c: 3
+"""
+    p.write_text(content, encoding="utf-8")
+    result = _load_yaml_list(p)
+    assert result == [{"a": 1}, {"b": 2}, {"c": 3}]
+
+
+def test_load_yaml_dict_success(tmp_path):
+    """Normal load for dict-expected files (intensity, methodology_factors)."""
+    p = tmp_path / "good_dict.yaml"
+    p.write_text("pue:\n  low: 1.1\n  mid: 1.25\n  high: 1.56\n", encoding="utf-8")
+    result = _load_yaml_dict(p)
+    assert result == {"pue": {"low": 1.1, "mid": 1.25, "high": 1.56}}
+
+
+def test_load_yaml_list_missing_file(tmp_path):
+    p = tmp_path / "does_not_exist.yaml"
+    assert _load_yaml_list(p) == []
+
+
+def test_load_yaml_dict_missing_file(tmp_path):
+    p = tmp_path / "no_dict.yaml"
+    assert _load_yaml_dict(p) == {}
+
+
+def test_load_yaml_list_bad_yaml_format(tmp_path):
+    """Parse error -> empty list (exact original except behavior)."""
+    p = tmp_path / "bad.yaml"
+    p.write_text("key: [ unclosed: list", encoding="utf-8")
+    assert _load_yaml_list(p) == []
+
+
+def test_load_yaml_dict_bad_yaml_format(tmp_path):
+    p = tmp_path / "bad_dict.yaml"
+    p.write_text("foo: : bar", encoding="utf-8")
+    assert _load_yaml_dict(p) == {}
+
+
+def test_load_yaml_list_wrong_top_level_type(tmp_path):
+    """YAML is a dict but list expected -> empty (if check fails)."""
+    p = tmp_path / "dict_not_list.yaml"
+    p.write_text("foo: bar\n", encoding="utf-8")
+    assert _load_yaml_list(p) == []
+
+
+def test_load_yaml_dict_wrong_top_level_type(tmp_path):
+    """YAML is a list but dict expected -> empty."""
+    p = tmp_path / "list_not_dict.yaml"
+    p.write_text("- 1\n- 2\n", encoding="utf-8")
+    assert _load_yaml_dict(p) == {}
