@@ -159,7 +159,7 @@ function App() {
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-6">
-                <div className="text-sm text-[#717771] font-mono">
+                <div className="text-sm text-[#9ba19b] font-mono">
                   Methodology v{data ? data.methodology_version : '—'} • {data ? data.data_date : '—'}
                 </div>
               </div>
@@ -217,11 +217,11 @@ function App() {
               <div className="text-[11px] font-bold uppercase tracking-widest text-emerald-400/80 mb-3">{tt.lcaTitle}</div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <div className="text-[11px] text-[#717771] mb-0.5">{tt.lcaOperational}</div>
+                  <div className="text-[11px] text-[#9ba19b] mb-0.5">{tt.lcaOperational}</div>
                   <div className="font-mono text-[#e4e7e4]">{formatCO2Range(totals.co2_kg)}</div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-[#717771] mb-0.5">{tt.lcaEmbodied}</div>
+                  <div className="text-[11px] text-[#9ba19b] mb-0.5">{tt.lcaEmbodied}</div>
                   <div className="font-mono text-[#a1a6a1]">{formatCO2Range(totals.co2_kg_embodied)}</div>
                 </div>
                 <div>
@@ -235,7 +235,7 @@ function App() {
                   </div>
                 )}
               </div>
-              <p className="mt-3 text-[11px] text-[#717771] leading-relaxed max-w-3xl">{tt.lcaNote}</p>
+              <p className="mt-3 text-[11px] text-[#9ba19b] leading-relaxed max-w-3xl">{tt.lcaNote}</p>
             </div>
           )}
         </div>
@@ -287,7 +287,7 @@ function App() {
               <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
                 <div>
                   <h2 className="font-bold">{tt.vizTitle}</h2>
-                  <p className="text-xs text-[#717771] mt-0.5">{tt.vizAllNote}</p>
+                  <p className="text-xs text-[#9ba19b] mt-0.5">{tt.vizAllNote}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <GroupToggle groupBy={groupBy} onChange={setGroupBy} />
@@ -317,7 +317,7 @@ function App() {
               <div className="mb-4 flex items-baseline justify-between">
                 <div>
                   <h2 className="font-bold">{tt.tableTitle}</h2>
-                  <p className="text-xs text-[#717771]">{tt.tableSubtitle}</p>
+                  <p className="text-xs text-[#9ba19b]">{tt.tableSubtitle}</p>
                 </div>
                 <div className="text-[11px] text-emerald-400/80 font-medium">{isScenario ? 'SCENARIO VALUES ACTIVE' : 'BASELINE VALUES'}</div>
               </div>
@@ -358,13 +358,13 @@ function App() {
                 </div>
                 <div className="mt-5 pt-4 border-t border-white/5 text-xs text-[#a1a6a1] leading-relaxed space-y-2">
                   <p><strong className="text-emerald-400">CSRD / ESRS E1 — </strong>{tt.csrdExample}</p>
-                  <p className="text-[#717771] italic">{tt.thesisScopeNote}</p>
+                  <p className="text-[#9ba19b] italic">{tt.thesisScopeNote}</p>
                 </div>
               </section>
             )}
 
             {/* Footer actions + full transparency */}
-            <footer className="pt-8 mt-4 border-t border-[#242924] text-xs text-[#717771] flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 justify-between">
+            <footer className="pt-8 mt-4 border-t border-[#242924] text-xs text-[#9ba19b] flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 justify-between">
               <div className="max-w-md">
                 {tt.footerStatic}<br/>
                 <span className="opacity-60">Estimates only. Not global measurement. (c) 2026 Wyl.</span>
