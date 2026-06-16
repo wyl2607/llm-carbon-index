@@ -30,4 +30,4 @@ Built as 2 lanes (grok): Lane E = P5+P6 serial (both `energy.py`); Lane F = P7 (
 3. ✅ **UI Readability — contrast** — muted secondary text `#717771` → `#969c96` (CSS var `--text-muted` + chart-tick / placeholder literals) for WCAG-AA contrast on the dark theme. `tsc -b` + `vite build` green.
    - ↪ *Optional future polish (subjective, deferred to design review):* larger base font / tighter typographic hierarchy / extra spacing on dense tables.
 
-> Note: the UI default language is currently `de` (`App.tsx:34` fallback). Switch to `en` if an English-first default is preferred — left as a product decision.
+> Note: UI default language set to `en` (`App.tsx:34` fallback), English-first; `?lang=zh` / `?lang=de` switch via URL or the in-app toggle.
