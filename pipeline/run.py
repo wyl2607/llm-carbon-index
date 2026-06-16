@@ -8,11 +8,16 @@ Orchestrates: fetch (with cache) -> normalize -> append_normalized (storage)
 from __future__ import annotations
 
 import argparse
+import platform
 from datetime import datetime, timezone
 
+import pipeline.config as config
+from pipeline import METHODOLOGY_VERSION
 from pipeline.estimate import estimate
+from pipeline.manifest import build_run_entry, upsert_run
 from pipeline.openrouter import fetch_rankings_daily, normalize
 from pipeline.output import build_output, write_outputs
+from pipeline.snapshot import code_git_sha, write_snapshot
 from pipeline.storage import append_normalized
 
 
@@ -41,6 +46,19 @@ def run(date: str = "latest") -> dict:
 
     doc = build_output(estimates, day_records, data_date)
     write_outputs(doc)
+
+    # Phase 6H: freeze the run's raw inputs + record checksums so the published output
+    # is independently reproducible (pipeline.verify) and tamper-evident.
+    inputs = write_snapshot(data_date, raw, estimates, METHODOLOGY_VERSION)
+    entry = build_run_entry(
+        data_date=data_date,
+        code_git_sha=code_git_sha(),
+        methodology_version=METHODOLOGY_VERSION,
+        inputs=inputs,
+        output_path=config.OUTPUT_HISTORY_DIR / f"{data_date}.json",
+        tool_versions={"python": platform.python_version()},
+    )
+    upsert_run(entry, config.MANIFEST_PATH)
     return doc
 
 

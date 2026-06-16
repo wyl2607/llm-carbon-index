@@ -182,3 +182,14 @@ in `README.md`.
 - Grid intensity: Electricity Maps (live) + Ember / EPA eGRID (annual fallback),
   recorded per row via `grid_source`.
 - Energy: Hugging Face **AI Energy Score** + **EcoLogits** (E-METHOD).
+
+## 11. Reproduce & verify
+
+A published run for data date `D` is accompanied by a frozen snapshot of its raw inputs under `data/raw/snapshots/{D}/` (the exact OpenRouter rankings response, each grid region response or the annual-factor record that was used, and a `resolved.json` capturing the `data/**/*.yaml` versions via repo git SHA at build time). Secrets and auth headers are never present in snapshots. `make verify {date}` re-executes the pipeline strictly from that snapshot (no network) and asserts that the emitted `data/output/history/{date}.json` is byte-identical to the committed golden (ignoring only the volatile `generated_at` timestamp). `data/output/manifest.json` records per-date `sha256:` checksums over every snapshot input file plus the final output, the code git SHA, methodology version, and tool versions; a third party can therefore independently confirm integrity. All dependencies are pinned via `uv.lock`.
+
+```bash
+git clone https://github.com/wyl2607/llm-carbon-index.git
+cd llm-carbon-index
+uv sync
+make verify 2026-06-14  # expect PASS
+```

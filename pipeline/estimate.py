@@ -9,6 +9,7 @@ No model facts (slugs, params, regions, intensities) live in this file.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 
 import yaml
@@ -66,12 +67,20 @@ def _load_yaml_dict(path: Path) -> dict:
     return data
 
 
-def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
+def estimate(
+    records: list[NormalizedRecord],
+    carbon_intensity_fn: Callable[[str], tuple[float, str, str]] | None = None,
+) -> list[ModelEstimate]:
     """Compute per-model energy + CO2 estimates for the supplied normalized records.
 
     Only non-`is_other` records produce ModelEstimate rows (the `other` aggregate
     is handled in totals by Phase 3). Every row carries full ranges; no bare numbers.
+
+    `carbon_intensity_fn` is the grid lookup; it defaults to the live/annual
+    `pipeline.grid.carbon_intensity`. Phase 6H's `verify` injects a deterministic
+    replay over a frozen snapshot so a run reproduces byte-for-byte offline.
     """
+    grid_lookup = carbon_intensity_fn or carbon_intensity
     # --- load injected data tables (I/O isolated here; pure funcs receive dicts) ---
     crosswalk: list[dict] = _load_yaml_list(CROSSWALK_PATH)
     intensity: dict = _load_yaml_dict(INTENSITY_PATH)
@@ -144,8 +153,8 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
         # 3. kWh = decode(output) + prefill(input) (pure; /1000 guard inside)
         energy_r = energy_kwh(wh_r, est_out, est_in, prefill_alpha)
 
-        # 4. grid (live or annual labelled + provenance source_id)
-        gco2, grid_src, grid_source_id = carbon_intensity(region)
+        # 4. grid (live or annual labelled + provenance source_id; replayable in verify)
+        gco2, grid_src, grid_source_id = grid_lookup(region)
 
         # 5. PUE as a band (A4 revised). A known provider PUE centres the band's mid;
         #    low/high come from the Uptime-informed global band.

@@ -181,3 +181,20 @@ text; the gate caps `claim` length. The compact subset `{id, title, publisher, u
 version, accessed}` of the entries actually referenced by a day's figures is emitted into
 `latest.json` `sources[]` (§1), and each model carries `energy_source_id` / `grid_source_id`
 so every published number is traceable end-to-end.
+
+---
+
+## 7. `data/output/manifest.json` (run manifest — Phase 6H)
+
+```jsonc
+{ "runs": [ {
+    "data_date": "2026-06-14",
+    "code_git_sha": "abc123",
+    "methodology_version": "0.4.0",
+    "tool_versions": { "python": "3.11.x", "ecologits": "x.y" },
+    "inputs": { "openrouter.json": "sha256:...", "grid/us-east.json": "sha256:..." },
+    "output_sha256": "sha256:..."
+} ] }
+```
+
+Snapshots (under `data/raw/snapshots/{data_date}/`) are **inputs** to a run, not published artifacts. Retention policy: keep the last N days' snapshots in-repo; archive or drop older ones. Every `sha256:` value is the digest over the *exact* bytes of the corresponding snapshot file (or the annual-factor fallback record used in place of a grid response).

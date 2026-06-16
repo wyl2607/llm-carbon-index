@@ -19,8 +19,14 @@ node_modules/
 web/dist/
 *.local
 
-# Raw ingested data (committed by CI in later phases, not by hand)
-data/raw/
+# Raw ingested data (committed by CI in later phases, not by hand).
+# Use data/raw/* (not data/raw/) so the snapshots exception below can re-include —
+# git cannot re-include a path whose parent directory is wholly excluded.
+data/raw/*
+# Phase 6H: frozen input snapshots ARE committed — they are the inputs a third
+# party replays to reproduce a published figure (unlike the volatile fetch cache).
+!data/raw/snapshots/
+!data/raw/snapshots/**
 
 # OS / editor
 .DS_Store

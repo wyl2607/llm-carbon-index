@@ -117,6 +117,19 @@ uv run ruff check .             # lint (incl. flake8-bandit secret checks)
 Without a key or network, the prover prints a clearly-labelled **illustrative
 sample** so the math is demonstrable; it never presents a sample as live data.
 
+## Reproduce & verify
+
+To reproduce a published daily run from its exact frozen inputs (Phase 6H):
+
+```bash
+git clone https://github.com/wyl2607/llm-carbon-index.git
+cd llm-carbon-index
+uv sync
+make verify 2026-06-14  # expect PASS
+```
+
+See `docs/methodology.md` §11 for snapshot layout, `manifest.json` checksums, golden-file comparison (ignoring `generated_at`), and the pinned-dep contract.
+
 ## Attribution
 
 - Rankings: `Source: OpenRouter (openrouter.ai/rankings), as of {date}`.
