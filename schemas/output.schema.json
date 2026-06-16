@@ -20,6 +20,7 @@
     "source_citation",
     "scope_note",
     "assumptions",
+    "sources",
     "models",
     "totals"
   ],
@@ -32,6 +33,22 @@
     },
     "source_citation": { "type": "string" },
     "scope_note": { "type": "string" },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "publisher", "url", "version", "accessed"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "publisher": { "type": "string" },
+          "url": { "type": "string" },
+          "version": { "type": "string" },
+          "accessed": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
     "assumptions": {
       "type": "object",
       "required": ["input_output_ratio"],
@@ -59,9 +76,11 @@
           "wh_per_output_token",
           "energy_kwh",
           "energy_source",
+          "energy_source_id",
           "region",
           "carbon_intensity_gco2_kwh",
           "grid_source",
+          "grid_source_id",
           "pue",
           "co2_kg",
           "co2_kg_embodied",
@@ -84,9 +103,11 @@
           "energy_source": {
             "enum": ["ai_energy_score", "ecologits", "parameter_class_fallback"]
           },
+          "energy_source_id": { "type": "string" },
           "region": { "type": "string" },
           "carbon_intensity_gco2_kwh": { "type": "number" },
           "grid_source": { "enum": ["electricity_maps_live", "annual_factor"] },
+          "grid_source_id": { "type": "string" },
           "pue": { "type": "number" },
           "co2_kg": { "$ref": "#/definitions/Range" },
           "co2_kg_embodied": { "$ref": "#/definitions/Range" },

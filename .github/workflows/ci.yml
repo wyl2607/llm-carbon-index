@@ -20,6 +20,9 @@ jobs:
       - name: Lint (ruff, incl. secret/security checks)
         run: uv run ruff check .
 
+      - name: Provenance gate (no unsourced number in data/**/*.yaml)
+        run: uv run python -m pipeline.provenance
+
       - name: Run tests
         # No OPENROUTER_API_KEY in CI for this job: the Phase-0 prover and tests
         # exercise the offline illustrative-sample path. Real keys come from

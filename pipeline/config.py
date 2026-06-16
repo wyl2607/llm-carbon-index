@@ -23,6 +23,18 @@ CLOSED_MODELS_PATH = DATA_DIR / "assumptions" / "closed_models.yaml"
 VENDOR_CLAIMS_PATH = DATA_DIR / "assumptions" / "vendor_claims.yaml"
 METHODOLOGY_FACTORS_PATH = DATA_DIR / "assumptions" / "methodology_factors.yaml"
 ANNUAL_FACTORS_PATH = DATA_DIR / "grid" / "annual_factors.yaml"
+PROVENANCE_SOURCES_PATH = DATA_DIR / "provenance" / "sources.yaml"
+
+# Data YAMLs walked by the Phase 6G "no unsourced number" gate. The provenance
+# registry itself is the source of truth and is excluded from the walk.
+PROVENANCE_GATED_PATHS = (
+    CROSSWALK_PATH,
+    INTENSITY_PATH,
+    CLOSED_MODELS_PATH,
+    VENDOR_CLAIMS_PATH,
+    METHODOLOGY_FACTORS_PATH,
+    ANNUAL_FACTORS_PATH,
+)
 
 OUTPUT_DIR = DATA_DIR / "output"
 OUTPUT_LATEST_PATH = OUTPUT_DIR / "latest.json"

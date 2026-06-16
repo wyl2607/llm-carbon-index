@@ -60,9 +60,11 @@ class ModelEstimate(TypedDict):
     wh_per_output_token: RangeDict
     energy_kwh: RangeDict
     energy_source: EnergySource
+    energy_source_id: str
     region: str
     carbon_intensity_gco2_kwh: float
     grid_source: GridSource
+    grid_source_id: str
     pue: float
     co2_kg: RangeDict
     co2_kg_embodied: RangeDict
@@ -79,6 +81,21 @@ class UnmappedSlugEntry(TypedDict):
 
     slug: str
     total_tokens: int
+
+
+class Source(TypedDict):
+    """Phase 6G: compact provenance entry emitted in latest.json `sources[]`.
+
+    The full registry (with locator/license/claim) lives in
+    data/provenance/sources.yaml; this is the self-describing subset.
+    """
+
+    id: str
+    title: str
+    publisher: str
+    url: str
+    version: str
+    accessed: str
 
 
 class Totals(TypedDict):

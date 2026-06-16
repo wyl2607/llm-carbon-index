@@ -24,9 +24,11 @@ export interface Model {
   wh_per_output_token: Range;
   energy_kwh: Range;
   energy_source: EnergySource | string;
+  energy_source_id?: string;
   region: string;
   carbon_intensity_gco2_kwh: number;
   grid_source: GridSource | string;
+  grid_source_id?: string;
   pue: number;
   co2_kg: Range;
   co2_kg_embodied?: Range;
@@ -68,6 +70,15 @@ export interface Totals {
   by_open_closed: Record<string, { co2_kg: Range, co2_kg_market?: Range, water_liters?: Range }>;
 }
 
+export interface Source {
+  id: string;
+  title: string;
+  publisher: string;
+  url: string;
+  version: string;
+  accessed: string;
+}
+
 export interface LatestData {
   methodology_version: string;
   generated_at: string;
@@ -82,6 +93,7 @@ export interface LatestData {
     embodied_ratio_of_operational?: string;
     water_l_per_kwh?: string;
   };
+  sources?: Source[];
   models: Model[];
   totals: Totals;
 }

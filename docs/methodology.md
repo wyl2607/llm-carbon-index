@@ -109,6 +109,22 @@ count companion (`models_measured` / `models_total`, `grid_live_models`) is also
 published for legible UI copy. This block introduces **no new sourced numbers**;
 it only reports what the per-row flags already imply.
 
+### 4b. Provenance & verifiability (`sources.yaml` + gate, methodology v0.4.0)
+
+CLAUDE.md's "no magic numbers" rule is now **machine-enforced**. `data/provenance/sources.yaml`
+is a structured registry — one entry per source (`id`, `title`, `publisher`, `url`, `version`,
+`accessed`, `locator`, `license`, `claim`) — and **every** numeric record in `data/**/*.yaml`
+carries a `source_id` (or `source_ids`) that must resolve to a registry `id`. The build gate
+`pipeline/provenance.py` (`python -m pipeline.provenance`, also a pytest test and a CI step)
+**fails on any unsourced number**, so no later phase can silently introduce one. This is the
+backbone of the project's *可被验证 / 溯源* (verifiable / traceable) goal.
+
+The published `latest.json` is self-describing: it carries a top-level `sources[]` array — the
+compact subset of the registry actually referenced that day — and every model row carries
+`energy_source_id` and `grid_source_id`, so each figure traces to its source. To respect source
+copyright, each registry `claim` is a **short paraphrase plus a locator**, never reproduced
+source text (the gate caps claim length).
+
 ## 5. Scope & limitations
 
 - **Coverage is partial.** Only OpenRouter-visible API traffic;

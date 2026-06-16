@@ -53,6 +53,7 @@ INTENSITY_MINI = {
             "openrouter_slug": "minimax/minimax-m2.5",
             "wh_per_output_token": {"low": 0.0008, "mid": 0.0015, "high": 0.003},
             "source": "AI Energy Score v2; see ASSUMPTIONS.md#E-MINIMAX-M2.5",
+            "source_id": "E-MINIMAX-M2.5",
         }
     ],
     "parameter_class_fallback": [
@@ -60,35 +61,41 @@ INTENSITY_MINI = {
             "max_active_params_b": 15,
             "wh_per_output_token": {"low": 0.0005, "mid": 0.0012, "high": 0.0025},
             "source": "ASSUMPTIONS.md#E-CLASS-SMALL",
+            "source_id": "E-CLASS-SMALL",
         },
         {
             "max_active_params_b": 100,
             "wh_per_output_token": {"low": 0.002, "mid": 0.005, "high": 0.012},
             "source": "ASSUMPTIONS.md#E-CLASS-LARGE",
+            "source_id": "E-CLASS-LARGE",
         },
     ],
 }
 
 
 def test_known_model_exact_lookup_and_no_flag():
-    wh, src, flags = wh_per_output_token("minimax/minimax-m2.5", CROSSWALK_MINI, INTENSITY_MINI)
+    wh, src, flags, sid = wh_per_output_token(
+        "minimax/minimax-m2.5", CROSSWALK_MINI, INTENSITY_MINI
+    )
     assert isinstance(wh, Range)
     assert wh.low == 0.0008 and wh.mid == 0.0015 and wh.high == 0.003
     assert src == "ai_energy_score"
+    assert sid == "E-MINIMAX-M2.5"  # Phase 6G: per-figure provenance source_id
     assert flags == []
 
 
 def test_unknown_slug_gets_unknown_and_class_fallback():
-    wh, src, flags = wh_per_output_token("foo/unknown-xyz", CROSSWALK_MINI, INTENSITY_MINI)
+    wh, src, flags, sid = wh_per_output_token("foo/unknown-xyz", CROSSWALK_MINI, INTENSITY_MINI)
     assert src == "parameter_class_fallback"
     assert "UNKNOWN_MODEL" in flags
     assert "FALLBACK_ENERGY_CLASS" in flags
     # conservative large band chosen for unknown
     assert wh.mid == 0.005
+    assert sid == "E-CLASS-LARGE"  # fallback band's provenance source_id
 
 
 def test_explicit_param_fallback_in_cw():
-    wh, src, flags = wh_per_output_token("openai/gpt-4o", CROSSWALK_MINI, INTENSITY_MINI)
+    wh, src, flags, sid = wh_per_output_token("openai/gpt-4o", CROSSWALK_MINI, INTENSITY_MINI)
     assert src == "parameter_class_fallback"
     assert "FALLBACK_ENERGY_CLASS" in flags
     assert wh.low == 0.002  # large band
@@ -96,7 +103,7 @@ def test_explicit_param_fallback_in_cw():
 
 def test_missing_intensity_row_falls_back():
     cw = [{"openrouter_slug": "bar/missing", "energy_source": "ai_energy_score"}]
-    wh, src, flags = wh_per_output_token("bar/missing", cw, INTENSITY_MINI)
+    wh, src, flags, sid = wh_per_output_token("bar/missing", cw, INTENSITY_MINI)
     assert src == "parameter_class_fallback"
     assert "FALLBACK_ENERGY_CLASS" in flags
 

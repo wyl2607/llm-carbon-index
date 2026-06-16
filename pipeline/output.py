@@ -15,6 +15,7 @@ import jsonschema
 import pipeline.config as config
 from pipeline import METHODOLOGY_VERSION
 from pipeline.precision import energy_tier, grid_tier, precision_fractions
+from pipeline.provenance import compact_sources, load_sources
 from pipeline.types import ModelEstimate, NormalizedRecord
 
 log = logging.getLogger(__name__)
@@ -195,6 +196,14 @@ def build_output(
         "by_open_closed": by_open_closed,
     }
 
+    # Phase 6G provenance: emit the compact registry entries actually referenced by
+    # this day's per-figure source_ids, so the artifact is self-describing/traceable.
+    sources_registry = load_sources()
+    referenced_ids = {m.get("energy_source_id") for m in estimates}
+    referenced_ids |= {m.get("grid_source_id") for m in estimates}
+    referenced_ids.discard(None)
+    sources = compact_sources(referenced_ids, sources_registry)
+
     doc: dict = {
         "methodology_version": METHODOLOGY_VERSION,
         "generated_at": generated_at,
@@ -202,6 +211,7 @@ def build_output(
         "source_citation": source_citation,
         "scope_note": scope_note,
         "assumptions": assumptions,
+        "sources": sources,
         "models": list(estimates),
         "totals": totals,
     }

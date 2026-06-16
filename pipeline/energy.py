@@ -13,8 +13,8 @@ from pipeline.types import EnergySource
 
 def wh_per_output_token(
     slug: str, crosswalk: list[dict], intensity_table: dict
-) -> tuple[Range, EnergySource, list[str]]:
-    """Return (wh_per_output_token Range, energy_source, flags).
+) -> tuple[Range, EnergySource, list[str], str]:
+    """Return (wh_per_output_token Range, energy_source, flags, source_id).
 
     Lookup order (see DATA_SCHEMAS §3 and phase-2 spec):
     - absent slug -> UNKNOWN_MODEL + parameter_class_fallback band
@@ -22,8 +22,10 @@ def wh_per_output_token(
     - else exact match in intensity models
     - declared source but no row -> FALLBACK_ENERGY_CLASS + band
 
-    Returned energy_source is always a valid EnergySource literal.
-    Flags contain UNKNOWN_MODEL / FALLBACK_ENERGY_CLASS as applicable (no silent 0).
+    Returned energy_source is always a valid EnergySource literal. source_id is the
+    provenance key of the selected model/band (Phase 6G), so every published energy
+    figure is traceable. Flags contain UNKNOWN_MODEL / FALLBACK_ENERGY_CLASS as
+    applicable (no silent 0).
     """
     flags: list[str] = []
 
@@ -47,12 +49,13 @@ def wh_per_output_token(
         bands = (intensity_table or {}).get("parameter_class_fallback", [])
         band = _choose_fallback_band(bands)
         whd = band["wh_per_output_token"]
-        # source string from the band (points to ASSUMPTIONS); we still emit
-        # energy_source literal "parameter_class_fallback"
+        # source_id from the band (Phase 6G); we still emit the energy_source
+        # literal "parameter_class_fallback"
         return (
             Range(whd["low"], whd["mid"], whd["high"]),
             "parameter_class_fallback",
             flags,
+            band.get("source_id", "E-CLASS-LARGE"),
         )
 
     # 2. specific model intensity
@@ -61,7 +64,12 @@ def wh_per_output_token(
         if m.get("openrouter_slug") == normalize_slug(slug):
             whd = m["wh_per_output_token"]
             # declared_source from cw is canonical for the output field
-            return Range(whd["low"], whd["mid"], whd["high"]), declared_source, flags
+            return (
+                Range(whd["low"], whd["mid"], whd["high"]),
+                declared_source,
+                flags,
+                m.get("source_id", "E-CLASS-LARGE"),
+            )
 
     # 3. cw claimed a measured source but intensity has no row -> graceful class fallback
     flags.append("FALLBACK_ENERGY_CLASS")
@@ -72,6 +80,7 @@ def wh_per_output_token(
         Range(whd["low"], whd["mid"], whd["high"]),
         "parameter_class_fallback",
         flags,
+        band.get("source_id", "E-CLASS-LARGE"),
     )
 
 
@@ -85,6 +94,7 @@ def _choose_fallback_band(bands: list[dict]) -> dict:
             "max_active_params_b": 100,
             "wh_per_output_token": {"low": 0.002, "mid": 0.005, "high": 0.012},
             "source": "parameter_class_fallback (ASSUMPTIONS.md#E-CLASS-LARGE)",
+            "source_id": "E-CLASS-LARGE",
         }
     # largest max_active as conservative proxy when params unknown
     return max(bands, key=lambda b: b.get("max_active_params_b") or 0)

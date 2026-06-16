@@ -27,6 +27,9 @@ The single source of truth for every artifact shape. If a phase needs to change 
     "embodied_ratio_of_operational": "0.28 / 0.39 / 0.54", // C-EMBODIED
     "water_l_per_kwh": "onsite 0.3/0.9/1.8 + offsite EWIF 2.0/3.14/4.35"  // W-WATER
   },
+  "sources": [                                    // Phase 6G: compact provenance entries referenced by this day's figures
+    { "id": "C-GRID-EGRID", "title": "eGRID2022", "publisher": "US EPA", "url": "https://www.epa.gov/egrid", "version": "2022", "accessed": "2026-06-14" }
+  ],
   "models": [
     {
       "slug": "minimax/minimax-m2.5",
@@ -38,9 +41,11 @@ The single source of truth for every artifact shape. If a phase needs to change 
       "wh_per_output_token": { "low": 0.0008, "mid": 0.0015, "high": 0.003 },
       "energy_kwh": { "low": 728, "mid": 1365, "high": 2730 },
       "energy_source": "ai_energy_score",       // ai_energy_score | ecologits | parameter_class_fallback
+      "energy_source_id": "E-MINIMAX-M2.5",     // Phase 6G: provenance key of this energy figure -> sources.yaml
       "region": "us-east",
       "carbon_intensity_gco2_kwh": 380,
       "grid_source": "electricity_maps_live",   // electricity_maps_live | annual_factor
+      "grid_source_id": "GRID-EM-LIVE",         // Phase 6G: provenance key of this grid figure -> sources.yaml
       "pue": 1.25,                              // representative scalar (mid of A4 band)
       "co2_kg": { "low": 332, "mid": 622, "high": 1245 },          // operational, location-based
       "co2_kg_embodied": { "low": 93, "mid": 243, "high": 672 },   // C-EMBODIED (amortised manufacturing)
@@ -146,3 +151,33 @@ parameter_class_fallback:            # used when a model has energy_source: para
 ```
 
 `region` values are shared keys across §2/§4/§5 and must match the Electricity Maps zone you query live.
+
+Every numeric record above also carries a `source_id` (or `source_ids`) that resolves to §6 — see the provenance gate.
+
+---
+
+## 6. `data/provenance/sources.yaml` (provenance registry — Phase 6G)
+
+The single source of truth for every number. Each numeric record in `data/**/*.yaml`
+carries a `source_id` (string) or `source_ids` (list) that **must** resolve to one `id`
+here, or the build fails (`pipeline/provenance.py` → `unsourced_numbers`, run in CI and as
+a pytest gate). IDs reuse the `docs/ASSUMPTIONS.md` scheme (`A*` / `E*` / `C*` / `DC*` /
+`V*`) where one exists.
+
+```yaml
+- id: "C-GRID-EGRID"
+  title: "eGRID2022"
+  publisher: "US EPA"
+  url: "https://www.epa.gov/egrid"
+  version: "2022"
+  accessed: "2026-06-14"
+  locator: "US average output emission rate"   # page/table/section pointer
+  license: "public domain (US gov)"
+  claim: "annual-average US grid emission factor"  # SHORT PARAPHRASE, never a verbatim quote
+```
+
+**Copyright:** `claim` is always a short paraphrase + a locator, never reproduced source
+text; the gate caps `claim` length. The compact subset `{id, title, publisher, url,
+version, accessed}` of the entries actually referenced by a day's figures is emitted into
+`latest.json` `sources[]` (§1), and each model carries `energy_source_id` / `grid_source_id`
+so every published number is traceable end-to-end.

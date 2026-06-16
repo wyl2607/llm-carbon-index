@@ -136,14 +136,16 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
         est_out = output_tokens(total_tokens)
         est_in = input_tokens(total_tokens, est_out)
 
-        # 2. wh per output token (with fallback labels)
-        wh_r, energy_src, eflags = wh_per_output_token(slug, crosswalk, intensity)
+        # 2. wh per output token (with fallback labels + provenance source_id)
+        wh_r, energy_src, eflags, energy_source_id = wh_per_output_token(
+            slug, crosswalk, intensity
+        )
 
         # 3. kWh = decode(output) + prefill(input) (pure; /1000 guard inside)
         energy_r = energy_kwh(wh_r, est_out, est_in, prefill_alpha)
 
-        # 4. grid (live or annual labelled)
-        gco2, grid_src = carbon_intensity(region)
+        # 4. grid (live or annual labelled + provenance source_id)
+        gco2, grid_src, grid_source_id = carbon_intensity(region)
 
         # 5. PUE as a band (A4 revised). A known provider PUE centres the band's mid;
         #    low/high come from the Uptime-informed global band.
@@ -201,9 +203,11 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
             "wh_per_output_token": wh_r.to_dict(),
             "energy_kwh": energy_r.to_dict(),
             "energy_source": energy_src,
+            "energy_source_id": energy_source_id,
             "region": region,
             "carbon_intensity_gco2_kwh": gco2,
             "grid_source": grid_src,
+            "grid_source_id": grid_source_id,
             "pue": pue,
             "co2_kg": co2_r.to_dict(),
             "co2_kg_embodied": co2_embodied_r.to_dict(),

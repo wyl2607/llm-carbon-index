@@ -212,6 +212,16 @@ def test_validate_accepts_valid_doc_and_rejects_broken_records(monkeypatch, tmp_
             "NOT global data-center emissions. All figures are estimates with uncertainty."
         ),
         "assumptions": {"input_output_ratio": "80:20", "default_pue": 1.2},
+        "sources": [
+            {
+                "id": "E-MINIMAX-M2.5",
+                "title": "AI Energy Score v2",
+                "publisher": "Hugging Face",
+                "url": "https://huggingface.co/spaces/AIEnergyScore",
+                "version": "v2",
+                "accessed": "2026-06-15",
+            }
+        ],
         "models": [
             {
                 "slug": "example/test",
@@ -223,9 +233,11 @@ def test_validate_accepts_valid_doc_and_rejects_broken_records(monkeypatch, tmp_
                 "wh_per_output_token": {"low": 0.001, "mid": 0.002, "high": 0.003},
                 "energy_kwh": {"low": 200, "mid": 400, "high": 600},
                 "energy_source": "ai_energy_score",
+                "energy_source_id": "E-MINIMAX-M2.5",
                 "region": "us-east",
                 "carbon_intensity_gco2_kwh": 380.0,
                 "grid_source": "annual_factor",
+                "grid_source_id": "C-GRID-EGRID",
                 "pue": 1.2,
                 "co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6},
                 "co2_kg_embodied": {"low": 25.5, "mid": 71.1, "high": 147.7},
@@ -311,6 +323,38 @@ def test_schema_requires_precision_block(monkeypatch, tmp_path):
         validate(bad)
 
 
+def test_schema_requires_sources_and_per_figure_source_ids(monkeypatch, tmp_path):
+    """Phase 6G: doc carries top-level sources + each model's energy/grid source_id;
+    dropping any of them fails the schema."""
+    _patch_estimate_paths(monkeypatch, tmp_path)
+    estimates = estimate(GOLDEN_RECORDS)
+    doc = build_output(estimates, GOLDEN_RECORDS, GOLDEN_DATE, generated_at="2026-06-15T00:00:00Z")
+
+    validate(doc)  # present -> passes
+    assert isinstance(doc["sources"], list) and doc["sources"]
+    for m in doc["models"]:
+        assert m["energy_source_id"]
+        assert m["grid_source_id"]
+
+    # every per-figure source_id resolves to a top-level sources entry
+    source_index = {s["id"] for s in doc["sources"]}
+    for m in doc["models"]:
+        assert m["energy_source_id"] in source_index
+        assert m["grid_source_id"] in source_index
+
+    # missing top-level sources fails
+    no_sources = json.loads(json.dumps(doc))
+    del no_sources["sources"]
+    with pytest.raises(jsonschema.ValidationError):
+        validate(no_sources)
+
+    # a model figure missing its source_id fails
+    no_fig = json.loads(json.dumps(doc))
+    del no_fig["models"][0]["energy_source_id"]
+    with pytest.raises(jsonschema.ValidationError):
+        validate(no_fig)
+
+
 def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path):
     """Fixed normalized day + patched data -> stable latest shape (excl. generated_at)."""
     _patch_estimate_paths(monkeypatch, tmp_path)
@@ -322,7 +366,7 @@ def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path)
     )
 
     # Basic presence and values
-    assert doc["methodology_version"] == "0.3.0"
+    assert doc["methodology_version"] == "0.4.0"
     assert doc["generated_at"] == "2026-06-15T00:00:00Z"
     assert doc["data_date"] == GOLDEN_DATE
     assert doc["source_citation"] == (
@@ -473,6 +517,7 @@ def test_write_outputs_validates_before_write_and_copies_to_history(tmp_path, mo
             "NOT global data-center emissions. All figures are estimates with uncertainty."
         ),
         "assumptions": {"input_output_ratio": "80:20", "default_pue": 1.2},
+        "sources": [],
         "models": [],
         "totals": {
             "total_tokens": 0,

@@ -4,6 +4,11 @@ Every number this project relies on lives here with a source, a value/range, and
 
 Each entry: `ID · statement · value(range) · source · uncertainty · where used · last reviewed`.
 
+**Machine-enforced since Phase 6G:** every number in `data/**/*.yaml` must carry a `source_id`
+that resolves to an entry in `data/provenance/sources.yaml`, checked by
+`python -m pipeline.provenance` in CI and pytest. The IDs in this file are the human-readable
+companions of those registry entries — keep the two in step when adding a constant.
+
 ---
 
 ## A — Modeling assumptions

@@ -3,8 +3,10 @@
 I/O module per ENGINEERING_STANDARDS §1: live Electricity Maps query
 (with injected key from config) + file fallback load of annual_factors.
 
-Public surface: carbon_intensity(region) -> (gco2_per_kwh: float, grid_source: str)
+Public surface: carbon_intensity(region) -> (gco2_per_kwh, grid_source, source_id)
 Never raises to caller on failure/unknown; always falls back and labels source.
+The source_id (Phase 6G) is the provenance key of the figure actually used:
+"GRID-EM-LIVE" for live, else the annual_factors row's source_id.
 """
 
 from __future__ import annotations
@@ -19,8 +21,8 @@ from pipeline.config import (
 )
 
 
-def carbon_intensity(region: str) -> tuple[float, str]:
-    """Return (gCO2eq per kWh, source_label) for the given region key.
+def carbon_intensity(region: str) -> tuple[float, str, str]:
+    """Return (gCO2eq per kWh, source_label, source_id) for the given region key.
 
     Region keys are shared with annual_factors.yaml and crosswalk assumed_region
     (e.g. "us-east", "europe-west", "cn-north").
@@ -52,7 +54,7 @@ def carbon_intensity(region: str) -> tuple[float, str]:
                             d = payload["data"]
                             ci = d.get("carbonIntensity") or d.get("carbon_intensity")
                     if ci is not None:
-                        return float(ci), "electricity_maps_live"
+                        return float(ci), "electricity_maps_live", "GRID-EM-LIVE"
                 except Exception:  # noqa: S110 - intentional: any live failure must fall back
                     # bad json or missing key -> fallback
                     pass
@@ -75,23 +77,23 @@ def carbon_intensity(region: str) -> tuple[float, str]:
         if entry.get("region") == region:
             val = entry.get("gco2_per_kwh")
             if val is not None:
-                return float(val), "annual_factor"
+                return float(val), "annual_factor", entry.get("source_id", "C-GRID-DEFAULT-400")
 
     # seeded default (see data/grid/annual_factors.yaml + ASSUMPTIONS C-GRID-DEFAULT)
     for entry in annual:
         if entry.get("region") == "default":
             val = entry.get("gco2_per_kwh")
             if val is not None:
-                return float(val), "annual_factor"
+                return float(val), "annual_factor", entry.get("source_id", "C-GRID-DEFAULT-400")
 
     # last-resort: first entry if table present (all used regions are seeded;
     # this path exists only for data corruption safety)
     for entry in annual:
         val = entry.get("gco2_per_kwh")
         if val is not None:
-            return float(val), "annual_factor"
+            return float(val), "annual_factor", entry.get("source_id", "C-GRID-DEFAULT-400")
 
     # absolute last resort (data file missing entirely) — still labelled, non-zero
     # value chosen to match order of magnitude of seeded US factor (EPA eGRID cited)
     # comment required because this is a constant path
-    return 380.0, "annual_factor"
+    return 380.0, "annual_factor", "C-GRID-EGRID"
