@@ -1,6 +1,6 @@
 # 更新日志 (Changelog)
 
-[English](CHANGELOG.md) | [中文](CHANGELOG_zh.md)
+[English](CHANGELOG.md) | [中文](CHANGELOG_zh.md) | [Deutsch](CHANGELOG_de.md)
 
 
 本项目的所有显著变更均记录于此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/)。

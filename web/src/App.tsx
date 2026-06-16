@@ -30,7 +30,7 @@ function App() {
   // Core interactive state
   const [lang, setLang] = useState<Lang>(() => {
     const l = new URLSearchParams(window.location.search).get('lang');
-    return (l === 'en' || l === 'zh') ? l : 'en';
+    return (l === 'en' || l === 'zh' || l === 'de') ? l : 'de';
   });
   const [greenShiftPercent, setGreenShiftPercent] = useState<number>(() => {
     const s = new URLSearchParams(window.location.search).get('shift');

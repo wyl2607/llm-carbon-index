@@ -1,6 +1,6 @@
 # Changelog
 
-[English](CHANGELOG.md) | [中文](CHANGELOG_zh.md)
+[English](CHANGELOG.md) | [中文](CHANGELOG_zh.md) | [Deutsch](CHANGELOG_de.md)
 
 All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/).
