@@ -47,7 +47,7 @@ def _load_latest_doc() -> dict:
     try:
         if latest.exists():
             return json.loads(latest.read_text(encoding="utf-8"))
-    except Exception:
+    except Exception:  # noqa: S110 - intentional fallback to sample fixture below
         pass
     # fall back to sample fixture (guaranteed to exist)
     sample = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "latest.sample.json"

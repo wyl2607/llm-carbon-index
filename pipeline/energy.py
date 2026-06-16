@@ -17,7 +17,8 @@ def wh_per_output_token(
     """Return (wh_per_output_token Range, energy_source, flags, source_id).
 
     Lookup order (Phase 6j update):
-    - First: exact normalized match in intensity "models" (measured ai_energy_score/ecologits entries)
+    - First: exact normalized match in intensity "models" (measured
+      ai_energy_score/ecologits entries)
       take priority over cw "parameter_class_fallback" declaration. This wires sourced
       measured values so energy_measured_fraction climbs for top-traffic models that
       have defensible data.
@@ -53,7 +54,8 @@ def wh_per_output_token(
             whd = m["wh_per_output_token"]
             src = m.get("energy_source") or declared_source
             if src == "parameter_class_fallback" or not src:
-                # explicit measured row in intensity -> treat as sourced (prefer ai for open; ecologits only for known closed)
+                # explicit measured row in intensity -> treat as sourced
+                # (prefer ai for open; ecologits only for known closed)
                 src = "ecologits" if "claude" in norm else "ai_energy_score"
             sid = m.get("source_id", "E-CLASS-LARGE")
             return (
@@ -79,7 +81,8 @@ def wh_per_output_token(
             band.get("source_id", "E-CLASS-LARGE"),
         )
 
-    # cw declared measured source but intensity has no row -> graceful class fallback (existing behavior)
+    # cw declared measured source but intensity has no row -> graceful class
+    # fallback (existing behavior)
     flags.append("FALLBACK_ENERGY_CLASS")
     bands = (intensity_table or {}).get("parameter_class_fallback", [])
     band = _choose_fallback_band(bands)

@@ -190,7 +190,9 @@ def test_indistinguishable_tiers_invariant_no_better_range_in_worse_tier():
                 for mw in t2:
                     # if mw is actually strictly better (mw low > mb high) this would be inversion
                     if mw["co2_kg"]["low"] > mb["co2_kg"]["high"]:
-                        assert False, f"inversion: {mw['slug']} low>{mb['slug']} high but placed in later group"
+                        raise AssertionError(
+                            f"inversion: {mw['slug']} low>{mb['slug']} high but placed in later group"
+                        )
     # also the concrete: clean dominates dirty? No: clean high=15 < dirty low=80 so clean.high < dirty.low
     # meaning in separation, clean triggers new tier after dirty group.
     assert pos["clean"] > pos["dirty"]  # in raw list, clean appears in later sublist
