@@ -43,6 +43,7 @@ OUTPUT_LATEST_PATH = OUTPUT_DIR / "latest.json"
 OUTPUT_HISTORY_DIR = OUTPUT_DIR / "history"          # data/output/history/{data_date}.json
 OUTPUT_TIMESERIES_PATH = OUTPUT_DIR / "timeseries.json"
 MANIFEST_PATH = OUTPUT_DIR / "manifest.json"         # Phase 6H run manifest (append-only)
+SENSITIVITY_PATH = OUTPUT_DIR / "sensitivity.json"   # Phase 6K OAT sensitivity report (latest)
 
 # Phase 6H reproducibility: frozen raw inputs per run, data/raw/snapshots/{data_date}/
 SNAPSHOTS_DIR = RAW_DIR / "snapshots"

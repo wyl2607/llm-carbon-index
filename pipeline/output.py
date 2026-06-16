@@ -18,6 +18,7 @@ from pipeline import METHODOLOGY_VERSION
 from pipeline.fairness import rank_stability
 from pipeline.precision import energy_tier, grid_tier, precision_fractions
 from pipeline.provenance import compact_sources, load_sources
+from pipeline.sensitivity import oat_sensitivity
 from pipeline.types import ModelEstimate, NormalizedRecord
 
 log = logging.getLogger(__name__)
@@ -295,6 +296,9 @@ def write_outputs(doc: dict) -> None:
     # Generate timeseries
     write_timeseries()
 
+    # Phase 6K: OAT sensitivity report (always overwritten; reflects latest run).
+    write_sensitivity_json(doc)
+
 def write_timeseries() -> None:
     """Aggregate data from all history/*.json files into timeseries.json."""
     hist_dir = config.OUTPUT_HISTORY_DIR
@@ -319,3 +323,30 @@ def write_timeseries() -> None:
         with open(timeseries_path, "w", encoding="utf-8") as f:
             json.dump(timeseries, f, ensure_ascii=False, indent=2)
             f.write("\n")
+
+
+def write_sensitivity_json(doc: dict) -> None:
+    """Phase 6K: run the OAT sweep on this run's models and write sensitivity.json.
+
+    The report always reflects the latest run's model mix (token volumes + energy
+    intensity + grid factors). It is a separate artifact from latest.json — it is
+    NOT schema-validated against the main output schema (it has its own §8 shape
+    in DATA_SCHEMAS.md) and does NOT affect make verify determinism (verify only
+    checks history/*.json).
+    """
+    models: list[dict] = doc.get("models", [])
+    data_date: str = doc.get("data_date", "")
+    report = oat_sensitivity(models)
+    report["data_date"] = data_date
+    # Canonical field order per DATA_SCHEMAS.md §8: data_date first, then drivers, dominant.
+    ordered: dict = {
+        "data_date": report.pop("data_date"),
+        "drivers": report["drivers"],
+        "dominant": report["dominant"],
+    }
+    sens_path = config.SENSITIVITY_PATH
+    sens_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(sens_path, "w", encoding="utf-8") as f:
+        json.dump(ordered, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    log.info("sensitivity.json written to %s (dominant: %s)", sens_path, ordered.get("dominant"))
