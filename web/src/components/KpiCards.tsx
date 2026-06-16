@@ -59,7 +59,7 @@ export const KpiCards: React.FC<Props> = ({ totals, shift = 0, lang, modeledFrac
       </div>
       {(low !== undefined && high !== undefined && low !== 0 && high !== 0) ? (
         <div className="mt-2 text-xs text-gray-500 font-mono flex items-center gap-1.5">
-          <span className="opacity-60">Range:</span> 
+          <span className="opacity-60">{tt.kpiRange}</span> 
           <span className="text-gray-400">{nf(low, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
           <span className="opacity-30">—</span>
           <span className="text-gray-400">{nf(high, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>

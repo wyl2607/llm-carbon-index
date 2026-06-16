@@ -323,7 +323,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
               <tr>
                 <td colSpan={hasWater ? 10 : 9} className="px-4 py-12 text-center text-[#9ba19b] bg-[#0a0c0a]">
                   <Search className="w-8 h-8 mx-auto mb-3 opacity-40" />
-                  <p>No models match current filters.</p>
+                  <p>{tt.tableNoMatch}</p>
                 </td>
               </tr>
             )}

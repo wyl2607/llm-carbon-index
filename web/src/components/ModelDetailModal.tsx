@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Model } from '../types';
+import { useI18n, type Lang } from '../lib/i18n';
 import { formatCO2Range, formatWaterRange, co2Per1kOutputTokens, formatCO2Per1kG } from '../lib/format';
 import { X } from 'lucide-react';
 
@@ -8,7 +9,8 @@ interface Props {
   onClose: () => void;
 }
 
-export const ModelDetailModal: React.FC<Props> = ({ model, onClose }) => {
+export const ModelDetailModal: React.FC<Props & {lang?: Lang}> = ({ model, onClose, lang = 'en' }) => {
+  const tt = useI18n(lang);
   if (!model) return null;
 
   const eff = co2Per1kOutputTokens(model);
@@ -33,21 +35,21 @@ export const ModelDetailModal: React.FC<Props> = ({ model, onClose }) => {
             <div className="font-mono text-xl font-semibold mt-0.5">{formatCO2Range(model.co2_kg)}</div>
           </div>
           <div>
-            <div className="text-[#9ba19b] text-xs uppercase tracking-widest">Water</div>
+            <div className="text-[#9ba19b] text-xs uppercase tracking-widest">{tt.modalWater}</div>
             <div className="font-mono text-xl font-semibold mt-0.5">{formatWaterRange(model.water_liters)}</div>
           </div>
 
           <div>
-            <div className="text-[#9ba19b] text-xs uppercase tracking-widest">Efficiency</div>
+            <div className="text-[#9ba19b] text-xs uppercase tracking-widest">{tt.modalEff}</div>
             <div className="font-mono mt-0.5">{formatCO2Per1kG(eff)}</div>
           </div>
           <div>
-            <div className="text-[#9ba19b] text-xs uppercase tracking-widest">Origin / Type</div>
+            <div className="text-[#9ba19b] text-xs uppercase tracking-widest">{tt.modalOrigin}</div>
             <div className="mt-0.5">{model.origin} · {model.open_or_closed}</div>
           </div>
 
           <div>
-            <div className="text-[#9ba19b] text-xs uppercase tracking-widest">Energy per output token (Wh)</div>
+            <div className="text-[#9ba19b] text-xs uppercase tracking-widest">{tt.modalEnergy}</div>
             <div className="font-mono">low {model.wh_per_output_token.low} · mid {model.wh_per_output_token.mid} · high {model.wh_per_output_token.high}</div>
           </div>
           <div>
@@ -57,22 +59,22 @@ export const ModelDetailModal: React.FC<Props> = ({ model, onClose }) => {
         </div>
 
         <div className="mt-5 p-4 rounded-xl bg-black/40 border border-white/5 text-sm">
-          <div className="font-semibold text-emerald-400 mb-2">Architectural & Hardware Proxies</div>
+          <div className="font-semibold text-emerald-400 mb-2">{tt.modalArch}</div>
           <div className="text-gray-300 text-xs space-y-2">
-            <p><strong>Hardware Assumption:</strong> Inference emissions model assumes standardized accelerator hardware (e.g., 8x H100 SXM for 70B+ parameter class models).</p>
-            <p><strong>Power Usage Effectiveness (PUE):</strong> Assumed constant at <strong>{model.pue}</strong>, based on reported regional data center averages.</p>
+            <p><strong>{tt.modalHardwareTitle}</strong> {tt.modalHardwareBody}</p>
+            <p><strong>{tt.modalPueTitle}</strong> {tt.modalPueBody(model.pue)}</p>
           </div>
         </div>
 
         <div className="mt-5 pt-4 border-t border-[#242924] text-xs text-[#a1a6a1]">
-          <div className="font-semibold text-[#e4e7e4] mb-1">Energy source:</div> {model.energy_source}<br/>
-          <div className="font-semibold text-[#e4e7e4] mt-2 mb-1">Grid source:</div> {model.grid_source} ({model.region})<br/>
-          {model.renewable_match_pct != null && <div className="mt-1">Renewable match: {model.renewable_match_pct}%</div>}
+          <div className="font-semibold text-[#e4e7e4] mb-1">{tt.modalEnergySrc}</div> {model.energy_source}<br/>
+          <div className="font-semibold text-[#e4e7e4] mt-2 mb-1">{tt.modalGridSrc}</div> {model.grid_source} ({model.region})<br/>
+          {model.renewable_match_pct != null && <div className="mt-1">{tt.modalRenewable} {model.renewable_match_pct}%</div>}
         </div>
 
         {model.flags.length > 0 && (
           <div className="mt-4">
-            <div className="uppercase text-xs tracking-widest text-amber-400 mb-1">Flags</div>
+            <div className="uppercase text-xs tracking-widest text-amber-400 mb-1">{tt.modalFlags}</div>
             <div className="flex flex-wrap gap-1">
               {model.flags.map(f => (
                 <span key={f} className="badge text-amber-300/90 border-amber-800/50 bg-amber-900/20 text-[10px]">{f}</span>
@@ -83,7 +85,7 @@ export const ModelDetailModal: React.FC<Props> = ({ model, onClose }) => {
         )}
 
         <div className="mt-6 text-right">
-          <button onClick={onClose} className="btn btn-secondary text-xs">Close</button>
+          <button onClick={onClose} className="btn btn-secondary text-xs">{tt.close}</button>
         </div>
       </div>
     </div>

@@ -34,7 +34,7 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
       <div className="card p-6">
         <div className="mb-5">
           <h2 className="font-bold">{tt.historyTitle}</h2>
-          <p className="text-xs text-[#9ba19b] mt-0.5">Tracking volume vs. efficiency over time.</p>
+          <p className="text-xs text-[#9ba19b] mt-0.5">{tt.historySub}</p>
         </div>
         <div className="rounded-xl border border-dashed border-[#242924] bg-[#0c0f0c] px-6 py-10 text-center">
           <div className="text-sm font-semibold text-[#a1a6a1]">{tt.historyCollecting}</div>
@@ -61,7 +61,7 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
     <div className="card p-6">
       <div className="mb-5">
         <h2 className="font-bold">{tt.historyTitle}</h2>
-        <p className="text-xs text-[#9ba19b] mt-0.5">Tracking volume vs. efficiency over time.</p>
+        <p className="text-xs text-[#9ba19b] mt-0.5">{tt.historySub}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">

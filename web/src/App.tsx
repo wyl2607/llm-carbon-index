@@ -391,7 +391,7 @@ function App() {
         )}
       </div>
 
-      <ModelDetailModal model={inspectModel} onClose={() => setInspectModel(null)} />
+      <ModelDetailModal model={inspectModel} onClose={() => setInspectModel(null)} lang={lang} />
     </div>
   );
 }
