@@ -107,7 +107,7 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false,
         {onToggleShowAll && (
           <button
             onClick={onToggleShowAll}
-            className="text-xs px-3 py-1 rounded-lg border border-[#242924] hover:bg-[#161916] text-[#a1a6a1]"
+            className="text-xs px-3 py-1 rounded-lg border border-[#242924] hover:bg-[#1a1e1a] text-[#a1a6a1]"
           >
             {showAll ? 'Show Top 15' : `Show All (${models.length})`}
           </button>
@@ -140,7 +140,7 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false,
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      <div className="text-[10px] text-[#717771] mt-1 text-center">
+      <div className="text-[10px] text-[#9ba19b] mt-1 text-center">
         Mid + low/high whiskers. Grouped by {groupBy.replace('_', ' ')}. {showAll ? 'All models shown.' : 'Top 15 + others aggregated for readability.'}
       </div>
     </div>

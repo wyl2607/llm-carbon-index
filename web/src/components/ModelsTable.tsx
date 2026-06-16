@@ -166,7 +166,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
         <div className="flex flex-col md:flex-row gap-3 items-center w-full xl:w-auto">
           <div className="relative w-full md:w-64">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-[#717771]" />
+              <Search className="h-4 w-4 text-[#9ba19b]" />
             </div>
             <input
               type="text"
@@ -293,7 +293,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                       {m.open_or_closed}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-xs text-[#717771] max-w-[150px]" title={m.energy_source}>
+                  <td className="px-4 py-2 text-xs text-[#9ba19b] max-w-[150px]" title={m.energy_source}>
                     <div className="flex flex-col gap-1">
                       {tierBadge(
                         isEnergyMeasured ? tt.tierMeasured : tt.tierClassFallback,
@@ -302,7 +302,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                       <span className="truncate text-[10px] opacity-70">{m.energy_source}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-2 text-xs text-[#717771] max-w-[150px]" title={m.grid_source}>
+                  <td className="px-4 py-2 text-xs text-[#9ba19b] max-w-[150px]" title={m.grid_source}>
                     <div className="flex flex-col gap-1">
                       {tierBadge(isGridLive ? tt.tierGridLive : tt.tierGridAnnual, isGridLive)}
                       <span className="truncate text-[10px] opacity-70">{m.grid_source}</span>
@@ -311,7 +311,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                   <td className="px-4 py-2 max-w-[170px] text-[11px]">{m.flags.length ? m.flags.map(flagBadge) : <span className="text-[#3f443f]">—</span>}</td>
                   <td className="px-1 py-2">
                     {onInspect && (
-                      <button onClick={() => onInspect(m)} className="text-[#717771] hover:text-emerald-400 p-1" aria-label={tt.details} title={tt.details}>
+                      <button onClick={() => onInspect(m)} className="text-[#9ba19b] hover:text-emerald-400 p-1" aria-label={tt.details} title={tt.details}>
                         <Eye size={15} />
                       </button>
                     )}
@@ -321,7 +321,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
             })}
             {sorted.length === 0 && (
               <tr>
-                <td colSpan={hasWater ? 10 : 9} className="px-4 py-12 text-center text-[#717771] bg-[#0a0c0a]">
+                <td colSpan={hasWater ? 10 : 9} className="px-4 py-12 text-center text-[#9ba19b] bg-[#0a0c0a]">
                   <Search className="w-8 h-8 mx-auto mb-3 opacity-40" />
                   <p>No models match current filters.</p>
                 </td>
@@ -330,7 +330,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
           </tbody>
         </table>
       </div>
-      <div className="text-[11px] text-[#717771] flex justify-between px-1">
+      <div className="text-[11px] text-[#9ba19b] flex justify-between px-1">
         <span>{tt.tableNote || 'Click headers to sort. All values carry low–mid–high ranges.'}</span>
         <span>{sorted.length} models</span>
       </div>

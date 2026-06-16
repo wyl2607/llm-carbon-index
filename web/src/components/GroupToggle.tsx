@@ -20,7 +20,7 @@ export const GroupToggle: React.FC<Props> = ({ groupBy, onChange }) => {
       className={`px-3 py-1 text-xs font-semibold transition border-r border-[#242924] last:border-r-0 ${
         groupBy === val
           ? 'bg-emerald-600 text-black'
-          : 'bg-[#0a0c0a] hover:bg-[#161916] text-[#a1a6a1]'
+          : 'bg-[#0a0c0a] hover:bg-[#1a1e1a] text-[#a1a6a1]'
       }`}
     >
       {label}
@@ -29,7 +29,7 @@ export const GroupToggle: React.FC<Props> = ({ groupBy, onChange }) => {
 
   return (
     <div className="flex items-center gap-2 text-xs">
-      <span className="font-medium text-[#717771] pr-1">{/* Colour by */}Group:</span>
+      <span className="font-medium text-[#9ba19b] pr-1">{/* Colour by */}Group:</span>
       <div className="inline-flex rounded-md overflow-hidden border border-[#242924]">
         {btn('open_or_closed', 'Open / Closed')}
         {btn('origin', 'Origin')}

@@ -42,7 +42,7 @@ export const ScopeDisclaimerBanner: React.FC<Props> = ({ scopeNote, sourceCitati
             (unmappedSlugs || []).length
           )}
           {unmappedSlugs && unmappedSlugs.length > 0 && (
-            <span className="block mt-0.5 text-[#717771] text-[11px]">
+            <span className="block mt-0.5 text-[#9ba19b] text-[11px]">
               {tt.unmappedTopModels} {unmappedSlugs.slice(0, 5).map((s, i) => (
                 <span key={i}>{i > 0 ? ', ' : ''}{s.slug} <span className="opacity-70">({formatTokens(s.total_tokens)})</span></span>
               ))}

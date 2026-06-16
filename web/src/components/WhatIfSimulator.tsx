@@ -198,7 +198,7 @@ export const WhatIfSimulator: React.FC<Props> = ({
                   aria-valuemax={100}
                 />
               </div>
-              <div className="text-[10px] text-[#717771] mt-1">{tt.climateScoreNote}</div>
+              <div className="text-[10px] text-[#9ba19b] mt-1">{tt.climateScoreNote}</div>
             </div>
 
             <div className="text-[13px] leading-relaxed text-emerald-100/80 border-l-2 border-emerald-800/60 pl-3">

@@ -56,7 +56,7 @@ export const FairnessNote: React.FC<Props> = ({ fairness, lang = 'en' }) => {
           ? `排名稳定性：${label}。效率轴（CO₂/输出 token）比总量 CO₂ 更能跨模型比较。`
           : `Rank stability: ${label}. Efficiency (CO₂/output-token) is the fairer cross-model axis than total CO₂.`}
       </p>
-      <p className="text-[12px] text-[#717771] mt-1.5 border-l-2 border-[#2a2f2a] pl-2.5">
+      <p className="text-[12px] text-[#9ba19b] mt-1.5 border-l-2 border-[#2a2f2a] pl-2.5">
         {lang === 'zh'
           ? '⚠ L-TOKENIZER：不同模型的 token 计数不可直接比较（分词器不同）。闭源模型区间故意更宽以反映其不透明性，从不仅凭中值排名。'
           : '⚠ L-TOKENIZER: token counts are not apples-to-apples across models (different tokenizers). Closed-model ranges are intentionally wider to reflect opacity — never ranked better on a midpoint alone.'}
