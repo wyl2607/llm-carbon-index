@@ -19,6 +19,16 @@ from typing import Union
 from pipeline.ranges import Range
 
 
+def _as_range(v: Union[float, Range]) -> Range:
+    """Convert scalar (float/int) to degenerate Range (low=mid=high=value).
+
+    If the input is already a Range, return the exact same object (identity).
+    This helper makes the four scalar/Range combinations for (onsite_wue + offsite_ewif)
+    uniform and DRY before multiplying by facility_energy_kwh * total_wue.
+    """
+    return v if isinstance(v, Range) else Range(v, v, v)
+
+
 def water_liters(
     facility_energy_kwh: Range,
     onsite_wue: Union[float, Range],
@@ -29,9 +39,6 @@ def water_liters(
     WUE terms may be scalars or Ranges; a Range total WUE widens the band
     endpoint-wise (conservative).
     """
-    def _as_range(v: Union[float, Range]) -> Range:
-        return v if isinstance(v, Range) else Range(v, v, v)
-
     if isinstance(onsite_wue, Range) or isinstance(offsite_ewif, Range):
         total_wue: Union[float, Range] = _as_range(onsite_wue) + _as_range(offsite_ewif)
     else:
