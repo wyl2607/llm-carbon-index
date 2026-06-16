@@ -15,7 +15,7 @@ import yaml
 
 import pipeline.config as config
 from pipeline import METHODOLOGY_VERSION
-from pipeline.fairness import rank_stability
+from pipeline.fairness import indistinguishable_tiers, rank_stability
 from pipeline.precision import energy_tier, grid_tier, precision_fractions
 from pipeline.provenance import compact_sources, load_sources
 from pipeline.sensitivity import oat_sensitivity
@@ -236,6 +236,13 @@ def build_output(
         "rank_stability": rs_report,
         "unweighted": {"co2_kg": unweighted_co2},
     }
+
+    # Phase 6m: indistinguishable tiers (group by overlapping co2_kg {low,high}).
+    # Replaces numbered ranks as headline because rank_stability shows per-model
+    # ordering is noise under alt assumptions (e.g. ranks_changed 10/10 on real data).
+    # tiers lists are slug lists; reversal makes [0] the lowest-impact band = Tier 1.
+    tier_groups = indistinguishable_tiers(list(estimates), key="co2_kg")
+    totals["tiers"] = [[m["slug"] for m in g] for g in reversed(tier_groups)]
 
     # Phase 6G provenance: emit the compact registry entries actually referenced by
     # this day's per-figure source_ids, so the artifact is self-describing/traceable.

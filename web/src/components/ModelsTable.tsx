@@ -12,15 +12,52 @@ interface Props {
   lang?: Lang;
   onInspect?: (m: Model) => void;
   isScenarioActive?: boolean;
+  // Phase 6m: server-computed tiers (list of slug lists) from totals.tiers.
+  // When present, used for authoritative grouping (stable across alts).
+  // When absent, component falls back to computing equivalent grouping locally
+  // from the passed models' co2_kg ranges so the banded table is always shown.
+  tiers?: string[][];
 }
 
-export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, isScenarioActive = false }) => {
+export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, isScenarioActive = false, tiers: incomingTiersProp }) => {
   const tt = useI18n(lang);
   const [sortKey, setSortKey] = useState<SortKey>('co2');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
   const [searchTerm, setSearchTerm] = useState('');
   const [originFilter, setOriginFilter] = useState('ALL');
   const [typeFilter, setTypeFilter] = useState('ALL');
+
+  // Phase 6m tier computation (early so sorted can primary-key on it)
+  const computeClientTiers = (ms: Model[]): string[][] => {
+    if (!ms.length) return [];
+    const sortedByMidDesc = [...ms].sort((x, y) => y.co2_kg.mid - x.co2_kg.mid);
+    const groups: string[][] = [];
+    let cur = [sortedByMidDesc[0].slug];
+    for (const m of sortedByMidDesc.slice(1)) {
+      const minLow = Math.min(...cur.map(sl => {
+        const found = ms.find(x => x.slug === sl);
+        return found ? found.co2_kg.low : 0;
+      }));
+      if (m.co2_kg.high < minLow) {
+        groups.push(cur);
+        cur = [m.slug];
+      } else {
+        cur.push(m.slug);
+      }
+    }
+    groups.push(cur);
+    return groups;
+  };
+  const clientTiersRaw = computeClientTiers(models);
+  const clientTiersBestFirst = clientTiersRaw.length ? clientTiersRaw.slice().reverse() : [];
+  const serverTiersBestFirst = (incomingTiersProp && incomingTiersProp.length) ? incomingTiersProp.slice().reverse() : null;
+  const effectiveTiers: string[][] = serverTiersBestFirst || clientTiersBestFirst;
+  const tierMap = new Map<string, number>();
+  effectiveTiers.forEach((group, idx) => {
+    const tnum = idx + 1;
+    group.forEach(sl => tierMap.set(sl, tnum));
+  });
+  const totalTierCount = effectiveTiers.length || 1;
 
   const sorted = useMemo(() => {
     let arr = [...models];
@@ -45,8 +82,13 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
       arr = arr.filter(m => m.open_or_closed === typeFilter);
     }
     
-    // Sort
+    // Sort (Phase 6m: primary by tier asc (Tier 1 best first), secondary by chosen key)
     arr.sort((a, b) => {
+      const ta = tierMap.get(a.slug) || 999;
+      const tb = tierMap.get(b.slug) || 999;
+      if (ta !== tb) {
+        return ta - tb; // lower tier# (better) first
+      }
       let va: number;
       let vb: number;
       if (sortKey === 'co2') {
@@ -59,7 +101,8 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
         va = co2Per1kOutputTokens(a);
         vb = co2Per1kOutputTokens(b);
       }
-      return sortDir === 'desc' ? vb - va : va - vb;
+      const sec = sortDir === 'desc' ? vb - va : va - vb;
+      return sec;
     });
     return arr;
   }, [models, sortKey, sortDir, searchTerm, originFilter, typeFilter]);
@@ -160,6 +203,8 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
   const isScenario = isScenarioActive;
   const hasWater = models.some(m => !!m.water_liters && m.water_liters.mid > 0);
 
+  // effectiveTiers + tierMap computed early (above) for sort + render grouping
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 card p-4">
@@ -258,75 +303,97 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-            {sorted.map((m, i) => {
-              const effG = co2Per1kOutputTokens(m);
-              const isHighEmission = effG > 5.0;
-              const isLowEmission = effG < 0.5;
-              const isEnergyMeasured =
-                m.energy_source === 'ai_energy_score' || m.energy_source === 'ecologits';
-              const isGridLive = m.grid_source === 'electricity_maps_live';
-              const originClass = m.origin === 'CN' ? 'badge-cn' : m.origin === 'US' ? 'badge-us' : m.origin === 'EU' ? 'badge-eu' : 'badge';
-              
-              return (
-                <tr key={m.slug} className={`border-b border-[#1f2420] hover:bg-[#151815] transition-colors ${i % 2 === 0 ? '' : 'bg-[#0f120f]'}`}>
-                  <td className="px-4 py-2 font-semibold text-[#e4e7e4]">{m.display_name}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-[#a1a6a1]">
-                    <span className="font-mono text-xs bg-[#0a0c0a] px-2 py-px rounded border border-[#242924]">{formatCO2Range(m.co2_kg)}</span>
-                  </td>
-                  {hasWater && (
-                    <td className="px-4 py-2 whitespace-nowrap text-[#a1a6a1]">
-                      <span className="font-mono text-xs bg-blue-950/30 text-blue-300 px-2 py-px rounded border border-blue-900/40">{formatWaterRange(m.water_liters)}</span>
+            {(() => {
+              const nodes: React.ReactNode[] = [];
+              let prevT: number | null = null;
+              sorted.forEach((m, i) => {
+                const t = tierMap.get(m.slug) || 1;
+                if (t !== prevT) {
+                  nodes.push(
+                    <tr key={`tierband-${t}`} className="bg-[#0a0c0a]">
+                      <td colSpan={hasWater ? 10 : 9} className="px-4 py-1 text-[10px] font-bold uppercase tracking-[1px] text-emerald-400 border-b border-[#242924]">
+                        Tier {t}{totalTierCount > 1 ? ` / ${totalTierCount}` : ''} — CO₂ ranges overlap (models indistinguishable within tier)
+                      </td>
+                    </tr>
+                  );
+                  prevT = t;
+                }
+                const effG = co2Per1kOutputTokens(m);
+                const isHighEmission = effG > 5.0;
+                const isLowEmission = effG < 0.5;
+                const isEnergyMeasured =
+                  m.energy_source === 'ai_energy_score' || m.energy_source === 'ecologits';
+                const isGridLive = m.grid_source === 'electricity_maps_live';
+                const originClass = m.origin === 'CN' ? 'badge-cn' : m.origin === 'US' ? 'badge-us' : m.origin === 'EU' ? 'badge-eu' : 'badge';
+                const displayRank = i + 1;
+                nodes.push(
+                  <tr key={m.slug} className={`border-b border-[#1f2420] hover:bg-[#151815] transition-colors ${i % 2 === 0 ? '' : 'bg-[#0f120f]'}`}>
+                    <td className="px-4 py-2 font-semibold text-[#e4e7e4]">
+                      <span className="inline-block align-middle px-1 py-px mr-1.5 text-[10px] font-bold rounded bg-emerald-900/60 text-emerald-300 border border-emerald-800/50">T{t}</span>
+                      {m.display_name}
+                      <span className="ml-1.5 text-[10px] text-[#5a605a] font-mono">#{displayRank}</span>
                     </td>
-                  )}
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    <span className={`font-mono px-2 py-px rounded text-xs font-bold border ${
-                      isHighEmission ? 'bg-rose-950/40 text-rose-400 border-rose-900/40' :
-                      isLowEmission ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/40' :
-                      'bg-[#0a0c0a] text-[#a1a6a1] border-[#242924]'
-                    }`}>
-                      {formatCO2Per1kG(effG)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2"><span className={`badge ${originClass}`}>{m.origin}</span></td>
-                  <td className="px-4 py-2">
-                    <span className={m.open_or_closed === 'open' ? 'badge badge-open' : 'badge badge-closed'}>
-                      {m.open_or_closed}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-xs text-[#9ba19b] max-w-[150px]" title={m.energy_source}>
-                    <div className="flex flex-col gap-1">
-                      {tierBadge(
-                        isEnergyMeasured ? tt.tierMeasured : tt.tierClassFallback,
-                        isEnergyMeasured,
-                      )}
-                      <span className="truncate text-[10px] opacity-70">{m.energy_source}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-2 text-xs text-[#9ba19b] max-w-[150px]" title={m.grid_source}>
-                    <div className="flex flex-col gap-1">
-                      {tierBadge(isGridLive ? tt.tierGridLive : tt.tierGridAnnual, isGridLive)}
-                      <span className="truncate text-[10px] opacity-70">{m.grid_source}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-2 max-w-[170px] text-[11px]">{m.flags.length ? m.flags.map(flagBadge) : <span className="text-[#3f443f]">—</span>}</td>
-                  <td className="px-1 py-2">
-                    {onInspect && (
-                      <button onClick={() => onInspect(m)} className="text-[#9ba19b] hover:text-emerald-400 p-1" aria-label={tt.details} title={tt.details}>
-                        <Eye size={15} />
-                      </button>
+                    <td className="px-4 py-2 whitespace-nowrap text-[#a1a6a1]">
+                      <span className="font-mono text-xs bg-[#0a0c0a] px-2 py-px rounded border border-[#242924]">{formatCO2Range(m.co2_kg)}</span>
+                    </td>
+                    {hasWater && (
+                      <td className="px-4 py-2 whitespace-nowrap text-[#a1a6a1]">
+                        <span className="font-mono text-xs bg-blue-950/30 text-blue-300 px-2 py-px rounded border border-blue-900/40">{formatWaterRange(m.water_liters)}</span>
+                      </td>
                     )}
-                  </td>
-                </tr>
-              );
-            })}
-            {sorted.length === 0 && (
-              <tr>
-                <td colSpan={hasWater ? 10 : 9} className="px-4 py-12 text-center text-[#9ba19b] bg-[#0a0c0a]">
-                  <Search className="w-8 h-8 mx-auto mb-3 opacity-40" />
-                  <p>{tt.tableNoMatch}</p>
-                </td>
-              </tr>
-            )}
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      <span className={`font-mono px-2 py-px rounded text-xs font-bold border ${
+                        isHighEmission ? 'bg-rose-950/40 text-rose-400 border-rose-900/40' :
+                        isLowEmission ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/40' :
+                        'bg-[#0a0c0a] text-[#a1a6a1] border-[#242924]'
+                      }`}>
+                        {formatCO2Per1kG(effG)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2"><span className={`badge ${originClass}`}>{m.origin}</span></td>
+                    <td className="px-4 py-2">
+                      <span className={m.open_or_closed === 'open' ? 'badge badge-open' : 'badge badge-closed'}>
+                        {m.open_or_closed}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 text-xs text-[#9ba19b] max-w-[150px]" title={m.energy_source}>
+                      <div className="flex flex-col gap-1">
+                        {tierBadge(
+                          isEnergyMeasured ? tt.tierMeasured : tt.tierClassFallback,
+                          isEnergyMeasured,
+                        )}
+                        <span className="truncate text-[10px] opacity-70">{m.energy_source}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2 text-xs text-[#9ba19b] max-w-[150px]" title={m.grid_source}>
+                      <div className="flex flex-col gap-1">
+                        {tierBadge(isGridLive ? tt.tierGridLive : tt.tierGridAnnual, isGridLive)}
+                        <span className="truncate text-[10px] opacity-70">{m.grid_source}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2 max-w-[170px] text-[11px]">{m.flags.length ? m.flags.map(flagBadge) : <span className="text-[#3f443f]">—</span>}</td>
+                    <td className="px-1 py-2">
+                      {onInspect && (
+                        <button onClick={() => onInspect(m)} className="text-[#9ba19b] hover:text-emerald-400 p-1" aria-label={tt.details} title={tt.details}>
+                          <Eye size={15} />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              });
+              if (sorted.length === 0) {
+                nodes.push(
+                  <tr key="no-match">
+                    <td colSpan={hasWater ? 10 : 9} className="px-4 py-12 text-center text-[#9ba19b] bg-[#0a0c0a]">
+                      <Search className="w-8 h-8 mx-auto mb-3 opacity-40" />
+                      <p>{tt.tableNoMatch}</p>
+                    </td>
+                  </tr>
+                );
+              }
+              return nodes;
+            })()}
           </tbody>
         </table>
       </div>
