@@ -74,6 +74,7 @@ export const translations = {
     presetEnergiewende: 'DE Energiewende Path (improving grid)',
 
     // Thesis & ESG section
+    thesisBadge: 'For Researchers & ESG Reporting',
     thesisTitle: 'For Thesis, CSRD/ESRS & German ESG Roles',
     thesisSubtitle: 'Ready-to-use materials for Master\'s theses, sustainability reports and job applications in green tech / consulting (E.ON, RWE, Siemens Energy, Deloitte, etc.).',
     thesisCopyCitation: 'Copy Citation',
@@ -134,6 +135,8 @@ export const translations = {
 
     // History
     historyTitle: 'Historical Trends & Efficiency',
+    historyCollecting: 'Collecting daily history…',
+    historyCollectingSub: 'Trend charts appear once {min} days of data are recorded (currently {n}). New snapshots are added daily via GitHub Actions.',
     historyCo2: 'Daily Emissions (kg CO₂ mid)',
     historyEff: 'Ecosystem Efficiency (gCO₂ / M tokens)',
     jevonsTitle: 'The Jevons Paradox in LLM Inference',
@@ -215,6 +218,7 @@ export const translations = {
 
 
     // Thesis & ESG section
+    thesisBadge: '面向研究者与 ESG 披露',
     thesisTitle: '适用于论文、CSRD/ESRS 与德国 ESG 职位',
     thesisSubtitle: '为硕士论文、可持续报告和绿色科技/咨询求职（E.ON、RWE、Siemens Energy、Deloitte 等）准备的即用材料。',
     thesisCopyCitation: '一键复制引用',
@@ -271,6 +275,8 @@ export const translations = {
     colFlags: '标志',
 
     historyTitle: '历史趋势与效率演进',
+    historyCollecting: '正在采集每日历史数据…',
+    historyCollectingSub: '累计满 {min} 天数据后显示趋势图（当前 {n} 天）。每日通过 GitHub Actions 追加新快照。',
     historyCo2: '每日排放（kg CO₂ 中位）',
     historyEff: '系统效率（gCO₂ / 百万 token）',
     jevonsTitle: '大语言模型推理中的杰文斯悖论 (Jevons Paradox)',

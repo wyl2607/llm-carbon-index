@@ -12,6 +12,8 @@ import { AccountingToggle, type AccountingMethod } from './components/Accounting
 import { HistoryViewer } from './components/HistoryViewer';
 import { OriginDonut } from './components/OriginDonut';
 import { ModelDetailModal } from './components/ModelDetailModal';
+import { shiftedCo2Kg } from './lib/scenario';
+import { Zap } from 'lucide-react';
 
 const isSampleData = (models: Model[]) =>
   models.length > 0 && models[0].slug.startsWith('example/');
@@ -79,8 +81,6 @@ function App() {
   const simulatedData = useMemo(() => {
     if (!data) return null;
     const useMarket = accountingMethod === 'market';
-    const shiftRatio = greenShiftPercent / 100;
-    const targetIntensity = 50;
 
     const simulatedModels = data.models.map(m => {
       const baseCo2 = (useMarket && m.co2_kg_market) ? m.co2_kg_market : m.co2_kg;
@@ -88,9 +88,7 @@ function App() {
 
       const simulateRange = (val: number) => {
         if (useMarket && m.renewable_match_pct === 100) return 0;
-        const orig = val * m.pue * m.carbon_intensity_gco2_kwh / 1000;
-        const shifted = val * m.pue * targetIntensity / 1000;
-        return orig * (1 - shiftRatio) + shifted * shiftRatio;
+        return shiftedCo2Kg(val, m.pue, m.carbon_intensity_gco2_kwh, greenShiftPercent);
       };
       return {
         ...m,
@@ -161,9 +159,6 @@ function App() {
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-6">
-                <div className="bg-emerald-500 text-black px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                  Alpha v1.1
-                </div>
                 <div className="text-sm text-[#717771] font-mono">
                   Methodology v{data ? data.methodology_version : '—'} • {data ? data.data_date : '—'}
                 </div>
@@ -229,11 +224,6 @@ function App() {
             />
           </div>
         )}
-
-
-
-
-
 
         {sample && (
           <div className="my-4 p-3 rounded-xl border border-amber-900/40 bg-amber-950/20 text-amber-300 text-sm">
@@ -312,6 +302,36 @@ function App() {
 
             {/* Trends */}
             <HistoryViewer lang={lang} />
+
+            {/* For researchers & ESG reporting — slim thesis / CSRD block */}
+            {data && (
+              <section className="card p-6 sm:p-7 bg-gradient-to-br from-[#0c100c] to-[#080a08] border-emerald-900/40">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
+                  <div className="max-w-2xl">
+                    <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-[11px] font-bold uppercase tracking-wider mb-3 border border-emerald-500/20">
+                      <Zap size={13} /> {tt.thesisBadge}
+                    </div>
+                    <h2 className="text-xl font-bold text-white mb-1.5">{tt.thesisTitle}</h2>
+                    <p className="text-sm text-[#a1a6a1] leading-relaxed">{tt.thesisSubtitle}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2.5 shrink-0">
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(tt.citeApa(data.data_date)).then(() => alert(tt.citeCopied)); }}
+                      className="btn btn-secondary text-xs px-4 py-2.5 font-bold"
+                    >
+                      {tt.thesisCopyCitation}
+                    </button>
+                    <a href={`${import.meta.env.BASE_URL}data/latest.json`} target="_blank" rel="noreferrer" className="btn btn-ghost border-[#242924] text-xs px-4 py-2.5 font-bold">
+                      {tt.rawJson}
+                    </a>
+                  </div>
+                </div>
+                <div className="mt-5 pt-4 border-t border-white/5 text-xs text-[#a1a6a1] leading-relaxed space-y-2">
+                  <p><strong className="text-emerald-400">CSRD / ESRS E1 — </strong>{tt.csrdExample}</p>
+                  <p className="text-[#717771] italic">{tt.thesisScopeNote}</p>
+                </div>
+              </section>
+            )}
 
             {/* Footer actions + full transparency */}
             <footer className="pt-8 mt-4 border-t border-[#242924] text-xs text-[#717771] flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 justify-between">

@@ -3,6 +3,11 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import type { TimeseriesDay } from '../types';
 import type { Lang } from '../lib/i18n';
 import { useI18n } from '../lib/i18n';
+import { nf } from '../lib/format';
+
+// Need at least this many days before a trend line is meaningful; below it the
+// chart is just a lonely point in an empty frame, so show a collecting-state.
+const MIN_TREND_DAYS = 3;
 
 interface Props { lang?: Lang; }
 
@@ -23,6 +28,27 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
 
   if (loading) return <div className="h-60 card skeleton" />;
   if (data.length === 0) return null;
+
+  if (data.length < MIN_TREND_DAYS) {
+    return (
+      <div className="card p-6">
+        <div className="mb-5">
+          <h2 className="font-bold">{tt.historyTitle}</h2>
+          <p className="text-xs text-[#717771] mt-0.5">Tracking volume vs. efficiency over time.</p>
+        </div>
+        <div className="rounded-xl border border-dashed border-[#242924] bg-[#0c0f0c] px-6 py-10 text-center">
+          <div className="text-sm font-semibold text-[#a1a6a1]">{tt.historyCollecting}</div>
+          <div className="mt-1.5 text-xs text-[#717771]">
+            {tt.historyCollectingSub.replace('{n}', String(data.length)).replace('{min}', String(MIN_TREND_DAYS))}
+          </div>
+        </div>
+        <div className="mt-5 p-4 rounded-xl border border-[#242924] bg-[#0c0f0c] text-sm">
+          <div className="font-semibold mb-1 text-emerald-400">{tt.jevonsTitle}</div>
+          <p className="text-[#a1a6a1] leading-snug text-[13px]">{tt.jevonsBody}</p>
+        </div>
+      </div>
+    );
+  }
 
   const chartData = data.map(day => {
     const totalTokens = day.totals.total_tokens / 1_000_000_000;
@@ -52,7 +78,7 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
                 </defs>
                 <CartesianGrid strokeDasharray="2 2" stroke="#242924" />
                 <XAxis dataKey="date" tick={{fontSize:10, fill:'#717771'}} tickLine={false} axisLine={{stroke:'#242924'}} />
-                <YAxis tickFormatter={v => Math.round(v).toLocaleString()} tick={{fontSize:10, fill:'#717771'}} tickLine={false} axisLine={{stroke:'#242924'}} />
+                <YAxis tickFormatter={v => nf(Math.round(v))} tick={{fontSize:10, fill:'#717771'}} tickLine={false} axisLine={{stroke:'#242924'}} />
                 <Tooltip contentStyle={{background:'#121512', border:'1px solid #242924', borderRadius:6, fontSize:12}} />
                 <Area type="monotone" dataKey="co2Kg" stroke="#10b981" strokeWidth={2.5} fill="url(#cCo2)" />
               </AreaChart>
@@ -72,7 +98,7 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
                 </defs>
                 <CartesianGrid strokeDasharray="2 2" stroke="#242924" />
                 <XAxis dataKey="date" tick={{fontSize:10, fill:'#717771'}} tickLine={false} axisLine={{stroke:'#242924'}} />
-                <YAxis tickFormatter={v => v.toFixed(1)} tick={{fontSize:10, fill:'#717771'}} tickLine={false} axisLine={{stroke:'#242924'}} />
+                <YAxis tickFormatter={v => nf(v, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} tick={{fontSize:10, fill:'#717771'}} tickLine={false} axisLine={{stroke:'#242924'}} />
                 <Tooltip contentStyle={{background:'#121512', border:'1px solid #242924', borderRadius:6, fontSize:12}} />
                 <Area type="monotone" dataKey="efficiency" stroke="#3b82f6" strokeWidth={2.5} fill="url(#cEff)" />
               </AreaChart>
