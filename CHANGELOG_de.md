@@ -10,6 +10,17 @@ Alle bemerkenswerten Änderungen an diesem Projekt werden in dieser Datei dokume
 - Hinzufügen von `CHANGELOG_de.md` und `README_de.md`, um die Anforderung zu erfüllen, dass alle drei Sprachen bei Updates synchronisiert sein müssen.
 - Sprachumschalter in der Benutzeroberfläche von Schaltflächen zu einem Dropdown-Menü (`<select>`) geändert.
 
+## [0.7.0] - 2026-06-16 (vNext: Genauigkeit & Abdeckung)
+### Hinzugefügt
+- **Gemessene Energie + Idle (6J)**: Die Pipeline nutzt nun gemessene Intensitäten von AI Energy Score / EcoLogits vor dem Fallback, plus einen optionalen `E-IDLE`-Always-on-Term. `energy_measured_fraction` steigt von 0,0 auf ≈0,29 (3 von 50 Modellen, token-gewichtet).
+- **Ranking → Stufen (6M)**: Modelle mit überlappenden `{low,high}`-CO₂-Bereichen werden zu nicht unterscheidbaren `totals.tiers` gruppiert; Stufen stehen im Vordergrund, exakte Ränge sind zweitrangig.
+- **Physischer Embodied-Schätzer (6N)**: LLMCarbon-Stil `Die-Fläche × CPA × GPU-Stunden/Lebensdauer/Auslastung` (`pipeline/embodied.py`), neben dem Verhältnis-Proxy berichtet, mit Methodenspanne.
+- **Literatur-Kreuzvalidierung (6P)**: `validate_literature.py` + `literature_anchors.yaml` → `validation.json`; BLOOM/Gemini bestehen, OpenAI 0,34 Wh nur als Report (Blog), Jegham-Langprompt geflaggt.
+- **MoE-bewusste Energie (6Q)**: Parameterklassen-Fallback auf `active_params_b` (nicht Gesamt) geschlüsselt.
+- **Dynamisches Regime / Batching (6O)**: belegter Regime-Multiplikator (`regime_factors.yaml`) + What-If-Schieberegler für Prompt-Länge/Batch.
+- **ESG- / CSRD-Scope-2-Export (6R)**: `esg_export.json` + Web-Download, der standort-/marktbasierte Summen auf GHG-Protocol-Scope-2-Dual-Reporting + ESRS-E1 abbildet, mit unentfernbarem Hinweis.
+- Vollständige zh/de-Lokalisierung der neuen Stufen-, Regime- und ESG-UI-Oberflächen + Methodik §14–§15.
+
 ## [0.6.1] - 2026-06-16 (Phase 7)
 ### Hinzugefügt
 - Vollständige chinesische (ZH) Lokalisierung für die Benutzeroberfläche (`web/src/lib/i18n.ts`).

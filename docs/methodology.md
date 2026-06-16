@@ -265,4 +265,16 @@ Literature numbers differ for well-understood reasons:
 
 Out-of-band verified anchors are retained in `validation.json` and can be inspected on every run. They are design signals (e.g. "our conservative closed fallback exceeds a vendor's reported median") rather than failures. The harness runs in the test suite (`pytest tests/test_literature_anchors.py`) and can be invoked standalone; any single file read error skips only the affected anchor.
 
+## 15. vNext depth additions (tiering, physical embodied, MoE energy, regime, ESG export)
+
+**Indistinguishable tiers (6m).** Because the per-model CO₂ ranking is unstable under defensible alternative assumptions (see `totals.fairness.rank_stability`), the index groups models whose `{low, high}` CO₂ ranges overlap into indistinguishable *tiers* (`pipeline/fairness.py:indistinguishable_tiers` → `totals.tiers`). Tier 1 is the lowest-impact band; tiers are the headline and exact ranks are secondary. With the current all-fallback data every top model collapses into a single tier — an honest reflection of the ~10–16× uncertainty band, not a defect.
+
+**Physical embodied cross-check (6n).** Alongside the ratio-of-operational embodied proxy (C-EMBODIED), a second physically grounded estimator (`pipeline/embodied.py`) follows LLMCarbon: `embodied_kg = die_area_cm² × CPA_kgCO₂/cm² × (GPU_hours / lifetime_hours) / utilization`, with GPU-hours derived from operational energy ÷ per-GPU power. Hardware constants (die area, CPA, TDP, lifetime, utilization per GPU class) are sourced in `data/assumptions/hardware_embodied.yaml` under the `H-*` namespace. Both estimators are reported; their spread is the embodied method-uncertainty.
+
+**MoE-aware energy (6q).** Inference energy scales with *active*, not total, parameters. The parameter-class fallback band is keyed on `active_params_b` from `model_crosswalk.yaml` (falling back to total `params_b` only when active is absent), so a high-total / low-active MoE model lands in the small-active energy class.
+
+**Dynamic regime / batching (6o).** Fixed Wh/token ignores batch size, KV-cache, and prefill/decode nonlinearity. A sourced regime multiplier (`data/assumptions/regime_factors.yaml`, `R-*` namespace) lets short→long prompt and low→high batch be tuned; the relationship is monotonic (longer prompt / lower batch → higher energy), exposed interactively via the What-If simulator sliders.
+
+**ESG / CSRD Scope-2 export (6r).** `pipeline/output.py` emits `data/output/esg_export.json` mapping location-based (`totals.co2_kg`) and market-based (`totals.co2_kg_market`) figures to GHG-Protocol Scope-2 dual reporting plus an ESRS-E1-flavored line item. The project scope/uncertainty caveat is embedded verbatim and non-removable in every exported artifact; no new numbers are created. A download surface is available in the web UI.
+
 This mechanism keeps the project honest against the external literature while respecting the "no silent 0 / no magic numbers / ranges end-to-end" invariants.

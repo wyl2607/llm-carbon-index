@@ -16,6 +16,7 @@
 本项目生成的数据完全开源，专为集成到您自己的可持续发展报告、LCA（生命周期评估）工具或 CSRD/ESRS Scope 3（范围 3）披露中而设计。
 
 - **下载数据**: 每日更新的 JSON 数据位于 [`data/output/latest.json`](https://raw.githubusercontent.com/wyl2607/llm-carbon-index/main/data/output/latest.json)。
+- **ESG / CSRD 导出**: [`data/output/esg_export.json`](https://raw.githubusercontent.com/wyl2607/llm-carbon-index/main/data/output/esg_export.json) 将基于位置法与基于市场法的总量映射为 GHG Protocol 范围二双重报告 + ESRS-E1 行项，并嵌入范围/不确定性声明。网页 UI 也提供 JSON/CSV 下载。
 - **方法学**: 查阅我们详尽的 [方法学与不确定性框架](docs/methodology.md)，其中详细说明了方程式、数据来源（如 EcoLogits、AI Energy Score、Electricity Maps）以及敏感性分析（如 PUE 偏差）。
 - **贡献指南**: 参见 [CONTRIBUTING.md](CONTRIBUTING.md) 并在报告数据纠错或提供新的模型架构配置文件时，使用我们的 [Issue 模板](.github/ISSUE_TEMPLATE/)。
 

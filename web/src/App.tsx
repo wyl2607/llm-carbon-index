@@ -10,6 +10,7 @@ import { Co2BarChart } from './components/Co2BarChart';
 import { ModelsTable } from './components/ModelsTable';
 import { KpiCards } from './components/KpiCards';
 import { WhatIfSimulator } from './components/WhatIfSimulator';
+import { EsgExportPanel } from './components/EsgExportPanel';
 import { AccountingToggle, type AccountingMethod } from './components/AccountingToggle';
 import { HistoryViewer } from './components/HistoryViewer';
 import { OriginDonut } from './components/OriginDonut';
@@ -286,6 +287,9 @@ function App() {
               modeledFraction={data?.totals?.modeled_traffic_fraction}
               lang={lang}
             />
+
+            {/* ESG / CSRD Scope-2 dual-reporting export (P7/6r) */}
+            <EsgExportPanel data={data} lang={lang} />
 
             {/* Visual Explorer */}
             <section className="card p-6">

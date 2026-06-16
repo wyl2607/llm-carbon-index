@@ -16,6 +16,7 @@ Dieses Projekt schätzt den CO₂-Fußabdruck des **sichtbaren LLM-Inferenzverke
 Die in diesem Projekt generierten Daten sind vollständig quelloffen und für die Integration in Ihre eigenen Nachhaltigkeitsberichte, Lebenszyklusanalysen (LCA) oder Scope-3-Offenlegungen nach CSRD/ESRS konzipiert.
 
 - **Daten-Download**: Täglich aktualisierte JSON-Daten finden Sie unter [`data/output/latest.json`](https://raw.githubusercontent.com/wyl2607/llm-carbon-index/main/data/output/latest.json).
+- **ESG- / CSRD-Export**: [`data/output/esg_export.json`](https://raw.githubusercontent.com/wyl2607/llm-carbon-index/main/data/output/esg_export.json) bildet standort- und marktbasierte Summen auf das GHG-Protocol-Scope-2-Dual-Reporting + eine ESRS-E1-Position ab, mit eingebettetem Scope-/Unsicherheitshinweis. Ein JSON/CSV-Download ist auch in der Web-UI verfügbar.
 - **Methodik**: Konsultieren Sie unser detailliertes [Methodik- und Unsicherheitsrahmenwerk](docs/methodology.md) (derzeit auf Englisch), das die Gleichungen, Datenquellen (z. B. EcoLogits, AI Energy Score, Electricity Maps) und Sensitivitätsanalysen erklärt.
 
 ## Status und Versionierung
