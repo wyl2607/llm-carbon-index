@@ -22,7 +22,7 @@ from pipeline.config import (
     METHODOLOGY_FACTORS_PATH,
     VENDOR_CLAIMS_PATH,
 )
-from pipeline.energy import energy_kwh, wh_per_output_token
+from pipeline.energy import energy_kwh, idle_for_slug, wh_per_output_token
 from pipeline.grid import carbon_intensity
 from pipeline.ranges import Range
 from pipeline.slugs import normalize_slug
@@ -114,6 +114,13 @@ def estimate(
     water_cfg = factors.get("water") or {}
     onsite_wue = _range(water_cfg.get("onsite_wue"), 0.3, 0.9, 1.8)
     offsite_ewif = _range(water_cfg.get("offsite_ewif"), 2.0, 3.14, 4.35)
+    # Market-based residual floor (C-MARKET-RESIDUAL): annual REC/PPA matching is
+    # NOT 24/7 carbon-free, so market-based CO2 must never collapse to a false 0.
+    # Sourced form is a dict {source_id, value, source}; a bare scalar is also accepted.
+    _mrf = factors.get("market_residual_floor", 0.10)
+    if isinstance(_mrf, dict):
+        _mrf = _mrf.get("value", 0.10)
+    market_residual_floor = float(_mrf)
 
     results: list[ModelEstimate] = []
 
@@ -150,8 +157,14 @@ def estimate(
             slug, crosswalk, intensity
         )
 
-        # 3. kWh = decode(output) + prefill(input) (pure; /1000 guard inside)
-        energy_r = energy_kwh(wh_r, est_out, est_in, prefill_alpha)
+        # 3. kWh = decode(output) + prefill(input) [+ optional idle slice] (/1000 guard inside)
+        # Idle/always-on term (E-IDLE) is added only for models carrying a defensible
+        # idle_kwh_per_day + idle_share_of_day in intensity.yaml; absent -> pure dynamic.
+        idle_r, idle_share, _ = idle_for_slug(slug, intensity)
+        energy_r = energy_kwh(
+            wh_r, est_out, est_in, prefill_alpha,
+            idle_kwh_per_day=idle_r, share_of_day=idle_share,
+        )
 
         # 4. grid (live or annual labelled + provenance source_id; replayable in verify)
         gco2, grid_src, grid_source_id = grid_lookup(region)
@@ -171,12 +184,18 @@ def estimate(
         co2_embodied_r = embodied_co2_kg(co2_r, embodied_ratio)
         co2_total_r = total_lca_co2_kg(co2_r, co2_embodied_r)
 
-        # 7. Market-based CO2 (operational; vendor renewable match)
+        # 7. Market-based CO2 (operational; vendor renewable match).
+        # A 100% annual match would zero this out, but annual REC/PPA matching is not
+        # 24/7 carbon-free (hourly mismatch leaves residual emissions). Clamp the factor
+        # to a documented residual floor (C-MARKET-RESIDUAL) so market CO2 never reports
+        # a false 0; flag rows where the floor binds so the assumption is never silent.
         match_pct = None
         if assumed_provider and assumed_provider in vendor_claims_map:
             match_pct = vendor_claims_map[assumed_provider]
 
-        market_factor = 1 - (match_pct or 0.0) / 100.0
+        raw_market_factor = 1 - (match_pct or 0.0) / 100.0
+        market_factor = max(market_residual_floor, raw_market_factor)
+        market_floored = market_factor > raw_market_factor
         co2_market_r = co2_r * market_factor
 
         # 8. Water footprint: facility energy * (on-site WUE + off-site EWIF) (W-WATER)
@@ -194,6 +213,10 @@ def estimate(
             flags.append("FALLBACK_GRID_ANNUAL")
         if open_or_closed == "closed":
             flags.append("CLOSED_MODEL_ASSUMED")
+        if idle_r is not None and idle_share > 0:
+            flags.append("IDLE_INCLUDED")
+        if market_floored:
+            flags.append("MARKET_RESIDUAL_FLOOR")
         # de-dupe while preserving a stable order
         seen: set[str] = set()
         uniq_flags: list[str] = []

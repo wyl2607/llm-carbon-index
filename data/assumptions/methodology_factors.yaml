@@ -67,6 +67,24 @@ water:
     EWIF 2.0-3.14-4.35 L/kWh (US power-generation water; 3.14 mid). Li et al.,
     "Making AI Less Thirsty" (arXiv:2304.03271). See ASSUMPTIONS.md#W-WATER.
 
+# C-MARKET-RESIDUAL — minimum residual factor for market-based (Scope 2) CO2.
+# A vendor's 100% ANNUAL renewable match does NOT mean 24/7 carbon-free supply:
+# hourly generation/consumption mismatch leaves real residual emissions. Google's
+# own reporting shows ~64% global 24/7 carbon-free energy in 2023 despite 100%
+# annual matching — i.e. material residual. We clamp market_factor to this floor
+# so market-based CO2 never collapses to a false, false-precision 0. Conservative
+# LOWER bound on residual (actual residual is likely higher); rows where it binds
+# are flagged MARKET_RESIDUAL_FLOOR so the assumption is never silent.
+market_residual_floor:
+  source_id: "C-MARKET-RESIDUAL"
+  value: 0.10
+  source: >-
+    Google reported ~64% global 24/7 carbon-free energy in 2023 despite 100%
+    annual renewable matching — annual matching is not hourly CFE, so a material
+    residual remains. 0.10 is a conservative LOWER bound on residual (actual is
+    likely higher); rows where it binds are flagged MARKET_RESIDUAL_FLOOR. See
+    ASSUMPTIONS.md#C-MARKET-RESIDUAL.
+
 # C-EMBODIED-ENVELOPE — embodied as share of *total* (op + emb) from literature.
 # 22-35% of total implies the proxy ratio 0.28/0.39/0.54 via share/(1-share).
 # Added for Phase 6n physical estimator tests (both methods must independently

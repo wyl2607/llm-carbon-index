@@ -381,7 +381,7 @@ def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path)
     )
 
     # Basic presence and values
-    assert doc["methodology_version"] == "0.6.0"
+    assert doc["methodology_version"] == "0.7.0"
     assert doc["generated_at"] == "2026-06-15T00:00:00Z"
     assert doc["data_date"] == GOLDEN_DATE
     assert doc["source_citation"] == (
@@ -480,6 +480,25 @@ def test_fairness_unweighted_is_equal_weight_mean_not_the_weighted_total(monkeyp
     assert unweighted["mid"] != total["mid"]
 
 
+def test_totals_independent_band_is_narrower_and_shares_mid(monkeypatch, tmp_path):
+    """totals.co2_kg_independent (quadrature) keeps the same mid as the conservative
+    co2_kg sum but is NEVER wider — the independent-error band partially cancels.
+    Both are emitted so the conservative headline isn't read as the only view.
+    """
+    _patch_estimate_paths(monkeypatch, tmp_path)
+    estimates = estimate(GOLDEN_RECORDS)
+    doc = build_output(estimates, GOLDEN_RECORDS, GOLDEN_DATE, generated_at="2026-06-15T00:00:00Z")
+
+    corr = doc["totals"]["co2_kg"]
+    indep = doc["totals"]["co2_kg_independent"]
+    # mid identical
+    assert indep["mid"] == pytest.approx(corr["mid"])
+    # independent band is inside (or equal to) the conservative envelope
+    assert indep["low"] >= corr["low"]
+    assert indep["high"] <= corr["high"]
+    assert indep["low"] <= indep["mid"] <= indep["high"]
+
+
 def test_build_output_emits_totals_tiers(monkeypatch, tmp_path):
     """Phase 6m: build_output always includes totals.tiers (list of slug lists).
     Tier membership is the stable grouping; within-tier ordering is secondary.
@@ -559,11 +578,14 @@ def test_write_outputs_validates_before_write_and_copies_to_history(tmp_path, mo
 
     Invalid raises before any write.
     """
-    # Patch only output locations (schema uses real one created for Phase 3)
+    # Patch ALL output locations write_outputs touches (latest + history + the
+    # timeseries/sensitivity side-artifacts) so the test never writes real data/output.
     fake_latest = tmp_path / "data" / "output" / "latest.json"
     fake_hist_dir = tmp_path / "data" / "output" / "history"
     monkeypatch.setattr(cfg, "OUTPUT_LATEST_PATH", fake_latest)
     monkeypatch.setattr(cfg, "OUTPUT_HISTORY_DIR", fake_hist_dir)
+    monkeypatch.setattr(cfg, "OUTPUT_TIMESERIES_PATH", tmp_path / "data" / "output" / "timeseries.json")
+    monkeypatch.setattr(cfg, "SENSITIVITY_PATH", tmp_path / "data" / "output" / "sensitivity.json")
 
     # Build a minimal valid doc (no estimate needed)
     doc = {

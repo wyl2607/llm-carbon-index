@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 from collections.abc import Iterable
 from datetime import datetime, timezone
 
@@ -100,6 +101,12 @@ def build_output(
         )
 
     def _sum_co2(rs: Iterable[dict]) -> dict:
+        # Conservative perfect-correlation envelope: low+low, high+high. The dominant
+        # uncertainties (PUE, energy class, grid factor) are SHARED systematic
+        # assumptions applied identically to every model, so their errors add
+        # coherently — the linear endpoint sum is the honest headline band, not an
+        # accident. See _sum_co2_independent for the narrower independent-error view
+        # and docs/methodology.md (Aggregation of uncertainty).
         rs = list(rs)
         if not rs:
             return {"low": 0.0, "mid": 0.0, "high": 0.0}
@@ -107,6 +114,27 @@ def build_output(
             "low": sum(float(r["low"]) for r in rs),
             "mid": sum(float(r["mid"]) for r in rs),
             "high": sum(float(r["high"]) for r in rs),
+        }
+
+    def _sum_co2_independent(rs: Iterable[dict]) -> dict:
+        """Aggregate band assuming per-model errors are statistically INDEPENDENT.
+
+        Mid is identical to the correlated sum; the half-widths combine in
+        quadrature (sqrt of sum of squares) instead of linearly, so independent
+        errors partially cancel and the band is NARROWER. Reality lies between this
+        and the conservative _sum_co2 envelope; latest.json reports both so the
+        headline (co2_kg) is not mistaken for the only defensible interpretation.
+        """
+        rs = list(rs)
+        if not rs:
+            return {"low": 0.0, "mid": 0.0, "high": 0.0}
+        mid = sum(float(r["mid"]) for r in rs)
+        lo_var = sum((float(r["mid"]) - float(r["low"])) ** 2 for r in rs)
+        hi_var = sum((float(r["high"]) - float(r["mid"])) ** 2 for r in rs)
+        return {
+            "low": mid - math.sqrt(lo_var),
+            "mid": mid,
+            "high": mid + math.sqrt(hi_var),
         }
 
     def _load_alt_assumption_sets() -> list[dict]:
@@ -127,6 +155,7 @@ def build_output(
 
     co2_list = [m["co2_kg"] for m in estimates]
     co2_kg = _sum_co2(co2_list)
+    co2_kg_independent = _sum_co2_independent(co2_list)
 
     _zero = {"low": 0.0, "mid": 0.0, "high": 0.0}
     co2_embodied_list = [m.get("co2_kg_embodied", _zero) for m in estimates]
@@ -207,6 +236,7 @@ def build_output(
         "est_output_tokens": est_output_tokens,
         "energy_kwh": energy_kwh,
         "co2_kg": co2_kg,
+        "co2_kg_independent": co2_kg_independent,
         "co2_kg_embodied": co2_kg_embodied,
         "co2_kg_total": co2_kg_total,
         "co2_kg_market": co2_kg_market,

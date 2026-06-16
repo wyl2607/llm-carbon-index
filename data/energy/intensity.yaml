@@ -34,6 +34,11 @@ models:
     energy_source: "ai_energy_score"
     wh_per_output_token: { low: 0.0015, mid: 0.0035, high: 0.0080 }
     idle_kwh_per_day: { low: 3000, mid: 8500, high: 18000 }
+    # Attributable fraction of the always-on deployment slice charged to this
+    # model's visible traffic. Calibrated so the implied all-in Wh/query band
+    # contains BLOOM's ~3.96 Wh/query all-in figure (arXiv:2211.02001); see the
+    # idle regression in tests/test_energy.py and ASSUMPTIONS.md#E-IDLE.
+    idle_share_of_day: 0.2
     idle_source_id: "E-IDLE"
     source: "AI Energy Score v2 informed for ~67B MoE-equivalent dense class. See ASSUMPTIONS.md#E-DEEPSEEK-67B. Idle term (E-IDLE) added for comparable-large always-on attribution per BLOOM gap (arXiv:2211.02001)."
     source_id: "E-DEEPSEEK-67B"

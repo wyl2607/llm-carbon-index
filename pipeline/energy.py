@@ -92,6 +92,39 @@ def wh_per_output_token(
     )
 
 
+def idle_for_slug(
+    slug: str, intensity_table: dict
+) -> tuple[Range | None, float, str | None]:
+    """Return (idle_kwh_per_day Range | None, idle_share_of_day, idle_source_id).
+
+    Looks up the slug's measured intensity row (same normalized match as
+    wh_per_output_token). A row carries the optional always-on/idle term only
+    when a defensible per-model figure exists (ASSUMPTIONS.md#E-IDLE), e.g.::
+
+        idle_kwh_per_day: { low: 3000, mid: 8500, high: 18000 }
+        idle_share_of_day: 0.2
+        idle_source_id: "E-IDLE"
+
+    When the row has no `idle_kwh_per_day`, returns (None, 0.0, None) so callers
+    fall back to the pure dynamic energy path (no silent idle attribution). All
+    idle numbers live in intensity.yaml; this function does no I/O.
+    """
+    norm = normalize_slug(slug)
+    for m in (intensity_table or {}).get("models", []):
+        if normalize_slug(m.get("openrouter_slug", "")) != norm:
+            continue
+        idle = m.get("idle_kwh_per_day")
+        if not idle:
+            return None, 0.0, None
+        share = float(m.get("idle_share_of_day", 0.0))
+        return (
+            Range(idle["low"], idle["mid"], idle["high"]),
+            share,
+            m.get("idle_source_id"),
+        )
+    return None, 0.0, None
+
+
 def _choose_fallback_band(bands: list[dict]) -> dict:
     """Pick the most conservative (largest max_active) band for unknowns / fallbacks.
     If empty, synthesize a safe documented default (still flagged).

@@ -15,6 +15,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 # Make local pipeline package importable when running pytest from repo root
@@ -255,6 +256,122 @@ def test_grid_fallback_labelled_when_em_raises(monkeypatch, tmp_path):
     assert m["grid_source"] == "annual_factor"
     assert "FALLBACK_GRID_ANNUAL" in m["flags"]
     assert m["carbon_intensity_gco2_kwh"] == 537  # cn-north from our temp annual
+
+
+def test_market_residual_floor_prevents_false_zero(monkeypatch, tmp_path):
+    """A 100%-annual-match provider must NOT yield market CO2 = 0 (false precision).
+    market_factor is clamped to the documented residual floor (C-MARKET-RESIDUAL)
+    and the row is flagged MARKET_RESIDUAL_FLOOR so the assumption is never silent.
+    """
+    cw = _write_yaml(
+        tmp_path,
+        "cw.yaml",
+        """
+- openrouter_slug: "openai/gpt-4o"
+  display_name: "GPT-4o"
+  origin: "US"
+  open_or_closed: "closed"
+  energy_source: "parameter_class_fallback"
+  assumed_provider: "openai"
+  assumed_region: "us-east"
+""",
+    )
+    inten = _write_yaml(tmp_path, "intensity.yaml", INTENSITY_YAML)
+    clo = _write_yaml(tmp_path, "closed.yaml", CLOSED_YAML)
+    ann = _write_yaml(tmp_path, "annual.yaml", ANNUAL_YAML)
+    vendor = _write_yaml(
+        tmp_path,
+        "vendor.yaml",
+        """
+- provider: "openai"
+  annual_renewable_match_pct: 100
+  source: "test"
+""",
+    )
+    factors = _write_yaml(tmp_path, "factors.yaml", "market_residual_floor: 0.10\n")
+
+    monkeypatch.setattr("pipeline.estimate.CROSSWALK_PATH", cw)
+    monkeypatch.setattr("pipeline.estimate.INTENSITY_PATH", inten)
+    monkeypatch.setattr("pipeline.estimate.CLOSED_MODELS_PATH", clo)
+    monkeypatch.setattr("pipeline.estimate.VENDOR_CLAIMS_PATH", vendor)
+    monkeypatch.setattr("pipeline.estimate.METHODOLOGY_FACTORS_PATH", factors)
+    monkeypatch.setattr("pipeline.grid.ANNUAL_FACTORS_PATH", ann)
+
+    recs: list[NormalizedRecord] = [
+        {
+            "date": "2026-06-14",
+            "model_slug": "openai/gpt-4o",
+            "total_tokens": 1_000_000_000,
+            "is_other": False,
+        },
+    ]
+    gpt = estimate(recs)[0]
+    assert gpt["renewable_match_pct"] == 100
+    assert gpt["co2_kg_market"]["mid"] > 0  # NOT a false zero
+    assert gpt["co2_kg_market"]["mid"] == pytest.approx(gpt["co2_kg"]["mid"] * 0.10)
+    assert "MARKET_RESIDUAL_FLOOR" in gpt["flags"]
+
+
+def test_idle_term_wired_adds_flag_and_energy(monkeypatch, tmp_path):
+    """E-IDLE: a slug carrying idle data in intensity.yaml gets the idle term added
+    to its energy (flagged IDLE_INCLUDED); models without idle data are unaffected.
+    """
+    cw = _write_yaml(
+        tmp_path,
+        "cw.yaml",
+        """
+- openrouter_slug: "deepseek/deepseek-chat"
+  display_name: "DeepSeek Chat"
+  origin: "CN"
+  open_or_closed: "open"
+  energy_source: "ai_energy_score"
+  assumed_region: "cn-north"
+""",
+    )
+    inten = _write_yaml(
+        tmp_path,
+        "intensity.yaml",
+        """
+models:
+  - openrouter_slug: "deepseek/deepseek-chat"
+    wh_per_output_token: { low: 0.0015, mid: 0.0035, high: 0.008 }
+    idle_kwh_per_day: { low: 3000, mid: 8500, high: 18000 }
+    idle_share_of_day: 0.2
+    idle_source_id: "E-IDLE"
+parameter_class_fallback:
+  - max_active_params_b: 100
+    wh_per_output_token: { low: 0.002, mid: 0.005, high: 0.012 }
+    source: "test"
+""",
+    )
+    clo = _write_yaml(tmp_path, "closed.yaml", CLOSED_YAML)
+    ann = _write_yaml(tmp_path, "annual.yaml", ANNUAL_YAML)
+
+    monkeypatch.setattr("pipeline.estimate.CROSSWALK_PATH", cw)
+    monkeypatch.setattr("pipeline.estimate.INTENSITY_PATH", inten)
+    monkeypatch.setattr("pipeline.estimate.CLOSED_MODELS_PATH", clo)
+    monkeypatch.setattr("pipeline.grid.ANNUAL_FACTORS_PATH", ann)
+
+    recs: list[NormalizedRecord] = [
+        {
+            "date": "2026-06-14",
+            "model_slug": "deepseek/deepseek-chat",
+            "total_tokens": 1_000_000_000,
+            "is_other": False,
+        },
+    ]
+    m = estimate(recs)[0]
+    assert "IDLE_INCLUDED" in m["flags"]
+
+    # energy must exceed the pure-dynamic value (idle adds a positive always-on term)
+    from pipeline.energy import energy_kwh
+    from pipeline.ranges import Range
+    from pipeline.tokens import input_tokens, output_tokens
+
+    out_tok = output_tokens(1_000_000_000)
+    in_tok = input_tokens(1_000_000_000, out_tok)
+    dyn = energy_kwh(Range(0.0015, 0.0035, 0.008), out_tok, in_tok, Range(0.1, 0.2, 0.3))
+    assert m["energy_kwh"]["mid"] > dyn.mid
 
 
 def test_conversion_guards_large_numbers():
