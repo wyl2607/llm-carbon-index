@@ -5,6 +5,7 @@ import { useI18n } from '../lib/i18n';
 import { Leaf, Zap, Info } from 'lucide-react';
 import { computeEquivalents, EQUIV_SOURCES, computeClimateScore } from '../lib/equivalences';
 import { useAnimatedNumber } from '../lib/useAnimatedNumber';
+import { nf } from '../lib/format';
 
 interface Props {
   greenShiftPercent: number;
@@ -137,14 +138,14 @@ export const WhatIfSimulator: React.FC<Props> = ({
                 <Leaf className="w-3.5 h-3.5" /> {tt.dailyAvoided}
               </div>
               <div className="font-mono text-[56px] leading-none font-black text-emerald-400 tracking-[-3.5px] tabular-nums drop-shadow-[0_0_25px_rgba(16,185,129,.25)]">
-                −{animatedReduction.toLocaleString()}
+                −{nf(animatedReduction)}
               </div>
               <div className="text-emerald-400/70 text-sm font-medium mt-1">{tt.kgCO2}</div>
 
               {greenShiftPercent > 0 && (
                 <div className="mt-3 text-sm">
                   <span className="px-3 py-px bg-emerald-500/10 text-emerald-300 border border-emerald-800/50 rounded-full text-xs font-bold">
-                    −{reductionPercent}%
+                    −{nf(parseFloat(reductionPercent) || 0, { maximumFractionDigits: 1 })}%
                   </span>
                 </div>
               )}
@@ -157,23 +158,23 @@ export const WhatIfSimulator: React.FC<Props> = ({
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
                 <div className="rounded-xl border border-[#1f2420] bg-[#0c0f0c] px-3 py-2.5">
-                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{equiv.cars.toLocaleString()}</div>
+                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{nf(equiv.cars)}</div>
                   <div className="text-[12px] text-emerald-200/70 leading-tight mt-px">{tt.equivCars}</div>
                 </div>
                 <div className="rounded-xl border border-[#1f2420] bg-[#0c0f0c] px-3 py-2.5">
-                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{equiv.flights.toLocaleString()}</div>
+                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{nf(equiv.flights)}</div>
                   <div className="text-[12px] text-emerald-200/70 leading-tight mt-px">{tt.equivFlights}</div>
                 </div>
                 <div className="rounded-xl border border-[#1f2420] bg-[#0c0f0c] px-3 py-2.5">
-                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{equiv.trees.toLocaleString()}</div>
+                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{nf(equiv.trees)}</div>
                   <div className="text-[12px] text-emerald-200/70 leading-tight mt-px">{tt.equivTrees}</div>
                 </div>
                 <div className="rounded-xl border border-[#1f2420] bg-[#0c0f0c] px-3 py-2.5">
-                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{equiv.homes.toLocaleString()}</div>
+                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{nf(equiv.homes)}</div>
                   <div className="text-[12px] text-emerald-200/70 leading-tight mt-px">{tt.equivHomes}</div>
                 </div>
                 <div className="rounded-xl border border-amber-900/40 bg-[#0c0f0c] px-3 py-2.5">
-                  <div className="font-mono text-2xl font-bold text-amber-300 tabular-nums">{equiv.homes.toLocaleString()}</div>
+                  <div className="font-mono text-2xl font-bold text-amber-300 tabular-nums">{nf(equiv.homes)}</div>
                   <div className="text-[11px] text-amber-200/70 leading-tight mt-px">{tt.equivDeHomes}</div>
                 </div>
                 <div className="rounded-xl border border-[#1f2420] bg-[#0c0f0c] px-3 py-2.5 col-span-2 sm:col-span-1 text-[11px] text-emerald-200/70">

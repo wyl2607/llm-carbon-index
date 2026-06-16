@@ -144,6 +144,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
   };
 
   const isScenario = isScenarioActive;
+  const hasWater = models.some(m => !!m.water_liters && m.water_liters.mid > 0);
 
   return (
     <div className="flex flex-col gap-5">
@@ -227,12 +228,12 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
       )}
 
       <div className="overflow-x-auto rounded-2xl border border-[#242924] bg-[#121512]">
-        <table className="min-w-[980px] w-full text-sm">
+        <table className={`min-w-[${hasWater ? '980' : '880'}px] w-full text-sm`}>
           <thead>
             <tr>
               {header(tt.colModel)}
               {header(tt.colCo2, 'co2')}
-              {header(tt.colWater, 'water')}
+              {hasWater && header(tt.colWater, 'water')}
               {header(tt.colEff, 'efficiency')}
               {header(tt.colOrigin)}
               {header(tt.colOpenClosed)}
@@ -251,14 +252,16 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
               
               return (
                 <tr key={m.slug} className={`border-b border-[#1f2420] hover:bg-[#151815] transition-colors ${i % 2 === 0 ? '' : 'bg-[#0f120f]'}`}>
-                  <td className="px-4 py-3.5 font-semibold text-[#e4e7e4]">{m.display_name}</td>
-                  <td className="px-4 py-3.5 whitespace-nowrap text-[#a1a6a1]">
+                  <td className="px-4 py-2 font-semibold text-[#e4e7e4]">{m.display_name}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-[#a1a6a1]">
                     <span className="font-mono text-xs bg-[#0a0c0a] px-2 py-px rounded border border-[#242924]">{formatCO2Range(m.co2_kg)}</span>
                   </td>
-                  <td className="px-4 py-3.5 whitespace-nowrap text-[#a1a6a1]">
-                    <span className="font-mono text-xs bg-blue-950/30 text-blue-300 px-2 py-px rounded border border-blue-900/40">{formatWaterRange(m.water_liters)}</span>
-                  </td>
-                  <td className="px-4 py-3.5 whitespace-nowrap">
+                  {hasWater && (
+                    <td className="px-4 py-2 whitespace-nowrap text-[#a1a6a1]">
+                      <span className="font-mono text-xs bg-blue-950/30 text-blue-300 px-2 py-px rounded border border-blue-900/40">{formatWaterRange(m.water_liters)}</span>
+                    </td>
+                  )}
+                  <td className="px-4 py-2 whitespace-nowrap">
                     <span className={`font-mono px-2 py-px rounded text-xs font-bold border ${
                       isHighEmission ? 'bg-rose-950/40 text-rose-400 border-rose-900/40' :
                       isLowEmission ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/40' :
@@ -267,16 +270,16 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                       {formatCO2Per1kG(effG)}
                     </span>
                   </td>
-                  <td className="px-4 py-3.5"><span className={`badge ${originClass}`}>{m.origin}</span></td>
-                  <td className="px-4 py-3.5">
+                  <td className="px-4 py-2"><span className={`badge ${originClass}`}>{m.origin}</span></td>
+                  <td className="px-4 py-2">
                     <span className={m.open_or_closed === 'open' ? 'badge badge-open' : 'badge badge-closed'}>
                       {m.open_or_closed}
                     </span>
                   </td>
-                  <td className="px-4 py-3.5 text-xs text-[#717771] truncate max-w-[138px]" title={m.energy_source}>{m.energy_source}</td>
-                  <td className="px-4 py-3.5 text-xs text-[#717771] truncate max-w-[138px]" title={m.grid_source}>{m.grid_source}</td>
-                  <td className="px-4 py-3.5 max-w-[170px] text-[11px]">{m.flags.length ? m.flags.map(flagBadge) : <span className="text-[#3f443f]">—</span>}</td>
-                  <td className="px-1 py-3.5">
+                  <td className="px-4 py-2 text-xs text-[#717771] truncate max-w-[138px]" title={m.energy_source}>{m.energy_source}</td>
+                  <td className="px-4 py-2 text-xs text-[#717771] truncate max-w-[138px]" title={m.grid_source}>{m.grid_source}</td>
+                  <td className="px-4 py-2 max-w-[170px] text-[11px]">{m.flags.length ? m.flags.map(flagBadge) : <span className="text-[#3f443f]">—</span>}</td>
+                  <td className="px-1 py-2">
                     {onInspect && (
                       <button onClick={() => onInspect(m)} className="text-[#717771] hover:text-emerald-400 p-1" aria-label={tt.details} title={tt.details}>
                         <Eye size={15} />
@@ -288,7 +291,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
             })}
             {sorted.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-4 py-12 text-center text-[#717771] bg-[#0a0c0a]">
+                <td colSpan={hasWater ? 10 : 9} className="px-4 py-12 text-center text-[#717771] bg-[#0a0c0a]">
                   <Search className="w-8 h-8 mx-auto mb-3 opacity-40" />
                   <p>No models match current filters.</p>
                 </td>
