@@ -306,6 +306,9 @@ def write_outputs(doc: dict) -> None:
     # Phase 6K: OAT sensitivity report (always overwritten; reflects latest run).
     write_sensitivity_json(doc)
 
+    # P7: ESG/CSRD Scope-2 dual-reporting export (after history snapshot, per spec)
+    write_esg_export(doc)
+
 def write_timeseries() -> None:
     """Aggregate data from all history/*.json files into timeseries.json."""
     hist_dir = config.OUTPUT_HISTORY_DIR
@@ -357,3 +360,68 @@ def write_sensitivity_json(doc: dict) -> None:
         json.dump(ordered, f, ensure_ascii=False, indent=2)
         f.write("\n")
     log.info("sensitivity.json written to %s (dominant: %s)", sens_path, ordered.get("dominant"))
+
+
+# --- P7: ESG/CSRD Scope-2 dual-reporting export (non-editable scope statement) ---
+
+SCOPE_CAVEAT: str = (
+    "This project estimates the CO₂ footprint of OpenRouter-visible LLM inference — "
+    "a representative but partial slice of global AI usage. It is NOT a "
+    "measurement of total global data-center emissions. All figures are estimates "
+    "with uncertainty ranges, not measurements."
+)
+
+
+def write_esg_export(doc: dict) -> None:
+    """Write data/output/esg_export.json mapping location-based + market-based to
+    GHG Protocol Scope 2 dual reporting + ESRS-E1 flavored line item.
+
+    Reuses *exactly* totals.co2_kg (location) and totals.co2_kg_market (market) as
+    {low,mid,high} ranges. No new numbers fabricated. The SCOPE_CAVEAT (project
+    scope statement) is embedded verbatim and is non-removable.
+
+    If any supporting read would fail, SKIP and continue (never aborts the
+    primary write_outputs path).
+    """
+    try:
+        totals: dict = doc.get("totals") or {}
+        loc = totals.get("co2_kg") or {"low": 0.0, "mid": 0.0, "high": 0.0}
+        mkt = totals.get("co2_kg_market") or loc
+        data_date: str = doc.get("data_date", "")
+        methodology_version: str = doc.get("methodology_version", "")
+
+        def _rng(r: dict) -> dict:
+            return {
+                "low": float(r.get("low", 0.0)),
+                "mid": float(r.get("mid", 0.0)),
+                "high": float(r.get("high", 0.0)),
+            }
+
+        esg_doc: dict = {
+            "data_date": data_date,
+            "methodology_version": methodology_version,
+            "scope_caveat": SCOPE_CAVEAT,
+            "scope_2": {
+                "location_based": _rng(loc),
+                "market_based": _rng(mkt),
+            },
+            "esrs_e1": {
+                "standard": "ESRS E1 Climate Change",
+                "disclosure": "E1-6 Gross Scopes 1, 2, 3 and Total GHG emissions",
+                "line_item": "Scope 2 purchased energy (location-based vs market-based) — estimated from OpenRouter-visible LLM inference traffic (proxy for Scope 3 Category 1 purchased services)",
+                "location_based_kgco2e": _rng(loc),
+                "market_based_kgco2e": _rng(mkt),
+                "modeled_traffic_fraction": float(totals.get("modeled_traffic_fraction", 0.0)),
+                "note": "Ranges carried end-to-end from totals; no collapse to point values. Dual reporting follows GHG Protocol Scope 2. Scale by modeled_traffic_fraction for full inventory. Full uncertainty and partial-coverage statement is in scope_caveat (non-removable).",
+            },
+            "source_citation": doc.get("source_citation", ""),
+        }
+
+        esg_path = config.OUTPUT_DIR / "esg_export.json"
+        esg_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(esg_path, "w", encoding="utf-8") as f:
+            json.dump(esg_doc, f, ensure_ascii=False, indent=2)
+            f.write("\n")
+        log.info("esg_export.json written to %s (date=%s)", esg_path, data_date)
+    except Exception:  # noqa: S110 - deliberate: if read or write of esg fails, skip and continue per spec
+        log.warning("esg_export write skipped (read or write path failed); primary outputs unaffected")

@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pipeline.config as cfg
 from pipeline.estimate import estimate
-from pipeline.output import build_output, validate, write_outputs
+from pipeline.output import build_output, validate, write_esg_export, write_outputs
 from pipeline.types import NormalizedRecord
 
 # --- temp data matching test_estimate style (subset, internally consistent) ---
@@ -562,8 +562,10 @@ def test_write_outputs_validates_before_write_and_copies_to_history(tmp_path, mo
     # Patch only output locations (schema uses real one created for Phase 3)
     fake_latest = tmp_path / "data" / "output" / "latest.json"
     fake_hist_dir = tmp_path / "data" / "output" / "history"
+    fake_output_dir = tmp_path / "data" / "output"
     monkeypatch.setattr(cfg, "OUTPUT_LATEST_PATH", fake_latest)
     monkeypatch.setattr(cfg, "OUTPUT_HISTORY_DIR", fake_hist_dir)
+    monkeypatch.setattr(cfg, "OUTPUT_DIR", fake_output_dir)
 
     # Build a minimal valid doc (no estimate needed)
     doc = {
@@ -620,8 +622,10 @@ def test_write_outputs_validates_before_write_and_copies_to_history(tmp_path, mo
     # Invalid doc must raise and must not have overwritten (we use a new name to prove)
     fake_latest2 = tmp_path / "data2" / "latest.json"
     fake_hist2 = tmp_path / "data2" / "history"
+    fake_output_dir2 = tmp_path / "data2" / "output"
     monkeypatch.setattr(cfg, "OUTPUT_LATEST_PATH", fake_latest2)
     monkeypatch.setattr(cfg, "OUTPUT_HISTORY_DIR", fake_hist2)
+    monkeypatch.setattr(cfg, "OUTPUT_DIR", fake_output_dir2)
 
     bad = dict(doc)
     bad["models"] = [{"slug": "x"}]  # missing many required fields -> schema fail
@@ -630,3 +634,78 @@ def test_write_outputs_validates_before_write_and_copies_to_history(tmp_path, mo
 
     assert not fake_latest2.exists()
     assert not fake_hist2.exists() or not any(fake_hist2.iterdir())
+
+
+# --- P7 ESG export tests (reconciliation, caveat, schema) ---
+
+
+def test_write_esg_export_emits_correct_dual_totals_and_caveat(monkeypatch, tmp_path):
+    """write_esg_export produces location/market that reconcile exactly to doc totals;
+    scope_caveat is present, non-empty and contains the required project statement.
+    """
+    _patch_estimate_paths(monkeypatch, tmp_path)
+
+    estimates = estimate(GOLDEN_RECORDS)
+    doc = build_output(estimates, GOLDEN_RECORDS, GOLDEN_DATE, generated_at="2026-06-15T00:00:00Z")
+
+    fake_out = tmp_path / "data" / "output"
+    monkeypatch.setattr(cfg, "OUTPUT_DIR", fake_out)
+
+    write_esg_export(doc)
+
+    esg_path = fake_out / "esg_export.json"
+    assert esg_path.exists()
+    esg = json.loads(esg_path.read_text(encoding="utf-8"))
+
+    # reconciliation to the source totals (exact, no tolerance needed for the copied values)
+    loc = doc["totals"]["co2_kg"]
+    mkt = doc["totals"]["co2_kg_market"]
+    assert esg["scope_2"]["location_based"]["low"] == loc["low"]
+    assert esg["scope_2"]["location_based"]["mid"] == loc["mid"]
+    assert esg["scope_2"]["location_based"]["high"] == loc["high"]
+    assert esg["scope_2"]["market_based"]["low"] == mkt["low"]
+    assert esg["scope_2"]["market_based"]["mid"] == mkt["mid"]
+    assert esg["scope_2"]["market_based"]["high"] == mkt["high"]
+
+    # also the esrs_e1 mirrors
+    assert esg["esrs_e1"]["location_based_kgco2e"]["mid"] == loc["mid"]
+    assert esg["esrs_e1"]["market_based_kgco2e"]["mid"] == mkt["mid"]
+
+    # non-removable caveat
+    assert "scope_caveat" in esg
+    caveat = esg["scope_caveat"]
+    assert isinstance(caveat, str) and len(caveat) > 50
+    assert "OpenRouter-visible LLM inference" in caveat
+    assert "NOT a measurement of total global data-center emissions" in caveat
+    assert "estimates with uncertainty ranges" in caveat
+
+    # other required fields
+    assert esg["data_date"] == GOLDEN_DATE
+    assert esg["methodology_version"]
+    assert "ESRS E1" in esg["esrs_e1"]["standard"]
+
+
+def test_esg_export_schema_validation_with_fixture(monkeypatch, tmp_path):
+    """A constructed export (from golden) validates against the dedicated schema.
+    Also exercises direct write path.
+    """
+    _patch_estimate_paths(monkeypatch, tmp_path)
+
+    estimates = estimate(GOLDEN_RECORDS)
+    doc = build_output(estimates, GOLDEN_RECORDS, GOLDEN_DATE, generated_at="2026-06-15T00:00:00Z")
+
+    fake_out = tmp_path / "data" / "output"
+    monkeypatch.setattr(cfg, "OUTPUT_DIR", fake_out)
+
+    write_esg_export(doc)
+    esg = json.loads((fake_out / "esg_export.json").read_text(encoding="utf-8"))
+
+    schema_path = Path(__file__).resolve().parents[1] / "schemas" / "esg_export.schema.json"
+    with open(schema_path, "r", encoding="utf-8") as f:
+        schema = json.load(f)
+
+    # must not raise
+    jsonschema.validate(instance=esg, schema=schema)
+
+    # quick sanity that required non-removable field survived schema
+    assert esg["scope_caveat"]
