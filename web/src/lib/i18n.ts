@@ -171,6 +171,21 @@ export const translations = {
     details: 'Details',
     close: 'Close',
     assumptions: 'Assumptions & Sources',
+
+    methodologyVersion: 'Methodology v',
+    heroTitle: 'LLM Carbon Index',
+    heroSubtitle: 'Transparent CO₂ estimation for the AI era.',
+    heroDesc: 'Tracking the environmental footprint of OpenRouter LLM inference with end-to-end uncertainty ranges.',
+    heroDescSub: '追踪 OpenRouter 大模型推理的碳足迹，提供端到端的不确定性估算范围。',
+    btnDocs: 'Methodology & Docs',
+    btnShare: 'Share Scenario',
+    errLoad: 'Error loading data:',
+    errEnsure: 'Ensure copy-data ran and public/data/latest.json exists.',
+    topEmitters: 'Top emitters + others',
+    scenarioActive: 'SCENARIO VALUES ACTIVE',
+    baselineActive: 'BASELINE VALUES',
+    footerCopyright: 'Estimates only. Not global measurement. (c) 2026 Wyl.',
+    sensitivityLabel: 'Sensitivity:',
   },
   zh: {
     brand: 'LLM Carbon Index',
@@ -324,8 +339,24 @@ export const translations = {
     details: '详情',
     close: '关闭',
     assumptions: '假设与数据来源',
+
+    methodologyVersion: '方法学 v',
+    heroTitle: 'LLM Carbon Index',
+    heroSubtitle: 'AI 时代的透明 CO₂ 估算。',
+    heroDesc: '追踪 OpenRouter 大模型推理的碳足迹，提供端到端的不确定性估算范围。',
+    heroDescSub: 'Tracking the environmental footprint of OpenRouter LLM inference with end-to-end uncertainty ranges.',
+    btnDocs: '方法学与文档',
+    btnShare: '分享情景视图',
+    errLoad: '数据加载失败：',
+    errEnsure: '请确保 copy-data 脚本已运行，且 public/data/latest.json 存在。',
+    topEmitters: '前排排放模型及其他',
+    scenarioActive: '情景数值生效中',
+    baselineActive: '基线数值',
+    footerCopyright: '仅为估算值，非全球测量数据。(c) 2026 Wyl.',
+    sensitivityLabel: '敏感度:',
   }
 } as const;
+
 
 export function useI18n(lang: Lang) {
   return translations[lang];

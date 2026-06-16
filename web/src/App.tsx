@@ -160,20 +160,20 @@ function App() {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-6">
                 <div className="text-sm text-[#9ba19b] font-mono">
-                  Methodology v{data ? data.methodology_version : '—'} • {data ? data.data_date : '—'}
+                  {tt.methodologyVersion}{data ? data.methodology_version : '—'} • {data ? data.data_date : '—'}
                 </div>
               </div>
               <h1 className="text-6xl sm:text-8xl font-black tracking-[-3px] text-white mb-6 leading-[0.9]">
-                LLM Carbon Index
+                {tt.heroTitle}
               </h1>
               <div className="space-y-4">
                 <p className="text-2xl sm:text-3xl text-emerald-400 font-bold tracking-tight leading-tight">
-                  Transparent CO₂ estimation for the AI era.
+                  {tt.heroSubtitle}
                 </p>
                 <p className="text-lg text-[#a1a6a1] leading-relaxed max-w-2xl font-medium">
-                  Tracking the environmental footprint of OpenRouter LLM inference with end-to-end uncertainty ranges. 
+                  {tt.heroDesc} 
                   <span className="block mt-2 opacity-60 font-normal italic">
-                    追踪 OpenRouter 大模型推理的碳足迹，提供端到端的不确定性估算范围。
+                    {tt.heroDescSub}
                   </span>
                 </p>
               </div>
@@ -186,7 +186,7 @@ function App() {
                 rel="noreferrer"
                 className="btn btn-primary px-8 py-4 text-base shadow-xl"
               >
-                Methodology & Docs
+                {tt.btnDocs}
               </a>
               <button 
                 onClick={() => {
@@ -195,7 +195,7 @@ function App() {
                 }}
                 className="btn btn-secondary px-8 py-4 text-base"
               >
-                Share Scenario
+                {tt.btnShare}
               </button>
             </div>
           </div>
@@ -265,7 +265,7 @@ function App() {
 
         {error && (
           <div className="my-6 p-4 border border-red-900/50 bg-red-950/20 text-red-300 rounded-xl text-sm">
-            Error loading data: {error}. Ensure copy-data ran and public/data/latest.json exists.
+            {tt.errLoad} {error}. {tt.errEnsure}
           </div>
         )}
 
@@ -296,7 +296,7 @@ function App() {
                     onChange={() => { /* top-N wired if desired */ }} 
                     className="text-xs py-1 px-2 bg-[#0a0c0a] border border-[#242924] rounded-lg"
                   >
-                    <option>Top emitters + others</option>
+                    <option>{tt.topEmitters}</option>
                   </select>
                 </div>
               </div>
@@ -319,7 +319,7 @@ function App() {
                   <h2 className="font-bold">{tt.tableTitle}</h2>
                   <p className="text-xs text-[#9ba19b]">{tt.tableSubtitle}</p>
                 </div>
-                <div className="text-[11px] text-emerald-400/80 font-medium">{isScenario ? 'SCENARIO VALUES ACTIVE' : 'BASELINE VALUES'}</div>
+                <div className="text-[11px] text-emerald-400/80 font-medium">{isScenario ? tt.scenarioActive : tt.baselineActive}</div>
               </div>
 
               <ModelsTable 
@@ -367,7 +367,7 @@ function App() {
             <footer className="pt-8 mt-4 border-t border-[#242924] text-xs text-[#9ba19b] flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 justify-between">
               <div className="max-w-md">
                 {tt.footerStatic}<br/>
-                <span className="opacity-60">Estimates only. Not global measurement. (c) 2026 Wyl.</span>
+                <span className="opacity-60">{tt.footerCopyright}</span>
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-1">
                 <a href="https://linkedin.com/in/wyl2607" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] transition-colors">LinkedIn</a>
@@ -377,7 +377,7 @@ function App() {
                 <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/docs/methodology.md" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] underline-offset-2 hover:underline">{tt.methodologyFull}</a>
                 {sensData && sensData.drivers && (
                   <span className="text-emerald-500/80">
-                    Sensitivity: {sensData.dominant} (±{Math.round(Math.max(...sensData.drivers.map(d => d.total_co2_swing_pct.high)))}%)
+                    {tt.sensitivityLabel} {sensData.dominant} (±{Math.round(Math.max(...sensData.drivers.map(d => d.total_co2_swing_pct.high)))}%)
                   </span>
                 )}
               </div>
