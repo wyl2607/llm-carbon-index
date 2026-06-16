@@ -224,3 +224,36 @@ The works above supply the empirical grounding and modeling precedent for the eq
 [6] CodeCarbon. https://github.com/mlco2/codecarbon
 [7] Jegham et al. (2025). How Hungry is AI? Benchmarking Energy, Water, and Carbon Footprint of LLM Inference. https://arxiv.org/abs/2505.09598
 [8] Li et al. (2023). Making AI Less "Thirsty": Water Footprint of LLMs. https://arxiv.org/abs/2304.03271
+[9] Google (2025). AI and Energy: A Technical Note on Inference Energy. https://arxiv.org/abs/2508.15734
+
+## 14. Literature cross-validation & citations (Phase 6P)
+
+This project performs a structured, automated cross-validation of its per-query energy (and derived CO₂) bands against independently published literature anchors. The harness lives in `pipeline/validate_literature.py` and is driven by the machine-readable registry `data/validation/literature_anchors.yaml`.
+
+### Anchors and provenance
+- Every anchor records an exact published figure (or short-prompt representative) as `{low, mid, high}` tolerance band plus (when available) a `co2_g_per_query` mid.
+- Every numeric value is accompanied by a `source_id` that **must** resolve to an entry in `data/provenance/sources.yaml` under the distinct `LIT-*` namespace (BLOOM, Gemini, OpenAI blog claim, Jegham). The test gate `tests/test_literature_anchors.py` asserts resolvability for all anchors.
+- `LIT-OPENAI` (0.34 Wh "average query", Altman 2025-06-10 blog) is explicitly marked `verified: false` and is carried only as a report-only soft anchor; no hard band assertion is executed against it until a peer-reviewed source supersedes the blog post.
+
+### Model matching and per-query derivation
+For each anchor the harness:
+1. Uses the `model_match` spec (`params_b_gte` + `dense`, `family`, etc.) to locate comparable rows in the day's `latest.json` models, consulting `model_crosswalk.yaml` for `params_b` / `active_params_b` when needed.
+2. When no exact high-parameter dense model is present in the index, it falls back to the corresponding `parameter_class_fallback` band from `intensity.yaml` (large-class for BLOOM-scale workloads). This guarantees a usable band even as the model catalogue evolves.
+3. Scales the selected `wh_per_output_token` Range by the anchor's documented `query_output_tokens` (representative output-side tokens for that literature workload definition) to produce a project `band` in Wh/query.
+4. Where the anchor supplies a grid/PUE-sensitive `co2_g_per_query`, a parallel CO₂ band is derived using the matched model's (or default) `pue` and `carbon_intensity_gco2_kwh`.
+5. Containment is tested as `band.low <= anchor_mid <= band.high`. A flag (out-of-band) is recorded as an explicit finding, never silently accepted.
+
+The emitted `data/output/validation.json` contains one record per anchor with `{id, anchor, band, co2_band?, status, source_id, verified, used, note}`.
+
+### Why the harness matters
+Literature numbers differ for well-understood reasons:
+- BLOOM (Luccioni et al. arXiv:2211.02001 / JMLR 2023) is all-in (dynamic + idle + embodied) on a 176 B dense model on French grid hardware; our operational per-token ranges deliberately exclude persistent idle, producing a comparable but narrower figure.
+- Google Gemini report (arXiv:2508.15734, Aug 2025) reports a low median text-prompt value (0.24 Wh) on highly optimized serving stacks; our closed-model rows use wide `parameter_class_fallback` bands precisely because parameters, hardware, and DC efficiency are undisclosed.
+- Jegham et al. (arXiv:2505.09598) document both short-query (0.42 Wh) and long-prompt extremes (29 Wh). Our harness uses a typical-query scaling factor; long-prompt outliers are expected to flag and are surfaced for readers.
+- Strubell et al. (arXiv:1906.02243) established the original call for energy reporting that this work extends from training to public inference traffic.
+- LLMCarbon / Faiz et al. (arXiv:2309.14393) supplied end-to-end modeling precedent (operational + embodied) whose 24–35 % embodied share informed C-EMBODIED.
+- HF AI Energy Score and EcoLogits remain the primary measured inputs (E-series); the literature harness provides an external sanity layer rather than replacing them.
+
+Out-of-band verified anchors are retained in `validation.json` and can be inspected on every run. They are design signals (e.g. "our conservative closed fallback exceeds a vendor's reported median") rather than failures. The harness runs in the test suite (`pytest tests/test_literature_anchors.py`) and can be invoked standalone; any single file read error skips only the affected anchor.
+
+This mechanism keeps the project honest against the external literature while respecting the "no silent 0 / no magic numbers / ranges end-to-end" invariants.

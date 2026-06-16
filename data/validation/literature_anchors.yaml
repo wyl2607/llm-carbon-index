@@ -1,0 +1,52 @@
+# Literature cross-validation anchors (Phase 6P)
+#
+# Every numeric anchor carries a source_id resolving to data/provenance/sources.yaml (LIT-* namespace).
+# {low,mid,high} ranges only; no single-point fabrication.
+# verified:false anchors are report-only (no hard band assertions in tests).
+# model_match guides selection of comparable index model or class band from crosswalk + output.
+# query_output_tokens: harness convention for scaling project's wh_per_output_token -> wh_per_query
+#   for apples-to-apples comparison to the cited literature "per query" workload definition.
+# If any file read fails for an anchor, that anchor is skipped (never abort whole run).
+#
+# Band assertion: project's derived per-query band must contain the anchor's published mid
+# (band.low <= lit_mid <= band.high). Out-of-band for a *verified* anchor is a surfaced finding,
+# not a silent pass (e.g. long-prompt, idle-inclusive, or conservative closed-model opacity).
+
+anchors:
+  - id: LIT-BLOOM
+    model_match: { params_b_gte: 150, dense: true }
+    metric: wh_per_query
+    value: { low: 3.5, mid: 3.96, high: 4.5 }
+    co2_g_per_query: { mid: 1.5 }
+    source_id: LIT-BLOOM
+    verified: true
+    query_output_tokens: 800
+    note: "all-in incl idle; per-token-only undercounts → needs idle (see 6j E-IDLE). Uses large-class band fallback as no 176B-dense in current index."
+
+  - id: LIT-GEMINI
+    model_match: { family: "gemini" }
+    metric: wh_per_query
+    value: { low: 0.20, mid: 0.24, high: 0.28 }
+    co2_g_per_query: { mid: 0.03 }
+    source_id: LIT-GEMINI
+    verified: true
+    query_output_tokens: 120
+    note: "median text prompt (Google reported). Our gemini rows use parameter_class_fallback (large band, conservative for closed opacity); lower literature value is expected finding."
+
+  - id: LIT-OPENAI
+    model_match: { family: "gpt" }
+    metric: wh_per_query
+    value: { low: 0.30, mid: 0.34, high: 0.40 }
+    source_id: LIT-OPENAI
+    verified: false
+    query_output_tokens: 150
+    note: "blog claim, not peer-reviewed; 'average query' undefined. Report-only until peer-reviewed source exists."
+
+  - id: LIT-JEGHAM
+    model_match: {}
+    metric: wh_per_query
+    value: { low: 0.35, mid: 0.42, high: 0.50 }
+    source_id: LIT-JEGHAM
+    verified: true
+    query_output_tokens: 350
+    note: "short query 0.42 Wh representative for harness scaling. Long-prompt max observed 29 Wh (our typical-query scaling intentionally does not cover extreme long-prompt workloads; flagged findings surface this)."

@@ -21,6 +21,35 @@ from pipeline.config import (
 )
 
 
+def _load_annual() -> list[dict]:
+    """Load the annual_factors table (list of region dicts). [] on any failure."""
+    try:
+        with open(ANNUAL_FACTORS_PATH, encoding="utf-8") as f:
+            loaded = yaml.safe_load(f)
+            if isinstance(loaded, list):
+                return [e for e in loaded if isinstance(e, dict)]
+    except Exception:  # noqa: S110 - missing/unreadable table -> empty (caller falls back)
+        pass
+    return []
+
+
+def em_zone_for_region(region: str, annual: list[dict]) -> str | None:
+    """Resolve the Electricity Maps zone code for an internal region key.
+
+    Internal region keys ("us-east", "europe-west", ...) are NOT valid Electricity
+    Maps zones (which are codes like "DE", "CN", "US-MIDA-PJM"). The mapping lives
+    in annual_factors.yaml as an `electricitymaps_zone` field per region. Returns
+    None when the region is unknown or has no mapped zone, so the live query is
+    skipped (and the annual factor is used) instead of querying an invalid zone
+    that would always 4xx and silently degrade.
+    """
+    for entry in annual:
+        if entry.get("region") == region:
+            zone = entry.get("electricitymaps_zone")
+            return str(zone) if zone else None
+    return None
+
+
 def carbon_intensity(region: str) -> tuple[float, str, str]:
     """Return (gCO2eq per kWh, source_label, source_id) for the given region key.
 
@@ -28,19 +57,22 @@ def carbon_intensity(region: str) -> tuple[float, str, str]:
     (e.g. "us-east", "europe-west", "cn-north").
 
     Attempt:
-    - If ELECTRICITYMAPS_API_KEY present: GET /v3/carbon-intensity/latest?zone={region}
-      with header "auth-token". On any failure (network, 4xx/5xx, bad payload,
-      unknown zone, rate limit) fall through.
-    - Fallback: load ANNUAL_FACTORS_PATH, exact region match -> value + "annual_factor".
+    - If ELECTRICITYMAPS_API_KEY present AND the region maps to a real Electricity
+      Maps zone (annual_factors.yaml `electricitymaps_zone`): GET
+      /v3/carbon-intensity/latest?zone={zone} with header "auth-token". On any
+      failure (network, 4xx/5xx, bad payload, unknown zone, rate limit) fall through.
+    - Fallback: ANNUAL_FACTORS_PATH exact region match -> value + "annual_factor".
       If region unknown in table, use seeded "default" entry (or first entry).
       Source label is always "annual_factor" for the fallback path.
 
     Respects free-tier terms (no caching here; Phase 3+ may add). Never silent 0.
     """
+    annual = _load_annual()
     key = electricitymaps_api_key()
-    if key:
+    zone = em_zone_for_region(region, annual)
+    if key and zone:
         try:
-            url = f"{ELECTRICITYMAPS_BASE_URL}/carbon-intensity/latest?zone={region}"
+            url = f"{ELECTRICITYMAPS_BASE_URL}/carbon-intensity/latest?zone={zone}"
             resp = requests.get(
                 url, headers={"auth-token": key}, timeout=12
             )
@@ -63,15 +95,6 @@ def carbon_intensity(region: str) -> tuple[float, str, str]:
             pass
 
     # --- annual factor fallback (never raises) ---
-    annual: list[dict] = []
-    try:
-        with open(ANNUAL_FACTORS_PATH, encoding="utf-8") as f:
-            loaded = yaml.safe_load(f)
-            if isinstance(loaded, list):
-                annual = [e for e in loaded if isinstance(e, dict)]
-    except Exception:
-        annual = []
-
     # exact match first
     for entry in annual:
         if entry.get("region") == region:
