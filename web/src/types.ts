@@ -29,6 +29,8 @@ export interface Model {
   grid_source: GridSource | string;
   pue: number;
   co2_kg: Range;
+  co2_kg_embodied?: Range;
+  co2_kg_total?: Range;
   co2_kg_market?: Range;
   renewable_match_pct?: number | null;
   wue?: number;
@@ -47,6 +49,8 @@ export interface Totals {
   est_output_tokens?: number;
   energy_kwh?: Range;
   co2_kg: Range;
+  co2_kg_embodied?: Range;
+  co2_kg_total?: Range;
   co2_kg_market?: Range;
   water_liters?: Range;
   by_origin: Record<string, { co2_kg: Range, co2_kg_market?: Range, water_liters?: Range }>;
@@ -61,7 +65,11 @@ export interface LatestData {
   scope_note: string;
   assumptions: {
     input_output_ratio: string;
-    default_pue: number;
+    default_pue?: number;
+    pue_band?: string;
+    prefill_alpha?: string;
+    embodied_ratio_of_operational?: string;
+    water_l_per_kwh?: string;
   };
   models: Model[];
   totals: Totals;

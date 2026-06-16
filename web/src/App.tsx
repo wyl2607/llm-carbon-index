@@ -13,6 +13,7 @@ import { HistoryViewer } from './components/HistoryViewer';
 import { OriginDonut } from './components/OriginDonut';
 import { ModelDetailModal } from './components/ModelDetailModal';
 import { shiftedCo2Kg } from './lib/scenario';
+import { formatCO2Range, formatWaterRange } from './lib/format';
 import { Zap } from 'lucide-react';
 
 const isSampleData = (models: Model[]) =>
@@ -202,13 +203,41 @@ function App() {
 
           {/* KPIs — high impact immediate context */}
           {totals && (
-            <KpiCards 
-              totals={totals} 
-              baselineCo2={baselineCo2} 
-              shift={greenShiftPercent} 
-              lang={lang} 
+            <KpiCards
+              totals={totals}
+              baselineCo2={baselineCo2}
+              shift={greenShiftPercent}
+              lang={lang}
               modeledFraction={data?.totals?.modeled_traffic_fraction}
             />
+          )}
+
+          {/* v0.2 lifecycle + water strip — operational vs embodied vs total + water */}
+          {totals?.co2_kg_total && totals?.co2_kg_embodied && (
+            <div className="mt-5 rounded-2xl border border-[#242924] bg-black/30 p-5">
+              <div className="text-[11px] font-bold uppercase tracking-widest text-emerald-400/80 mb-3">{tt.lcaTitle}</div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <div className="text-[11px] text-[#717771] mb-0.5">{tt.lcaOperational}</div>
+                  <div className="font-mono text-[#e4e7e4]">{formatCO2Range(totals.co2_kg)}</div>
+                </div>
+                <div>
+                  <div className="text-[11px] text-[#717771] mb-0.5">{tt.lcaEmbodied}</div>
+                  <div className="font-mono text-[#a1a6a1]">{formatCO2Range(totals.co2_kg_embodied)}</div>
+                </div>
+                <div>
+                  <div className="text-[11px] text-emerald-400/80 mb-0.5">{tt.lcaTotal}</div>
+                  <div className="font-mono text-emerald-300 font-semibold">{formatCO2Range(totals.co2_kg_total)}</div>
+                </div>
+                {totals.water_liters && (
+                  <div>
+                    <div className="text-[11px] text-blue-300/70 mb-0.5">{tt.lcaWater}</div>
+                    <div className="font-mono text-blue-300">{formatWaterRange(totals.water_liters)}</div>
+                  </div>
+                )}
+              </div>
+              <p className="mt-3 text-[11px] text-[#717771] leading-relaxed max-w-3xl">{tt.lcaNote}</p>
+            </div>
           )}
         </div>
 
