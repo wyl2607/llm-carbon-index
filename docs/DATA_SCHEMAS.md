@@ -82,7 +82,11 @@ The single source of truth for every artifact shape. If a phase needs to change 
         "by_efficiency": { "top_n": 10, "ranks_changed": 0, "max_displacement": 0 }
       },
       "unweighted": { "co2_kg": { "low": 0, "mid": 0, "high": 0 } }  // equal-weight mean per model = totals.co2_kg / N (the "average modeled-model footprint"); a different number from the traffic-weighted total, so the headline isn't read as one popular model's artifact (FAIRNESS.md §4)
-    }
+    },
+    "tiers": [                                    // Phase 6m: indistinguishable tiers (headline signal). Each inner list = slugs whose co2_kg {low,high} ranges overlap and are therefore empirically indistinguishable. tiers[0] is Tier 1 (lowest-impact band). Within-tier order is not meaningful; exact ranks are secondary/dimmed in UI. Emitted by build_output using fairness.indistinguishable_tiers; membership is stable across alt_assumption_sets while per-model ranks are not (see rank_stability.by_co2.ranks_changed).
+      ["minimax/minimax-m3-20260531", "other-in-band"],
+      ["next-band-model-1"]
+    ]
   }
 }
 ```

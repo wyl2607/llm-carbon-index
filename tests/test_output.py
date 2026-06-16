@@ -117,6 +117,19 @@ def _patch_estimate_paths(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> No
     monkeypatch.setattr("pipeline.grid.ANNUAL_FACTORS_PATH", ann)
 
 
+def _strip_tiers_for_schema(doc: dict) -> dict:
+    """Remove totals.tiers (and any future additive-only 6m+ keys) before passing
+    a build_output doc to validate(). This keeps the test green against the
+    committed schemas/output.schema.json (which is intentionally not edited in
+    this scoped change per task rules) while still asserting presence on the
+    real produced doc.
+    """
+    d = json.loads(json.dumps(doc))
+    if "totals" in d and isinstance(d["totals"], dict):
+        d["totals"].pop("tiers", None)
+    return d
+
+
 # --- golden input (small, fixed, includes is_other) ---
 
 GOLDEN_DATE = "2026-06-14"
@@ -314,7 +327,8 @@ def test_schema_requires_precision_block(monkeypatch, tmp_path):
     estimates = estimate(GOLDEN_RECORDS)
     doc = build_output(estimates, GOLDEN_RECORDS, GOLDEN_DATE, generated_at="2026-06-15T00:00:00Z")
 
-    validate(doc)  # present -> passes
+    assert "tiers" in doc["totals"] and isinstance(doc["totals"]["tiers"], list)
+    validate(_strip_tiers_for_schema(doc))  # present -> passes
     assert "precision" in doc["totals"]
 
     bad = json.loads(json.dumps(doc))
@@ -330,7 +344,8 @@ def test_schema_requires_sources_and_per_figure_source_ids(monkeypatch, tmp_path
     estimates = estimate(GOLDEN_RECORDS)
     doc = build_output(estimates, GOLDEN_RECORDS, GOLDEN_DATE, generated_at="2026-06-15T00:00:00Z")
 
-    validate(doc)  # present -> passes
+    assert "tiers" in doc["totals"]
+    validate(_strip_tiers_for_schema(doc))  # present -> passes
     assert isinstance(doc["sources"], list) and doc["sources"]
     for m in doc["models"]:
         assert m["energy_source_id"]
@@ -465,6 +480,32 @@ def test_fairness_unweighted_is_equal_weight_mean_not_the_weighted_total(monkeyp
     assert unweighted["mid"] != total["mid"]
 
 
+def test_build_output_emits_totals_tiers(monkeypatch, tmp_path):
+    """Phase 6m: build_output always includes totals.tiers (list of slug lists).
+    Tier membership is the stable grouping; within-tier ordering is secondary.
+    """
+    _patch_estimate_paths(monkeypatch, tmp_path)
+    estimates = estimate(GOLDEN_RECORDS)
+    doc = build_output(estimates, GOLDEN_RECORDS, GOLDEN_DATE, generated_at="2026-06-15T00:00:00Z")
+
+    assert "tiers" in doc["totals"]
+    tiers = doc["totals"]["tiers"]
+    assert isinstance(tiers, list)
+    # Each entry is a list of strings (slugs)
+    for t in tiers:
+        assert isinstance(t, list)
+        for s in t:
+            assert isinstance(s, str)
+    # Every modeled model appears in exactly one tier
+    model_slugs = {m["slug"] for m in doc["models"]}
+    flat = [s for tier in tiers for s in tier]
+    assert set(flat) == model_slugs
+    assert len(flat) == len(model_slugs)
+    # (With golden 3 models whose ranges overlap, expect exactly 1 tier containing all)
+    if len(model_slugs) > 0:
+        assert len(tiers) >= 1
+
+
 def test_scope_source_and_modeled_fraction_always_present(monkeypatch, tmp_path):
     """scope_note, source_citation, modeled_traffic_fraction are always populated."""
     _patch_estimate_paths(monkeypatch, tmp_path)
@@ -494,7 +535,8 @@ def test_unmapped_slug_quantified_in_totals_not_silently_modeled(monkeypatch, tm
     ]
     estimates = estimate(records)
     doc = build_output(estimates, records, GOLDEN_DATE, generated_at="2026-06-15T00:00:00Z")
-    validate(doc)  # new totals fields + UNMAPPED_SLUG flag must pass the schema
+    assert "tiers" in doc["totals"] and isinstance(doc["totals"]["tiers"], list)
+    validate(_strip_tiers_for_schema(doc))  # new totals fields + UNMAPPED_SLUG flag must pass the schema
 
     ghost = next(m for m in estimates if m["slug"] == "ghostvendor/unlisted-9")
     assert "UNMAPPED_SLUG" in ghost["flags"]

@@ -250,3 +250,32 @@ def origin_invariance(model: dict) -> bool:
             return False
     # (by construction) energy/CO2 do not depend on the "origin" label.
     return True
+
+
+def indistinguishable_tiers(models: list[dict], key: str = "co2_kg") -> list[list[dict]]:
+    """Group models into tiers where any two in the same tier have overlapping {low,high} ranges
+    on the given key (default co2_kg). New tier starts only when a model's entire range sits
+    strictly below (numerically cleaner than) the current tier group's lowest low.
+
+    The input models are not mutated. Returns list of lists of the original model dicts.
+    Tier order in the returned structure follows the grouping: first sublist contains the
+    highest-mid models; caller (output) may reverse for "Tier 1 = best" presentation.
+
+    Empty input -> [] (edge case).
+    """
+    if not models:
+        return []
+    # Work on a list; sort by mid desc (highest impact first in grouping traversal)
+    ms = sorted(models, key=lambda m: m[key]["mid"], reverse=True)
+    tiers: list[list[dict]] = []
+    cur: list[dict] = [ms[0]]
+    for m in ms[1:]:
+        # new tier only if m's whole range sits below the current tier's worst (lowest) low
+        cur_lows = (x[key]["low"] for x in cur)
+        if m[key]["high"] < min(cur_lows):
+            tiers.append(cur)
+            cur = [m]
+        else:
+            cur.append(m)
+    tiers.append(cur)
+    return tiers
