@@ -25,6 +25,12 @@ def wh_per_output_token(
       (parameter_class_fallback or declared-but-missing-row -> FALLBACK + class band).
     - absent slug -> UNKNOWN_MODEL + parameter_class_fallback band
 
+    P5 (MoE): when selecting parameter_class_fallback band, key on cw active_params_b
+    (fall back only to params_b if active absent). This implements LLMCarbon insight that
+    inference energy scales with *active* params for MoE models (e.g. 230B total / 10B active
+    must land in small class). Unknowns / no-size still conservatively pick largest band.
+    Measured rows always priority (Wave 1).
+
     Returned energy_source is always a valid EnergySource literal. source_id is the
     provenance key (Phase 6G). Flags contain UNKNOWN_MODEL / FALLBACK_ENERGY_CLASS only
     on the fallback path (no silent 0). Model-specific numbers live only in intensity.yaml.
@@ -70,7 +76,12 @@ def wh_per_output_token(
         if "FALLBACK_ENERGY_CLASS" not in flags:
             flags.append("FALLBACK_ENERGY_CLASS")
         bands = (intensity_table or {}).get("parameter_class_fallback", [])
-        band = _choose_fallback_band(bands)
+        active_b: float | None = None
+        if cw_entry:
+            active_b = cw_entry.get("active_params_b")
+            if active_b is None:
+                active_b = cw_entry.get("params_b")
+        band = _choose_fallback_band(bands, active_params_b=active_b)
         whd = band["wh_per_output_token"]
         return (
             Range(whd["low"], whd["mid"], whd["high"]),
@@ -82,7 +93,12 @@ def wh_per_output_token(
     # cw declared measured source but intensity has no row -> graceful class fallback (existing behavior)
     flags.append("FALLBACK_ENERGY_CLASS")
     bands = (intensity_table or {}).get("parameter_class_fallback", [])
-    band = _choose_fallback_band(bands)
+    active_b: float | None = None
+    if cw_entry:
+        active_b = cw_entry.get("active_params_b")
+        if active_b is None:
+            active_b = cw_entry.get("params_b")
+    band = _choose_fallback_band(bands, active_params_b=active_b)
     whd = band["wh_per_output_token"]
     return (
         Range(whd["low"], whd["mid"], whd["high"]),
@@ -92,9 +108,16 @@ def wh_per_output_token(
     )
 
 
-def _choose_fallback_band(bands: list[dict]) -> dict:
-    """Pick the most conservative (largest max_active) band for unknowns / fallbacks.
-    If empty, synthesize a safe documented default (still flagged).
+def _choose_fallback_band(bands: list[dict], active_params_b: float | None = None) -> dict:
+    """Select band keyed on active params (P5 MoE).
+
+    - If active_params_b supplied (>0): pick smallest max_active_params_b band that still
+      covers it (i.e. first sufficient class for the *active* size; total params ignored
+      for MoE). This is the key change: 230B-total/10B-active lands in SMALL not LARGE.
+    - Else (unknown model, no cw size info): pick most conservative (largest max_active)
+      band.
+
+    If empty, synthesize a safe documented default (still flagged upstream).
     """
     if not bands:
         # ultimate safety net; numbers match the seeded large band intent
@@ -104,7 +127,16 @@ def _choose_fallback_band(bands: list[dict]) -> dict:
             "source": "parameter_class_fallback (ASSUMPTIONS.md#E-CLASS-LARGE)",
             "source_id": "E-CLASS-LARGE",
         }
-    # largest max_active as conservative proxy when params unknown
+    if active_params_b is not None and active_params_b > 0:
+        candidates = [
+            b for b in bands
+            if (b.get("max_active_params_b") or 0) >= active_params_b
+        ]
+        if candidates:
+            # tightest sufficient band (by max_active)
+            return min(candidates, key=lambda b: (b.get("max_active_params_b") or 0))
+        # model larger than any seeded band: fall back to largest (conservative)
+    # unknown or no-size: conservative largest
     return max(bands, key=lambda b: b.get("max_active_params_b") or 0)
 
 
@@ -115,6 +147,7 @@ def energy_kwh(
     prefill_alpha: Range | None = None,
     idle_kwh_per_day: Range | None = None,
     share_of_day: float = 0.0,
+    regime_multiplier: Range | None = None,
 ) -> Range:
     """Total IT energy in kWh for the day's tokens.
 
@@ -135,6 +168,13 @@ def energy_kwh(
     Default (None/0) contributes exactly zero (no behavior change for callers
     that have not yet been updated to pass per-model idle). Only models with
     defensible idle data carry the field in intensity.yaml (E-IDLE).
+
+    P6 regime multiplier (OPTIONAL): dynamic regime/batching/prompt-length factor
+    from data/assumptions/regime_factors.yaml (R-* sourced). Multiplies the
+    (decode+prefill) dynamic kWh (before or after idle; order commutative for Range).
+    Makes prefill_alpha + fixed Wh/token into a user-tunable regime. When None or
+    omitted, multiplies by 1.0 (no change to prior callers). Range * Range used.
+    See ASSUMPTIONS.md#R-REGIME and regime_factors.yaml for short/med/long × low/high.
     """
     decode = wh_per_token * output_tokens
     if input_tokens and prefill_alpha is not None:
@@ -147,4 +187,6 @@ def energy_kwh(
     if idle_kwh_per_day is not None and share_of_day > 0:
         idle_contrib = idle_kwh_per_day * share_of_day  # Range * scalar -> Range
         kwh = kwh + idle_contrib  # Range + Range supported
+    if regime_multiplier is not None:
+        kwh = kwh * regime_multiplier  # Range * Range for regime (P6)
     return kwh
