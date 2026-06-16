@@ -215,7 +215,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
             </div>
             <input
               type="text"
-              className="block w-full pl-9 pr-3 py-2 border border-[#242924] rounded-xl bg-[#0a0c0a] placeholder-[#717771] focus:border-emerald-600 text-sm"
+              className="block w-full pl-9 pr-3 py-2 border border-[#242924] rounded-xl bg-[#0a0c0a] placeholder-[#969c96] focus:border-emerald-600 text-sm"
               placeholder={tt.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
