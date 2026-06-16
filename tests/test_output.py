@@ -366,7 +366,7 @@ def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path)
     )
 
     # Basic presence and values
-    assert doc["methodology_version"] == "0.4.0"
+    assert doc["methodology_version"] == "0.5.0"
     assert doc["generated_at"] == "2026-06-15T00:00:00Z"
     assert doc["data_date"] == GOLDEN_DATE
     assert doc["source_citation"] == (
@@ -446,6 +446,23 @@ def test_totals_reconcile_with_model_sums_and_breakdowns(monkeypatch, tmp_path):
     assert by_oc_low == doc["totals"]["co2_kg"]["low"]
     assert by_oc_mid == doc["totals"]["co2_kg"]["mid"]
     assert by_oc_high == doc["totals"]["co2_kg"]["high"]
+
+
+def test_fairness_unweighted_is_equal_weight_mean_not_the_weighted_total(monkeypatch, tmp_path):
+    """totals.fairness.unweighted.co2_kg = total / N (the average modeled-model footprint),
+    a genuinely different number from the traffic-weighted total when N > 1 (FAIRNESS.md §4)."""
+    _patch_estimate_paths(monkeypatch, tmp_path)
+    estimates = estimate(GOLDEN_RECORDS)
+    doc = build_output(estimates, GOLDEN_RECORDS, GOLDEN_DATE, generated_at="2026-06-15T00:00:00Z")
+
+    n = len(doc["models"])
+    assert n > 1  # otherwise the distinction is vacuous
+    total = doc["totals"]["co2_kg"]
+    unweighted = doc["totals"]["fairness"]["unweighted"]["co2_kg"]
+    for k in ("low", "mid", "high"):
+        assert unweighted[k] == total[k] / n
+    # must NOT silently equal the weighted total (the bug we are guarding against)
+    assert unweighted["mid"] != total["mid"]
 
 
 def test_scope_source_and_modeled_fraction_always_present(monkeypatch, tmp_path):

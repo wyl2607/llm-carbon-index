@@ -4,6 +4,7 @@ import type { Lang } from './lib/i18n';
 import { useI18n } from './lib/i18n';
 import { ScopeDisclaimerBanner } from './components/ScopeDisclaimerBanner';
 import { PrecisionBanner } from './components/PrecisionBanner';
+import { FairnessNote } from './components/FairnessNote';
 import { GroupToggle, type GroupBy } from './components/GroupToggle';
 import { Co2BarChart } from './components/Co2BarChart';
 import { ModelsTable } from './components/ModelsTable';
@@ -242,9 +243,9 @@ function App() {
           )}
         </div>
 
-        {/* Scope / Transparency + estimation precision — professional, always visible */}
+        {/* Scope / Transparency + estimation precision + fairness — professional, always visible */}
         {simulatedData && (
-          <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
             <ScopeDisclaimerBanner
               scopeNote={simulatedData.scope_note}
               sourceCitation={simulatedData.source_citation}
@@ -253,6 +254,7 @@ function App() {
               lang={lang}
             />
             <PrecisionBanner precision={data?.totals?.precision} lang={lang} />
+            <FairnessNote fairness={data?.totals?.fairness} lang={lang} />
           </div>
         )}
 

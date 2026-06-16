@@ -23,6 +23,7 @@ CLOSED_MODELS_PATH = DATA_DIR / "assumptions" / "closed_models.yaml"
 VENDOR_CLAIMS_PATH = DATA_DIR / "assumptions" / "vendor_claims.yaml"
 METHODOLOGY_FACTORS_PATH = DATA_DIR / "assumptions" / "methodology_factors.yaml"
 ANNUAL_FACTORS_PATH = DATA_DIR / "grid" / "annual_factors.yaml"
+ALT_ASSUMPTION_SETS_PATH = DATA_DIR / "assumptions" / "alt_assumption_sets.yaml"
 PROVENANCE_SOURCES_PATH = DATA_DIR / "provenance" / "sources.yaml"
 
 # Data YAMLs walked by the Phase 6G "no unsourced number" gate. The provenance
@@ -34,6 +35,7 @@ PROVENANCE_GATED_PATHS = (
     VENDOR_CLAIMS_PATH,
     METHODOLOGY_FACTORS_PATH,
     ANNUAL_FACTORS_PATH,
+    ALT_ASSUMPTION_SETS_PATH,
 )
 
 OUTPUT_DIR = DATA_DIR / "output"

@@ -65,7 +65,7 @@ def test_build_run_entry_keys_and_sorted_inputs(tmp_path: Path):
     entry = build_run_entry(
         data_date="2026-06-14",
         code_git_sha="abc123def",
-        methodology_version="0.4.0",
+        methodology_version="0.5.0",
         inputs=inputs,
         output_path=out_path,
         tool_versions={"python": "3.11.9", "ecologits": "0.5.0"},
@@ -83,7 +83,7 @@ def test_build_run_entry_keys_and_sorted_inputs(tmp_path: Path):
 
     assert entry["data_date"] == "2026-06-14"
     assert entry["code_git_sha"] == "abc123def"
-    assert entry["methodology_version"] == "0.4.0"
+    assert entry["methodology_version"] == "0.5.0"
     assert entry["tool_versions"] == {"python": "3.11.9", "ecologits": "0.5.0"}
 
     # inputs hashed and keys sorted alpha by name
@@ -106,7 +106,7 @@ def test_upsert_run_appends_replaces_and_sorts_by_date(tmp_path: Path):
     entry1 = {
         "data_date": "2026-06-14",
         "code_git_sha": "shaA",
-        "methodology_version": "0.4.0",
+        "methodology_version": "0.5.0",
         "tool_versions": {"python": "3.11"},
         "inputs": {"openrouter.json": "sha256:aaa"},
         "output_sha256": "sha256:zzz",
@@ -121,7 +121,7 @@ def test_upsert_run_appends_replaces_and_sorts_by_date(tmp_path: Path):
     entry0 = {
         "data_date": "2026-06-13",
         "code_git_sha": "sha0",
-        "methodology_version": "0.4.0",
+        "methodology_version": "0.5.0",
         "tool_versions": {"python": "3.11"},
         "inputs": {"openrouter.json": "sha256:000"},
         "output_sha256": "sha256:yyy",
@@ -136,7 +136,7 @@ def test_upsert_run_appends_replaces_and_sorts_by_date(tmp_path: Path):
     entry1b = {
         "data_date": "2026-06-14",
         "code_git_sha": "shaB",
-        "methodology_version": "0.4.0",
+        "methodology_version": "0.5.0",
         "tool_versions": {"python": "3.11"},
         "inputs": {"openrouter.json": "sha256:aaa2"},
         "output_sha256": "sha256:zzz2",
@@ -156,7 +156,7 @@ def test_upsert_run_appends_replaces_and_sorts_by_date(tmp_path: Path):
     entry2 = {
         "data_date": "2026-06-15",
         "code_git_sha": "sha2",
-        "methodology_version": "0.4.0",
+        "methodology_version": "0.5.0",
         "tool_versions": {"python": "3.11"},
         "inputs": {"openrouter.json": "sha256:bbb"},
         "output_sha256": "sha256:xxx",

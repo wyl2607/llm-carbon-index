@@ -226,6 +226,45 @@
             },
             "additionalProperties": false
           }
+        },
+        "fairness": {
+          "type": "object",
+          "properties": {
+            "rank_stability": {
+              "type": "object",
+              "properties": {
+                "by_co2": {
+                  "type": "object",
+                  "required": ["top_n", "ranks_changed", "max_displacement"],
+                  "properties": {
+                    "top_n": { "type": "integer", "minimum": 0 },
+                    "ranks_changed": { "type": "integer", "minimum": 0 },
+                    "max_displacement": { "type": "integer", "minimum": 0 }
+                  },
+                  "additionalProperties": false
+                },
+                "by_efficiency": {
+                  "type": "object",
+                  "required": ["top_n", "ranks_changed", "max_displacement"],
+                  "properties": {
+                    "top_n": { "type": "integer", "minimum": 0 },
+                    "ranks_changed": { "type": "integer", "minimum": 0 },
+                    "max_displacement": { "type": "integer", "minimum": 0 }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            "unweighted": {
+              "type": "object",
+              "properties": {
+                "co2_kg": { "$ref": "#/definitions/Range" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

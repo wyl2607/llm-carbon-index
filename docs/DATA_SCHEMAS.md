@@ -75,7 +75,14 @@ The single source of truth for every artifact shape. If a phase needs to change 
     "co2_kg_embodied": { "low": 0, "mid": 0, "high": 0 },   // C-EMBODIED total
     "co2_kg_total": { "low": 0, "mid": 0, "high": 0 },      // operational + embodied total
     "by_origin": { "CN": { "co2_kg": {"low":0,"mid":0,"high":0} } },
-    "by_open_closed": { "open": { "co2_kg": {"low":0,"mid":0,"high":0} }, "closed": { "co2_kg": {"low":0,"mid":0,"high":0} } }
+    "by_open_closed": { "open": { "co2_kg": {"low":0,"mid":0,"high":0} }, "closed": { "co2_kg": {"low":0,"mid":0,"high":0} } },
+    "fairness": {                                 // Phase 6I
+      "rank_stability": {
+        "by_co2":        { "top_n": 10, "ranks_changed": 0, "max_displacement": 0 },
+        "by_efficiency": { "top_n": 10, "ranks_changed": 0, "max_displacement": 0 }
+      },
+      "unweighted": { "co2_kg": { "low": 0, "mid": 0, "high": 0 } }  // equal-weight mean per model = totals.co2_kg / N (the "average modeled-model footprint"); a different number from the traffic-weighted total, so the headline isn't read as one popular model's artifact (FAIRNESS.md §4)
+    }
   }
 }
 ```
@@ -190,7 +197,7 @@ so every published number is traceable end-to-end.
 { "runs": [ {
     "data_date": "2026-06-14",
     "code_git_sha": "abc123",
-    "methodology_version": "0.4.0",
+    "methodology_version": "0.5.0",
     "tool_versions": { "python": "3.11.x", "ecologits": "x.y" },
     "inputs": { "openrouter.json": "sha256:...", "grid/us-east.json": "sha256:..." },
     "output_sha256": "sha256:..."

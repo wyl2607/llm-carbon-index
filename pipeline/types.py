@@ -116,3 +116,6 @@ class Totals(TypedDict):
     co2_kg_total: RangeDict
     co2_kg_market: RangeDict
     water_liters: RangeDict
+    # Phase 6I: fairness companion (rank stability under alts + unweighted aggregate).
+    # Always emitted by build_output; may be absent from certain hand-crafted test fixtures.
+    fairness: dict

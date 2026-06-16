@@ -15,6 +15,12 @@ models whose parameters, hardware, and data-center locations are undisclosed.
 The published `totals.modeled_traffic_fraction` states exactly how much of each
 day's OpenRouter traffic we actually model.
 
+The exact **system boundary** — what is counted in, what is out, and why — is
+documented in [`BOUNDARY.md`](BOUNDARY.md). Principles for impartial
+cross-model comparison (open vs. closed asymmetry, tokenizer non-comparability,
+origin neutrality, rank stability under alternative assumptions) are in
+[`FAIRNESS.md`](FAIRNESS.md).
+
 ## 2. The estimation chain
 
 ```

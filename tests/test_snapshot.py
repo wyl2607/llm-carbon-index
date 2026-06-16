@@ -40,7 +40,7 @@ def test_writer_never_persists_env_secret(
             "grid_source_id": "C-GRID-US-EAST-350",
         }
     ]
-    inputs = write_snapshot(DATE, raw, estimates, "0.4.0")
+    inputs = write_snapshot(DATE, raw, estimates, "0.5.0")
 
     for path in inputs.values():
         text = path.read_text(encoding="utf-8")

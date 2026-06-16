@@ -28,8 +28,8 @@ Always-loaded context lives in `/CLAUDE.md` (hard rules) and these three governa
 | 6F | `phase-6f-estimation-tier-honesty.md` | `totals.precision` (measured% / live-grid%) + UI honesty banner | ✅ done |
 | 6G | `phase-6g-provenance-ledger.md` | source registry + per-figure `source_id` + "no unsourced number" CI gate | ✅ done |
 | 6H | `phase-6h-reproducibility-harness.md` | input snapshots, deterministic re-run, `make verify`, checksum manifest | ✅ done |
-| **6I** | `phase-6i-fairness-and-boundary.md` | `BOUNDARY.md` + `FAIRNESS.md` + `totals.fairness` (rank stability, unweighted) | ⬜ **next** |
-| 6J | `phase-6j-sourced-energy-upgrade.md` | measured energy for top-traffic models; `energy_measured_fraction` rises | ⬜ pending |
+| 6I | `phase-6i-fairness-and-boundary.md` | `BOUNDARY.md` + `FAIRNESS.md` + `totals.fairness` (rank stability, unweighted) | ✅ done |
+| **6J** | `phase-6j-sourced-energy-upgrade.md` | measured energy for top-traffic models; `energy_measured_fraction` rises | ⬜ **next** |
 | 6K | `phase-6k-uncertainty-and-sensitivity.md` | `sensitivity.json` + dominant driver; thesis-grade methodology | ⬜ pending |
 | 6L | `phase-6l-retro-tech-frontend.md` | retrofuturist re-skin, honesty surfaces preserved | ⬜ pending |
 

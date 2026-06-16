@@ -11,9 +11,11 @@ from collections.abc import Iterable
 from datetime import datetime, timezone
 
 import jsonschema
+import yaml
 
 import pipeline.config as config
 from pipeline import METHODOLOGY_VERSION
+from pipeline.fairness import rank_stability
 from pipeline.precision import energy_tier, grid_tier, precision_fractions
 from pipeline.provenance import compact_sources, load_sources
 from pipeline.types import ModelEstimate, NormalizedRecord
@@ -106,6 +108,22 @@ def build_output(
             "high": sum(float(r["high"]) for r in rs),
         }
 
+    def _load_alt_assumption_sets() -> list[dict]:
+        """I/O boundary only (yaml load). Returns the alt_sets list for rank_stability.
+        Pure computation lives in pipeline.fairness (no import-time I/O).
+        """
+        p = config.ALT_ASSUMPTION_SETS_PATH
+        try:
+            with open(p, encoding="utf-8") as f:
+                data = yaml.safe_load(f) or {}
+            raw = data.get("alt_sets") or data.get("assumption_sets") or []
+            if isinstance(raw, list):
+                return [s for s in raw if isinstance(s, dict)]
+        except Exception:  # noqa: S110 - deliberate fallback for missing alt sets
+            # absence or unreadable -> empty (stability report will be all-zero)
+            pass
+        return []
+
     co2_list = [m["co2_kg"] for m in estimates]
     co2_kg = _sum_co2(co2_list)
 
@@ -194,6 +212,28 @@ def build_output(
         "water_liters": water_liters,
         "by_origin": by_origin,
         "by_open_closed": by_open_closed,
+    }
+
+    # Phase 6I (Tasks 3+4 + interfaces): fairness diagnostics.
+    # rank_stability recomputes top-N (by total CO2 and by efficiency=
+    # CO2 per output token) under each alt set from alt_assumption_sets.yaml
+    # and reports {top_n, ranks_changed, max_displacement}.
+    # unweighted.co2_kg is the EQUAL-WEIGHT MEAN of per-model co2_kg (total / N
+    # models) — the "average modeled-model footprint" companion to the
+    # traffic-weighted total, so the headline isn't read as one popular model's
+    # artifact (FAIRNESS.md §4). A genuinely different number from totals.co2_kg.
+    # Exact shape per DATA_SCHEMAS.md §1 and phase-6i spec. All Ranges preserved.
+    n_models = len(co2_list)
+    unweighted_co2 = (
+        {k: co2_kg[k] / n_models for k in ("low", "mid", "high")}
+        if n_models
+        else {"low": 0.0, "mid": 0.0, "high": 0.0}
+    )
+    assumption_sets = _load_alt_assumption_sets()
+    rs_report = rank_stability(list(estimates), assumption_sets)
+    totals["fairness"] = {
+        "rank_stability": rs_report,
+        "unweighted": {"co2_kg": unweighted_co2},
     }
 
     # Phase 6G provenance: emit the compact registry entries actually referenced by

@@ -1,0 +1,39 @@
+# Alternative assumption sets for Phase 6I rank-stability (fairness) diagnostics.
+#
+# These sets are *defensible variants* of cross-cutting modeling choices.
+# They are used *only* by pipeline.fairness.rank_stability (called from output.py)
+# to quantify whether top-N order on total CO₂ and on efficiency (CO₂ per output token)
+# survives reasonable alternatives. They do not affect primary estimates, published
+# co2_kg, or the main methodology.
+#
+# Per CLAUDE.md + ENGINEERING_STANDARDS: every numeric value carries a source_id
+# that resolves in data/provenance/sources.yaml. We reuse existing ids (A2 added
+# for the ratio; A4 for PUE; C-GRID-* for region factors). No unsourced numbers.
+#
+# The sets cover the axes named in phase-6i spec:
+#   - io-ratio 70:30 vs default 80:20 (A2)
+#   - PUE 1.1 / 1.5 (A4 band; 1.2 is near the documented mid)
+#   - best-vs-assumed region (force lowest seeded grid factor for all models)
+#
+# See docs/ASSUMPTIONS.md for human-readable descriptions and last-reviewed dates.
+
+alt_sets:
+  - id: "io_ratio_70_30"
+    input_output_ratio: "70:30"   # output fraction becomes 0.30 (vs documented default 0.20)
+    source_id: "A2"
+    note: "heavier completion share; sensitivity axis per ASSUMPTIONS.md#A2"
+
+  - id: "pue_1_1"
+    pue: 1.1
+    source_id: "A4"
+    note: "optimistic hyperscaler fleet PUE (A4 low bound)"
+
+  - id: "pue_1_5"
+    pue: 1.5
+    source_id: "A4"
+    note: "conservative PUE (near A4 high; scalar for alt diagnostic)"
+
+  - id: "best_grid_region"
+    grid_gco2: 230
+    source_id: "C-GRID-EUROPE-WEST-230"
+    note: "all models evaluated under lowest seeded annual factor (europe-west) instead of their per-model assumed region; best-case geography axis"

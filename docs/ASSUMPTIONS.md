@@ -149,3 +149,22 @@ These feed `data/assumptions/closed_models.yaml`. Every closed model row receive
 ---
 
 *Maintenance:* review the dated entries when refreshing data or before submitting the thesis. Stale grid factors and energy coefficients are the most likely to drift.
+
+---
+
+## A6 — Alternative assumption sets (Phase 6I only)
+
+`data/assumptions/alt_assumption_sets.yaml` supplies the defensible variants passed exclusively to `pipeline.fairness.rank_stability` (via `build_output`). These quantify leaderboard robustness on the two boards (total CO₂; CO₂ per output token) when we vary:
+
+- A2 input:output split (70:30 vs documented 80:20)
+- A4 PUE (1.1 and 1.5 scalars vs the band)
+- region grid factor ("best" = lowest seeded annual, europe-west 230 g, vs each model's assumed region)
+
+Each numeric leaf carries a `source_id` that resolves in `sources.yaml` (A2, A4, C-GRID-EUROPE-WEST-230). The sets never affect primary published estimates or the core chain; they exist only for the `totals.fairness.rank_stability` companion (and the unweighted aggregate view). See `specs/phase-6i-fairness-and-boundary.md` (Tasks 3/4/6) and `DATA_SCHEMAS.md` §1.
+
+Values + sources (reused; no new magic):
+- "70:30" → A2
+- PUE 1.1 / 1.5 → A4
+- grid_gco2 230 → C-GRID-EUROPE-WEST-230
+
+Last reviewed: 2026-06-16.

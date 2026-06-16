@@ -50,11 +50,26 @@ export interface Precision {
   grid_live_models: number;
 }
 
+export interface RankStabilityBoard {
+  top_n: number;
+  ranks_changed: number;
+  max_displacement: number;
+}
+
+export interface Fairness {
+  rank_stability: {
+    by_co2: RankStabilityBoard;
+    by_efficiency: RankStabilityBoard;
+  };
+  unweighted: { co2_kg: Range };
+}
+
 export interface Totals {
   total_tokens: number;
   uncovered_tokens: number;
   modeled_traffic_fraction: number;
   precision?: Precision;
+  fairness?: Fairness;
   mapped_traffic_fraction: number;
   unmapped_tokens: number;
   unmapped_traffic_fraction: number;
