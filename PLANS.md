@@ -1,5 +1,88 @@
 # llm-carbon-index: Future Plans & To-Do
 
+---
+
+## OPEN BACKLOG — audit 2026-06-17 (do this before claiming "complete")
+
+> Source: full spec + paper cross-check on 2026-06-17. The shipped log below is real,
+> but the audit found one un-built spec phase, several **design logic errors in the
+> auto-update path**, and gaps in the 1-year (long-termism) story: automated data
+> refresh, data tracking/reproducibility, and security. Ordered by severity.
+
+### P0 — Design logic errors (they silently break the project's core promise)
+
+- [ ] **B1 — Daily cron does NOT commit its own input snapshot → unverifiable orphan goldens.**
+  `pipeline/run.py` self-snapshots to `data/raw/snapshots/<date>/`, but
+  `.github/workflows/pipeline.yml` only `git add data/output`. Every auto-refreshed day
+  ships a golden whose 6H snapshot is never committed — re-creating exactly the "lost
+  input" failure DISCOVERIES.md documented and the 2026-06-15 orphan-golden we already
+  had to drop by hand. **Fix:** the refresh job must `git add data/output data/raw/snapshots`
+  (and the manifest) in one commit, atomically.
+- [ ] **B2 — Cron auto-pushes to `main` with no gate.** `pipeline.yml` runs the pipeline and
+  `git push` straight to `main` with *no* `pytest`, *no* `make verify`, *no* provenance
+  gate. A bad upstream day, a new unsourced model, or a non-reproducible golden lands on
+  the public site unreviewed. **Fix:** run `ruff` + `pytest` + `python -m pipeline.provenance`
+  + `make verify <date>` before commit; on failure, open a PR / issue instead of pushing.
+
+### P1 — Spec phase not built + paper/data drift
+
+- [ ] **6L — Retro-tech (retrofuturist) frontend re-skin.** `specs/phase-6l-retro-tech-frontend.md`
+  exists; implementation does **not** (no `web/src/theme/` tokens, no phosphor/CRT/grid
+  styling, acceptance boxes all unchecked). The only spec'd dev phase still open. Must
+  preserve every honesty surface (scope banner, precision%, range error-bars,
+  flag→source links, fairness note); ranges never collapsed to a bare number;
+  WCAG-AA + keyboard + `prefers-reduced-motion`. Design serves transparency, last.
+- [ ] **D1 — arXiv draft numbers are stale vs current data.** `inference_carbon_index_arxiv_draft.md`
+  still says "**0%** of model energy from measurement" (now **29%**), names io-ratio/PUE as
+  top drivers (current `sensitivity.json` dominant = **energy_intensity**; io=rank 3,
+  PUE=rank 2), and cites "**7.7k tCO₂e / 16×**" (current `co2_kg_total` mid ≈ **6.4k**, band
+  1.67k–25.7k ≈ 15×). Re-derive §4 illustrative numbers + §6 limitations (i–iv already
+  resolved) from `data/output/latest.json` before submission.
+- [ ] **E1 — `.env.example` variable name mismatch.** It documents
+  `ELECTRICITY_MAPS_API_TOKEN`; code + CI read `ELECTRICITYMAPS_API_KEY`
+  (`pipeline/config.py:72`). A dev following the example sets the wrong name → live grid
+  silently off. **Fix:** rename in `.env.example` (and any docs) to the canonical name.
+
+### P2 — Long-termism: automated data refresh & data tracking (1-year horizon)
+
+- [ ] **L1 — Silent cron-failure blindness.** If the daily refresh dies (upstream change,
+  expired key, rate-limit), nothing alerts and the site quietly serves stale data. **Add:**
+  failure notification (issue-on-failure / status badge) **and** a visible "data as of /
+  stale if older than N days" indicator in the UI driven by `data_date`.
+- [ ] **L2 — Live grid integration is plumbed but inert.** `grid_live_fraction = 0.0`; the
+  secret is passed to cron but no live value is produced (paper limitation vii). Decide:
+  wire Electricity Maps live for known regions **or** stop advertising the secret. Until
+  wired, the "live-grid %" honesty metric is permanently 0.
+- [ ] **L3 — History growth / retention policy.** `timeseries.json` is rebuilt from all of
+  `data/output/history/**`; define retention, compaction, or an index so multi-year daily
+  cadence stays cheap and the repo doesn't bloat with snapshots.
+- [ ] **L4 — Schema/methodology versioning & migration.** `METHODOLOGY_VERSION` exists; add
+  an explicit migration note + golden-regeneration rule (DISCOVERIES already flags: 6J-class
+  changes must regenerate golden **and** snapshot in one commit or `make verify` fails).
+
+### P3 — Long-termism: security & supply chain
+
+- [ ] **S1 — No Dependabot / Renovate.** `SECURITY.md` names build-dependency supply-chain as a
+  primary risk but nothing automates updates. Add Dependabot for `uv` (pip), `npm` (web),
+  and GitHub Actions.
+- [ ] **S2 — Mutable action tags.** Workflows pin `actions/checkout@v5`, `peaceiris/...@v4`,
+  etc. by mutable tag. SHA-pin third-party actions (esp. the gh-pages deployer that has
+  `contents: write`) to prevent tag-move supply-chain attacks.
+- [ ] **S3 — No secret-scanning / SAST in CI.** ruff `S` (bandit) catches python patterns but
+  not a committed `.env`/token. Add gitleaks (or GitHub secret scanning) + CodeQL.
+- [ ] **S4 — No web dependency scan.** Add `npm audit` (or equivalent) to the deploy/CI path so
+  frontend supply-chain regressions surface.
+- [ ] **S5 — Least-privilege for the auto-push token.** The cron job pushes to `main` with
+  `contents: write`. Once B2 lands (gate-or-PR), prefer a branch+PR flow so no unreviewed
+  bot commit can reach the published artifact.
+
+> **Continue developing?** Yes — the core (phases 1–6K) and every paper method are done and
+> exceed the draft, so the project is publishable in substance. But it is **not** "complete":
+> P0 must be fixed before trusting the daily auto-update, and 6L + the security/long-term
+> items (P1–P3) are the real remaining work for a credible, self-maintaining 1-year artifact.
+
+---
+
 ## vNext Wave 1 — shipped 2026-06-16 (credibility milestone)
 
 Driven by `vNext_analysis_and_roadmap.md` + `inference_carbon_index_arxiv_draft.md`.
