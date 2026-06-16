@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "definitions": {
+    "Range": {
+      "type": "object",
+      "required": ["low", "mid", "high"],
+      "properties": {
+        "low": { "type": "number" },
+        "mid": { "type": "number" },
+        "high": { "type": "number" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "data_date",
+    "methodology_version",
+    "scope_caveat",
+    "scope_2",
+    "esrs_e1"
+  ],
+  "properties": {
+    "data_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "methodology_version": { "type": "string" },
+    "scope_caveat": { "type": "string", "minLength": 20 },
+    "source_citation": { "type": "string" },
+    "scope_2": {
+      "type": "object",
+      "required": ["location_based", "market_based"],
+      "properties": {
+        "location_based": { "$ref": "#/definitions/Range" },
+        "market_based": { "$ref": "#/definitions/Range" }
+      },
+      "additionalProperties": false
+    },
+    "esrs_e1": {
+      "type": "object",
+      "required": [
+        "standard",
+        "disclosure",
+        "line_item",
+        "location_based_kgco2e",
+        "market_based_kgco2e"
+      ],
+      "properties": {
+        "standard": { "type": "string" },
+        "disclosure": { "type": "string" },
+        "line_item": { "type": "string" },
+        "location_based_kgco2e": { "$ref": "#/definitions/Range" },
+        "market_based_kgco2e": { "$ref": "#/definitions/Range" },
+        "modeled_traffic_fraction": { "type": "number" },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

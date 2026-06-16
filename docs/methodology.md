@@ -171,6 +171,15 @@ The two can differ by an order of magnitude. Reporting both, and the
 substitution scenarios, is **Phase 6** work; this MVP reports location-based
 only and flags the distinction so it is never misread as physical reality.
 
+**Scope-2 dual reporting (GHG Protocol) & ESRS-E1 mapping (P7):** The committed
+`data/output/esg_export.json` (and the matching client-side builder) directly
+exposes `totals.co2_kg` as the location-based Scope-2 total and `totals.co2_kg_market`
+as the market-based Scope-2 total, each as `{low, mid, high}` ranges. An
+ESRS-E1-flavored line item is provided for CSRD reporting use. The full project
+scope/uncertainty statement is embedded verbatim inside the export artifact and
+is non-removable. No new numeric values are invented — the fields are projections
+of the already-computed dual totals that the pipeline has carried since Phase 6b.
+
 ## 9. Electricity Maps licensing decision (L-EM-FREE)
 
 The Electricity Maps free tier is **non-commercial**. Decision for this project:
