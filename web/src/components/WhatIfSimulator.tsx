@@ -6,6 +6,12 @@ import { Leaf, Zap, Info } from 'lucide-react';
 import { computeEquivalents, EQUIV_SOURCES, computeClimateScore } from '../lib/equivalences';
 import { useAnimatedNumber } from '../lib/useAnimatedNumber';
 import { nf } from '../lib/format';
+import {
+  getRegimeMultiplierFromSliders,
+  promptClassFromValue,
+  batchClassFromValue,
+  applyRegimeToRange,
+} from '../lib/scenario';
 
 interface Props {
   greenShiftPercent: number;
@@ -27,6 +33,16 @@ export const WhatIfSimulator: React.FC<Props> = ({
   lang
 }) => {
   const tt = useI18n(lang);
+
+  // P6: local state for regime/prompt-length sliders (no parent lift; self-contained for listed-file scope)
+  const [promptSlider, setPromptSlider] = React.useState<number>(50); // 0 short ... 100 long
+  const [batchSlider, setBatchSlider] = React.useState<number>(75); // 0 low-batch (high energy) ... 100 high-batch (eff)
+  const regimeMult = getRegimeMultiplierFromSliders(promptSlider, batchSlider);
+  const promptCls = promptClassFromValue(promptSlider);
+  const batchCls = batchClassFromValue(batchSlider);
+  const regimeLabel = `${promptCls} prompt / ${batchCls} batch`;
+  // illustrative: scale the received ref co2 by regime (co2 linear with energy); used only for P6 demo numbers inside this component
+  const regimeEffectiveCo2 = originalCo2 ? applyRegimeToRange(originalCo2, regimeMult) : undefined;
 
   const reductionMid = originalCo2 && simulatedCo2 
     ? Math.max(0, Math.round(originalCo2.mid - simulatedCo2.mid))
@@ -130,6 +146,53 @@ export const WhatIfSimulator: React.FC<Props> = ({
                 {tt.maxPotentialNote(maxPotential)}
               </div>
             )}
+
+            {/* P6: regime + prompt-length sliders (dynamic batching / context) — local state, pure math from scenario.ts */}
+            <div className="mt-6 pt-4 border-t border-emerald-900/40">
+              <div className="text-xs font-semibold tracking-widest text-emerald-300/80 uppercase mb-1">P6 Dynamic Regime (energy per token)</div>
+              <div className="text-[11px] text-emerald-200/60 mb-3">Fixed Wh/token ignores batch, KV-cache &amp; prefill nonlinearity. Sliders apply sourced regime multiplier (R-* from ASSUMPTIONS + regime_factors.yaml). Monotonic: longer prompt / lower batch → higher energy.</div>
+
+              <div className="mb-3">
+                <div className="flex justify-between items-baseline mb-1 px-1">
+                  <label className="text-xs font-semibold tracking-widest text-emerald-300/80 uppercase">Prompt length regime (short → long; affects prefill + KV)</label>
+                  <span className="font-mono text-sm text-emerald-400/90">{promptCls}</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={promptSlider}
+                  onChange={(e) => setPromptSlider(Number(e.target.value))}
+                  className="impact-slider w-full accent-emerald-400 cursor-pointer"
+                  aria-label="Prompt length regime slider (P6)"
+                />
+                <div className="flex justify-between text-[10px] text-emerald-300/50 px-0.5">short (light KV) — med — long (heavy KV/prefill)</div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-baseline mb-1 px-1">
+                  <label className="text-xs font-semibold tracking-widest text-emerald-300/80 uppercase">Batch / utilization (low → high batch; higher util lowers per-token)</label>
+                  <span className="font-mono text-sm text-emerald-400/90">{batchCls}</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={batchSlider}
+                  onChange={(e) => setBatchSlider(Number(e.target.value))}
+                  className="impact-slider w-full accent-emerald-400 cursor-pointer"
+                  aria-label="Batch utilization regime slider (P6)"
+                />
+                <div className="flex justify-between text-[10px] text-emerald-300/50 px-0.5">low batch (inefficient) — high batch (amortised)</div>
+              </div>
+
+              <div className="mt-3 text-[11px] px-1 font-mono text-emerald-300/90">
+                Regime mult: <span className="text-emerald-400 font-bold">{regimeMult.mid.toFixed(2)}×</span> (range {regimeMult.low.toFixed(2)}–{regimeMult.high.toFixed(2)})
+                <span className="ml-2 text-emerald-400/60">[{regimeLabel}]</span>
+              </div>
+            </div>
           </div>
 
           <div className="lg:col-span-2 space-y-4">
@@ -141,6 +204,12 @@ export const WhatIfSimulator: React.FC<Props> = ({
                 −{nf(animatedReduction)}
               </div>
               <div className="text-emerald-400/70 text-sm font-medium mt-1">{tt.kgCO2}</div>
+              {/* P6 regime effect note (illustrative; scales base energy hence absolute CO2 for fixed grid) */}
+              {regimeEffectiveCo2 && (
+                <div className="mt-2 text-[10px] text-amber-300/80">
+                  Regime factor scales base: ~{regimeMult.mid.toFixed(2)}× → effective ref co2 mid ~{nf(regimeEffectiveCo2.mid)}
+                </div>
+              )}
 
               {greenShiftPercent > 0 && (
                 <div className="mt-3 text-sm">

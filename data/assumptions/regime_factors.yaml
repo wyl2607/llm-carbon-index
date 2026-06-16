@@ -1,0 +1,46 @@
+# Regime / dynamic batching / prompt-length factors (P6).
+# Base wh_per_output_token (intensity) reflects a *reference regime* (medium prompt length,
+# high batch / high utilization). Real workloads vary: long prompts increase KV-cache pressure
+# + prefill share (nonlinearity); low batch size lowers GPU/accelerator utilization.
+# A regime multiplier scales the base (decode+prefill effective) energy.
+#
+# Structure: discrete classes for short/medium/long prompt × high/low batch.
+# high batch = larger batches / higher util (lower per-token energy)
+# low batch = batch=1 or small, memory-bound, higher energy/token.
+#
+# All numeric multipliers are {low,mid,high} Ranges; end-to-end uncertainty preserved.
+# No model-specific; only in data yaml. If read fails callers SKIP (per CLAUDE.md).
+#
+# Sourced R-* only (see sources.yaml + ASSUMPTIONS.md#R-REGIME).
+# Citations include Jegham et al. arXiv:2505.09598 (long-prompt up to ~29 Wh/query vs
+# short ~0.42 Wh) and prefill/decode asymmetry literature (arXiv:2507.11417 + TokenPowerBench 2512.03024).
+# Multipliers chosen so that after * reference class, query-level stays plausible vs lit
+# (E-METHOD ~150 output tok base; long+low-batch can approach published extremes without
+# exceeding after uncertainty).
+#
+# Monotonic by design: longer prompt or lower batch => strictly higher multiplier band.
+#
+# Used by: pipeline/energy.energy_kwh(..., regime_multiplier=...) and web scenario math.
+
+regimes:
+  short_prompt:
+    high_batch:
+      multiplier: { low: 0.75, mid: 0.95, high: 1.20 }
+      source_id: "R-REGIME-SHORT-HIGH"
+    low_batch:
+      multiplier: { low: 1.10, mid: 1.35, high: 1.70 }
+      source_id: "R-REGIME-SHORT-LOW"
+  medium_prompt:
+    high_batch:
+      multiplier: { low: 0.90, mid: 1.05, high: 1.30 }
+      source_id: "R-REGIME-MED-HIGH"
+    low_batch:
+      multiplier: { low: 1.35, mid: 1.65, high: 2.10 }
+      source_id: "R-REGIME-MED-LOW"
+  long_prompt:
+    high_batch:
+      multiplier: { low: 1.55, mid: 2.10, high: 2.90 }
+      source_id: "R-REGIME-LONG-HIGH"
+    low_batch:
+      multiplier: { low: 2.60, mid: 4.00, high: 6.50 }
+      source_id: "R-REGIME-LONG-LOW"
