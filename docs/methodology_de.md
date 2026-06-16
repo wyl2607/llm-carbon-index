@@ -147,3 +147,30 @@ Die oben genannten Arbeiten liefern die empirische Grundlage und das methodische
 [6] CodeCarbon. https://github.com/mlco2/codecarbon
 [7] Jegham et al. (2025). How Hungry is AI? Benchmarking Energy, Water, and Carbon Footprint of LLM Inference. https://arxiv.org/abs/2505.09598
 [8] Li et al. (2023). Making AI Less "Thirsty": Water Footprint of LLMs. https://arxiv.org/abs/2304.03271
+
+## 14. Literatur-Kreuzvalidierung & Zitate (Phase 6P)
+
+Dieses Projekt führt eine strukturierte, automatisierte Kreuzvalidierung seiner Energie-Bänder pro Anfrage (und der abgeleiteten CO₂-Bänder) gegen unabhängig veröffentlichte Literatur-Anker durch. Die Routine liegt in `pipeline/validate_literature.py` und wird vom maschinenlesbaren Register `data/validation/literature_anchors.yaml` gesteuert.
+
+### Anker und Herkunft
+- Jeder Anker erfasst eine exakte veröffentlichte Zahl (oder einen Kurzprompt-Repräsentanten) als `{low, mid, high}`-Toleranzband, plus (falls verfügbar) einen `co2_g_per_query`-Mittelwert.
+- Jeder Zahlenwert trägt eine `source_id`, die in `data/provenance/sources.yaml` unter dem eigenen `LIT-*`-Namensraum auflösbar sein **muss** (BLOOM, Gemini, OpenAI-Blogaussage, Jegham). Das Test-Gate `tests/test_literature_anchors.py` prüft die Auflösbarkeit aller Anker.
+- `LIT-OPENAI` (0,34 Wh „durchschnittliche Anfrage", Altman-Blog vom 10.06.2025) ist ausdrücklich `verified: false` und wird nur als reiner Report-Anker geführt; bis eine peer-reviewte Quelle den Blogbeitrag ersetzt, wird keine harte Band-Assertion dagegen ausgeführt.
+
+### Modellabgleich und Herleitung pro Anfrage
+Für jeden Anker: Lokalisierung vergleichbarer Modelle in der `latest.json` des Tages über `model_match` (`params_b_gte`+`dense`/`family`), bei Bedarf via `model_crosswalk.yaml` (`params_b`/`active_params_b`); fehlt ein exaktes dichtes Hochparametermodell, Rückgriff auf das `parameter_class_fallback`-Band aus `intensity.yaml`; Skalierung von `wh_per_output_token` mit `query_output_tokens` ergibt das Wh/Anfrage-Band; bei `co2_g_per_query` paralleles CO₂-Band über `pue` und `carbon_intensity_gco2_kwh`; Containment-Prüfung `band.low <= anchor_mid <= band.high`, Out-of-Band (flag) als explizites Finding, nie still akzeptiert. Ausgabe: `data/output/validation.json`, ein Datensatz je Anker.
+
+### Warum die Routine wichtig ist
+Literaturzahlen unterscheiden sich aus gut verstandenen Gründen: BLOOM (arXiv:2211.02001) ist Vollkosten (dynamisch+idle+embodied) für ein 176-B-Modell auf französischer Netzhardware, während unsere betrieblichen Token-Bänder den dauerhaften Idle bewusst ausschließen; der Gemini-Bericht (arXiv:2508.15734) nennt einen niedrigen Median (0,24 Wh) auf hochoptimierten Stacks, während unsere Closed-Modell-Zeilen breite `parameter_class_fallback`-Bänder nutzen, gerade weil Parameter/Hardware/RZ-Effizienz nicht offengelegt sind; Jegham (arXiv:2505.09598) dokumentiert Kurzanfragen (0,42 Wh) und Langprompt-Extreme (29 Wh) — Ausreißer werden erwartungsgemäß geflaggt; Strubell (arXiv:1906.02243) begründete den ursprünglichen Aufruf zur Energieberichterstattung; LLMCarbon/Faiz (arXiv:2309.14393) lieferte mit dem 24–35-%-Embodied-Anteil die Grundlage für C-EMBODIED. Out-of-Band-Anker sind Designsignale, keine Fehler.
+
+## 15. vNext-Vertiefungen (Stufen / physisches Embodied / MoE-Energie / Regime / ESG-Export)
+
+**Nicht unterscheidbare Stufen (6m).** Da das CO₂-Ranking pro Modell unter plausiblen Alternativannahmen instabil ist (siehe `totals.fairness.rank_stability`), gruppiert der Index Modelle mit überlappenden `{low, high}`-CO₂-Bereichen zu nicht unterscheidbaren *Stufen* (`pipeline/fairness.py:indistinguishable_tiers` → `totals.tiers`). Stufe 1 ist der Bereich mit der geringsten Wirkung; Stufen stehen im Vordergrund, exakte Ränge sind zweitrangig. Mit den aktuellen reinen Fallback-Daten kollabieren alle Spitzenmodelle zu einer einzigen Stufe — eine ehrliche Widerspiegelung des ~10–16×-Unsicherheitsbands, kein Mangel.
+
+**Physische Embodied-Gegenprüfung (6n).** Neben dem Verhältnis-Proxy (C-EMBODIED) folgt ein zweiter, physisch fundierter Schätzer (`pipeline/embodied.py`) LLMCarbon: `embodied_kg = Die-Fläche_cm² × CPA_kgCO₂/cm² × (GPU-Stunden / Lebensdauer-Stunden) / Auslastung`, mit GPU-Stunden aus betrieblicher Energie ÷ GPU-Leistung. Hardware-Konstanten (Die-Fläche, CPA, TDP, Lebensdauer, Auslastung je GPU-Klasse) sind in `data/assumptions/hardware_embodied.yaml` im `H-*`-Namensraum belegt. Beide Schätzer werden berichtet; ihre Spanne ist die Embodied-Methodenunsicherheit.
+
+**MoE-bewusste Energie (6q).** Inferenzenergie skaliert mit *aktiven*, nicht Gesamtparametern. Das Parameterklassen-Fallback-Band wird auf `active_params_b` aus `model_crosswalk.yaml` geschlüsselt (Rückfall auf Gesamt-`params_b` nur bei fehlendem Aktivwert), sodass ein MoE-Modell mit hoher Gesamt-/niedriger Aktivzahl in die Small-Active-Energieklasse fällt.
+
+**Dynamisches Regime / Batching (6o).** Fixes Wh/Token ignoriert Batchgröße, KV-Cache und Prefill/Decode-Nichtlinearität. Ein belegter Regime-Multiplikator (`data/assumptions/regime_factors.yaml`, `R-*`-Namensraum) macht kurz→lang Prompt und niedrig→hoch Batch einstellbar; die Beziehung ist monoton (längerer Prompt / kleinerer Batch → höhere Energie) und über die What-If-Simulator-Schieberegler interaktiv zugänglich.
+
+**ESG / CSRD Scope-2-Export (6r).** `pipeline/output.py` erzeugt `data/output/esg_export.json` und bildet standortbasierte (`totals.co2_kg`) und marktbasierte (`totals.co2_kg_market`) Werte auf das GHG-Protocol-Scope-2-Dual-Reporting plus eine ESRS-E1-artige Position ab. Der Scope-/Unsicherheitshinweis des Projekts ist wortgetreu und unentfernbar in jedes Exportartefakt eingebettet; es werden keine neuen Zahlen erzeugt. Ein Download steht in der Web-UI bereit.

@@ -129,13 +129,13 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false,
             textAnchor="end"
             height={52}
             interval={0}
-            tick={{ fontSize: 10, fill: '#717771' }}
+            tick={{ fontSize: 10, fill: '#969c96' }}
             tickLine={{ stroke: '#242924' }}
             axisLine={{ stroke: '#242924' }}
           />
           <YAxis
             tickFormatter={(v) => (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)}
-            tick={{ fontSize: 10, fill: '#717771' }}
+            tick={{ fontSize: 10, fill: '#969c96' }}
             tickLine={{ stroke: '#242924' }}
             axisLine={{ stroke: '#242924' }}
           />

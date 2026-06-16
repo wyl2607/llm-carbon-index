@@ -71,7 +71,9 @@ models:
 
 parameter_class_fallback:
   # Used when energy_source=parameter_class_fallback in crosswalk OR slug unknown to crosswalk.
-  # Bands keyed by max_active_params_b. Pick largest for unknowns (conservative).
+  # Bands keyed by max_active_params_b. P5: selection in energy.py now keys on cw active_params_b
+  # (MoE: inference energy ~ active params, not total; fall back to params_b only if active absent).
+  # Unknowns still pick largest band (conservative). See ASSUMPTIONS.md E-CLASS-* and energy.py.
   - max_active_params_b: 15
     wh_per_output_token: { low: 0.0005, mid: 0.0012, high: 0.0025 }
     source: "ASSUMPTIONS.md#E-CLASS-SMALL (informed by AI Energy Score v2 + EcoLogits small-model measurements; widened for variance)"

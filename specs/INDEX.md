@@ -35,6 +35,9 @@ Always-loaded context lives in `/CLAUDE.md` (hard rules) and these three governa
 | **6M** | (vNext P2; spec inline in roadmap) | ranking → **tiering** honesty: `totals.tiers` groups overlapping `{low,high}` CO₂ bands; tiers headline, ranks secondary | ✅ done (dbb2424) |
 | **6N** | (vNext P4; spec inline in roadmap) | physical LLMCarbon-style embodied estimator (`pipeline/embodied.py`, CPA×area×amortization) alongside ratio-proxy + method spread | ✅ done (b4e17ea) |
 | **6P** | (vNext P3; spec inline in roadmap) | literature cross-validation harness (`validate_literature.py` + `literature_anchors.yaml` → `validation.json`): BLOOM/Gemini pass, OpenAI report-only, Jegham long-prompt flagged | ✅ done (2fccf29) |
+| **6Q** | (vNext P5; spec inline in roadmap) | MoE-aware energy: parameter-class fallback band keyed on `active_params_b` (not total) | ✅ done (Wave 2) |
+| **6O** | (vNext P6; spec inline in roadmap) | dynamic regime / batching + prompt-length scenarios (`regime_factors.yaml` + WhatIfSimulator sliders + scenario.ts) | ✅ done (Wave 2) |
+| **6R** | (vNext P7; spec inline in roadmap) | ESG / CSRD Scope-2 dual-reporting export (`esg_export.json` + EsgExportPanel + ESRS-E1 line item, non-removable caveat) | ✅ done (Wave 2) |
 
 When a phase is finished, update its row to ✅ and note the commit hash.
 

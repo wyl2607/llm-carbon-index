@@ -5,6 +5,17 @@
 
 本项目的所有显著变更均记录于此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/)。
 
+## [0.7.0] - 2026-06-16 (vNext：准确性与覆盖度)
+### 新增
+- **measured 能耗 + idle（6J）**：pipeline 现优先消费 AI Energy Score / EcoLogits 实测强度（高于 fallback），并加可选 `E-IDLE` always-on 项。`energy_measured_fraction` 从 0.0 升至 ≈0.29（50 个模型中 3 个、按 token 加权）。
+- **排名 → 层级（6M）**：`{low,high}` CO₂ 区间重叠的模型归入不可区分的 `totals.tiers`；层级作头条，精确名次为次要。
+- **物理 embodied 估算器（6N）**：LLMCarbon 式 `芯片面积 × CPA × GPU小时/寿命/利用率`（`pipeline/embodied.py`），与 ratio 代理并列报告并给出方法差值。
+- **文献交叉验证（6P）**：`validate_literature.py` + `literature_anchors.yaml` → `validation.json`；BLOOM/Gemini 通过，OpenAI 0.34 Wh 仅作报告（博客），Jegham 长 prompt 被 flag。
+- **MoE 感知能耗（6Q）**：参数类 fallback 以 `active_params_b`（非总参数）为键。
+- **动态工况 / 批处理（6O）**：有出处的工况乘子（`regime_factors.yaml`）+ What-If 的 prompt 长度/批大小滑块。
+- **ESG / CSRD 范围二导出（6R）**：`esg_export.json` + 网页下载，把基于位置/市场的总量映射为 GHG Protocol 范围二双重报告 + ESRS-E1，并嵌入不可移除的声明。
+- 新的层级、工况、ESG UI 界面以及方法论 §14–§15 的完整 zh/de 本地化。
+
 ## [0.6.1] - 2026-06-16 (阶段 7)
 ### 新增
 - 网页端仪表盘的完整中文（zh）本地化支持。

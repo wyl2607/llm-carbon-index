@@ -77,8 +77,8 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="2 2" stroke="#242924" />
-                <XAxis dataKey="date" tick={{fontSize:10, fill:'#717771'}} tickLine={false} axisLine={{stroke:'#242924'}} />
-                <YAxis tickFormatter={v => nf(Math.round(v))} tick={{fontSize:10, fill:'#717771'}} tickLine={false} axisLine={{stroke:'#242924'}} />
+                <XAxis dataKey="date" tick={{fontSize:10, fill:'#969c96'}} tickLine={false} axisLine={{stroke:'#242924'}} />
+                <YAxis tickFormatter={v => nf(Math.round(v))} tick={{fontSize:10, fill:'#969c96'}} tickLine={false} axisLine={{stroke:'#242924'}} />
                 <Tooltip contentStyle={{background:'#121512', border:'1px solid #242924', borderRadius:6, fontSize:12}} />
                 <Area type="monotone" dataKey="co2Kg" stroke="#10b981" strokeWidth={2.5} fill="url(#cCo2)" />
               </AreaChart>
@@ -97,8 +97,8 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="2 2" stroke="#242924" />
-                <XAxis dataKey="date" tick={{fontSize:10, fill:'#717771'}} tickLine={false} axisLine={{stroke:'#242924'}} />
-                <YAxis tickFormatter={v => nf(v, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} tick={{fontSize:10, fill:'#717771'}} tickLine={false} axisLine={{stroke:'#242924'}} />
+                <XAxis dataKey="date" tick={{fontSize:10, fill:'#969c96'}} tickLine={false} axisLine={{stroke:'#242924'}} />
+                <YAxis tickFormatter={v => nf(v, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} tick={{fontSize:10, fill:'#969c96'}} tickLine={false} axisLine={{stroke:'#242924'}} />
                 <Tooltip contentStyle={{background:'#121512', border:'1px solid #242924', borderRadius:6, fontSize:12}} />
                 <Area type="monotone" dataKey="efficiency" stroke="#3b82f6" strokeWidth={2.5} fill="url(#cEff)" />
               </AreaChart>

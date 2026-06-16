@@ -35,11 +35,11 @@ describe('Phase 6F estimation-tier honesty (PrecisionBanner)', () => {
     expect(p.grid_live_fraction + p.grid_annual_fallback_fraction).toBeCloseTo(1.0, 6);
   });
 
-  it('renders an always-visible note reflecting 0% measured / 0% live for today\'s data', () => {
+  it('renders an always-visible note reflecting the measured / live fractions from today\'s data', () => {
     render(<PrecisionBanner precision={sample.totals.precision} lang="en" />);
     const banner = screen.getByRole('note');
-    // today's reality: all fallback -> 0% measured energy, 0% live grid
-    expect(banner.textContent).toMatch(/0% measured energy/);
+    // post-6j reality: top-traffic models are now measured (≈29%), grid still 0% live.
+    expect(banner.textContent).toMatch(/29% measured energy/);
     expect(banner.textContent).toMatch(/0% live grid/);
   });
 

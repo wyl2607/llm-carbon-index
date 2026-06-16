@@ -14,6 +14,8 @@ Per phase-2 spec + ENGINEERING_STANDARDS §5 + Phase 6j:
 - Phase 6j: energy_measured_fraction (via precision) equals token-weighted share of upgraded models
 - Phase 6j: un-upgraded retain FALLBACK_ENERGY_CLASS
 - Phase 6j: idle regression — large-model implied Wh/query band contains ~3.96 only when idle term included (E-IDLE + E-METHOD)
+- P5: MoE active_params_b (not total) selects class band (230B/10B -> SMALL); fallback to params_b only if active absent
+- P6: energy_kwh accepts regime_multiplier (R-*) and multiplies (before/after idle)
 """
 
 from __future__ import annotations
@@ -320,3 +322,66 @@ def test_idle_regression_large_model_implied_wh_per_query_contains_bloom_3_96():
     assert wh_per_q_with.low <= 3.96 <= wh_per_q_with.high
     # sanity: idle actually moved the band up
     assert wh_per_q_with.mid > wh_per_q_dyn.mid + 1.0
+
+
+# --- P5 MoE active params tests ---
+
+def test_moe_active_params_selects_small_class_not_total():
+    """P5: 230B-total / 10B-active MoE (MiniMax-like) with parameter_class_fallback
+    must select the *small-active* band (E-CLASS-SMALL), not the large-total class.
+    This validates active_params_b takes precedence over params_b for band choice.
+    """
+    cw_moe = [
+        {
+            "openrouter_slug": "bigmoe/example-230b-a10b",
+            "energy_source": "parameter_class_fallback",
+            "params_b": 230,
+            "active_params_b": 10,
+        }
+    ]
+    wh, src, flags, sid = wh_per_output_token("bigmoe/example-230b-a10b", cw_moe, INTENSITY_MINI)
+    assert src == "parameter_class_fallback"
+    assert "FALLBACK_ENERGY_CLASS" in flags
+    # must be the SMALL band (mid 0.0012), not LARGE (0.005)
+    assert wh.mid == 0.0012
+    assert wh.low == 0.0005 and wh.high == 0.0025
+    assert sid == "E-CLASS-SMALL"
+
+
+def test_active_params_fallback_to_total_when_active_absent():
+    """P5: when only params_b present (no active), still use it for sizing (legacy open dense)."""
+    cw_dense = [
+        {
+            "openrouter_slug": "dense/example-70b",
+            "energy_source": "parameter_class_fallback",
+            "params_b": 70,
+            "active_params_b": None,
+        }
+    ]
+    wh, src, flags, sid = wh_per_output_token("dense/example-70b", cw_dense, INTENSITY_MINI)
+    assert src == "parameter_class_fallback"
+    assert wh.mid == 0.005  # 70 >15 -> LARGE
+    assert sid == "E-CLASS-LARGE"
+
+
+def test_energy_kwh_regime_multiplier_p6():
+    """P6: regime_multiplier (from R-* bands) scales the dynamic kWh (decode+prefill); Range preserved.
+    Default None = *1 (no change). Monotonic not asserted here (see scenario.test + regime_factors).
+    """
+    base_wh = Range(0.001, 0.002, 0.004)
+    # ref (no regime)
+    k0 = energy_kwh(base_wh, 1000, 0, None)
+    assert k0.mid == 0.002
+    # med-low ~1.65
+    regime = Range(1.35, 1.65, 2.10)
+    k = energy_kwh(base_wh, 1000, 0, None, None, 0.0, regime)
+    assert k.low == pytest.approx(0.00135)
+    assert k.mid == pytest.approx(0.0033)
+    assert k.high == pytest.approx(0.0084)
+    assert k.low <= k.mid <= k.high
+    # with prefill too
+    alpha = Range(0.1, 0.2, 0.3)
+    kr = energy_kwh(base_wh, 1000, input_tokens=500, prefill_alpha=alpha, regime_multiplier=regime)
+    # without would be (2 + 0.2*0.5*2? wait calc) but check scaled
+    k_base = energy_kwh(base_wh, 1000, 500, alpha)
+    assert kr.mid == pytest.approx(k_base.mid * 1.65)

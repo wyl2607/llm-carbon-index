@@ -215,7 +215,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
             </div>
             <input
               type="text"
-              className="block w-full pl-9 pr-3 py-2 border border-[#242924] rounded-xl bg-[#0a0c0a] placeholder-[#717771] focus:border-emerald-600 text-sm"
+              className="block w-full pl-9 pr-3 py-2 border border-[#242924] rounded-xl bg-[#0a0c0a] placeholder-[#969c96] focus:border-emerald-600 text-sm"
               placeholder={tt.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -312,7 +312,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                   nodes.push(
                     <tr key={`tierband-${t}`} className="bg-[#0a0c0a]">
                       <td colSpan={hasWater ? 10 : 9} className="px-4 py-1 text-[10px] font-bold uppercase tracking-[1px] text-emerald-400 border-b border-[#242924]">
-                        Tier {t}{totalTierCount > 1 ? ` / ${totalTierCount}` : ''} — CO₂ ranges overlap (models indistinguishable within tier)
+                        {tt.tierBand(t, totalTierCount)}
                       </td>
                     </tr>
                   );

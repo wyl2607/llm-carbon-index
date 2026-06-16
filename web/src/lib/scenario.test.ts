@@ -65,3 +65,111 @@ describe('shiftedCo2Range', () => {
     expect(r).toEqual({ low: 200, mid: 400, high: 800 });
   });
 });
+
+// --- P6 regime math tests (pure functions, monotonic, sourced bounds) ---
+
+import {
+  getRegimeMultiplier,
+  getRegimeMultiplierFromSliders,
+  applyRegimeToRange,
+  promptClassFromValue,
+  batchClassFromValue,
+  type PromptClass,
+  type BatchClass,
+} from './scenario';
+
+describe('promptClassFromValue / batchClassFromValue', () => {
+  it('maps sliders to discrete classes (P6)', () => {
+    expect(promptClassFromValue(0)).toBe('short');
+    expect(promptClassFromValue(32)).toBe('short');
+    expect(promptClassFromValue(33)).toBe('medium');
+    expect(promptClassFromValue(65)).toBe('medium');
+    expect(promptClassFromValue(66)).toBe('long');
+    expect(promptClassFromValue(100)).toBe('long');
+    expect(promptClassFromValue(NaN)).toBe('medium');
+
+    expect(batchClassFromValue(0)).toBe('low');
+    expect(batchClassFromValue(49)).toBe('low');
+    expect(batchClassFromValue(50)).toBe('high');
+    expect(batchClassFromValue(100)).toBe('high');
+    expect(batchClassFromValue(NaN)).toBe('high');
+  });
+});
+
+describe('getRegimeMultiplier (P6)', () => {
+  it('returns valid Range low<=mid<=high for all 6 classes', () => {
+    const classes: Array<[PromptClass, BatchClass]> = [
+      ['short','high'], ['short','low'],
+      ['medium','high'], ['medium','low'],
+      ['long','high'], ['long','low'],
+    ];
+    for (const [p, b] of classes) {
+      const m = getRegimeMultiplier(p, b);
+      expect(m.low).toBeLessThanOrEqual(m.mid);
+      expect(m.mid).toBeLessThanOrEqual(m.high);
+      expect(m.low).toBeGreaterThan(0);
+    }
+  });
+
+  it('is strictly monotonic: longer prompt or lower batch => higher energy mult (mid+high)', () => {
+    const shortHigh = getRegimeMultiplier('short', 'high');
+    const shortLow = getRegimeMultiplier('short', 'low');
+    const medHigh = getRegimeMultiplier('medium', 'high');
+    const medLow = getRegimeMultiplier('medium', 'low');
+    const longHigh = getRegimeMultiplier('long', 'high');
+    const longLow = getRegimeMultiplier('long', 'low');
+
+    // within same prompt, low batch > high batch
+    expect(shortLow.mid).toBeGreaterThan(shortHigh.mid);
+    expect(medLow.mid).toBeGreaterThan(medHigh.mid);
+    expect(longLow.mid).toBeGreaterThan(longHigh.mid);
+
+    // across prompt length (holding batch)
+    expect(medHigh.mid).toBeGreaterThan(shortHigh.mid);
+    expect(longHigh.mid).toBeGreaterThan(medHigh.mid);
+    expect(medLow.mid).toBeGreaterThan(shortLow.mid);
+    expect(longLow.mid).toBeGreaterThan(medLow.mid);
+
+    // cross extremes
+    expect(longLow.high).toBeGreaterThan(shortHigh.high);
+  });
+
+  it('from sliders matches class lookup', () => {
+    expect(getRegimeMultiplierFromSliders(10, 90)).toEqual(getRegimeMultiplier('short', 'high'));
+    expect(getRegimeMultiplierFromSliders(80, 10)).toEqual(getRegimeMultiplier('long', 'low'));
+  });
+});
+
+describe('applyRegimeToRange + published bounds (P6)', () => {
+  const baseEnergy: Range = { low: 0.0005, mid: 0.005, high: 0.012 }; // covers small-to-large class high
+  it('applies endpoint-wise (conservative) and keeps low<=mid<=high', () => {
+    const mult = getRegimeMultiplier('long', 'low');
+    const scaled = applyRegimeToRange(baseEnergy, mult);
+    expect(scaled.low).toBeCloseTo(baseEnergy.low * mult.low);
+    expect(scaled.mid).toBeCloseTo(baseEnergy.mid * mult.mid);
+    expect(scaled.high).toBeCloseTo(baseEnergy.high * mult.high);
+    expect(scaled.low).toBeLessThanOrEqual(scaled.mid);
+    expect(scaled.mid).toBeLessThanOrEqual(scaled.high);
+  });
+
+  it('regime bounds stay inside published per-token / query ranges (Jegham LIT-JEGHAM + E-METHOD)', () => {
+    // Jegham: long-prompt max ~29 Wh/query; short ~0.42. Use E-METHOD divisor ~150 output tok for per-tok equiv.
+    const TOK = 150;
+    const longMaxWhPerQuery = 29;
+    const impliedMaxPerTok = longMaxWhPerQuery / TOK; // ~0.193 Wh/tok
+
+    const maxBasePerTok = 0.012; // large class high from intensity
+    const longLow = getRegimeMultiplier('long', 'low');
+    const effectiveMax = maxBasePerTok * longLow.high;
+
+    // effective long-low must not exceed published long extreme (with margin for E-METHOD variance)
+    expect(effectiveMax).toBeLessThanOrEqual(impliedMaxPerTok * 1.1); // conservative allowance documented in ASSUMPTIONS
+
+    // all regime mids produce query energy for 150 tok output that is > short lit min and < long max (sanity, no fabrication)
+    const shortHigh = getRegimeMultiplier('short', 'high');
+    const qShort = 0.002 * shortHigh.mid * TOK; // reference-ish base (mid of med class)
+    expect(qShort).toBeGreaterThan(0.1); // short regime still produces non-zero; full short-query lit 0.42 includes overheads
+    const qLong = maxBasePerTok * longLow.mid * TOK;
+    expect(qLong).toBeLessThanOrEqual(longMaxWhPerQuery);
+  });
+});

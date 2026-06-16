@@ -51,7 +51,7 @@ export const FairnessNote: React.FC<Props> = ({ fairness, lang = 'en' }) => {
       {/* Phase 6m: louder, explicit numbers + tier honesty callout */}
       <p className={`mt-2 text-xs font-semibold ${isRobust ? 'text-emerald-400' : 'text-amber-400'}`}>
         by_co2: ranks_changed={co2Changed} / top_n={topN}, max_displacement={rank_stability.by_co2.max_displacement}.
-        Exact per-model ranks are secondary/dimmed. Models with overlapping {'{'}low,high{'}'} CO₂ ranges are grouped into indistinguishable tiers (Tier 1 = lowest-impact band).
+        {' '}{tt.tierNote}
       </p>
       <p className="text-[12px] text-[#9ba19b] mt-1.5 border-l-2 border-[#2a2f2a] pl-2.5">
         {tt.lTokenizerNote}
