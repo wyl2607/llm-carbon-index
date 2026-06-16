@@ -1,36 +1,47 @@
 # Changelog
 
+[English](CHANGELOG.md) | [中文](CHANGELOG_zh.md)
+
 All notable changes to this project are documented here. Format loosely follows
-[Keep a Changelog](https://keepachangelog.com/); this project is pre-1.0.
+[Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased]
+## [0.6.1] - 2026-06-16 (Phase 7)
+### Added
+- Complete Chinese (zh) localization for the web dashboard.
+- UI Readability enhancements (increased contrast for secondary text from `#717771` to `#9ba19b`).
+- Plans for German (de) localization documented in `PLANS.md`.
 
-### Added — Phase 0 (scaffold + prove the math)
-- Standalone repo scaffold: `README` (with scope statement + file manifest),
-  `CLAUDE.md`, `PLAN.md`, `LICENSE` (MIT), `CONTRIBUTING.md`, `SECURITY.md`,
-  `.gitignore` (incl. `.env`), `.env.example`, `.editorconfig`, `pyproject.toml`
-  (pytest + ruff), GitHub CI / issue / PR templates.
-- `scratch/prove_math.py`: end-to-end prover — OpenRouter rankings (key from
-  env, illustrative-sample fallback offline) → Wh → grid intensity → gCO₂, with
-  a per-prompt sanity check. Every constant cites its source; uncertainty
-  carried as `{min, max}`.
-- `tests/test_prove_math.py`: Wh↔kWh / g↔kg conversion guards, range
-  preservation, order-of-magnitude sanity (7 tests).
-- `docs/methodology.md`: seeded thesis-methodology draft (scope, formulas,
-  constants + sources, location vs market-based Scope 2 discussion, limitations).
-- Seed reference data in `data/`: `grid_fallback_factors.yaml`,
-  `provider_region_map.yaml` (cited); schema stubs for `model_crosswalk.yaml`
-  and `closed_model_assumptions.yaml`.
+## [0.6.0] - 2026-06-16 (Phase 6A-6L)
+### Added
+- **Uncertainty & Sensitivity Framework**: Formalized methodology for endpoint ranges (low/mid/high) and tracking the dominant uncertainty driver (e.g. `PUE_UNCERTAINTY`).
+- **Reproducibility**: Daily snapshots with `manifest.json` checksums and golden-file `make verify` capability.
+- **Fairness & Boundary Docs**: Explicit scope definition focusing on OpenRouter-visible traffic, preventing misrepresentation of global datacenter emissions.
+- **UI Themes**: "Premium Dark ESG" aesthetic (modern, glass-morphism, emerald-green highlights) implemented.
+- Dynamic `methodology_version` fetching and display in the web UI.
 
-### Merged
-- Absorbed design ideas from the parallel Gemini effort
-  (`openrouter-co2-rankings`): location-based vs market-based dual accounting,
-  separate prompt/completion energy intensity, provider→region→grid model, and
-  the Light Minimalist UI design language. Reconciled to `PLAN.md` hard
-  constraints (added source citations, `{min,max}` ranges, `data/*.yaml`
-  placement, fallback+confidence, static-JSON architecture). Provenance and the
-  rejected items are documented in `docs/absorbed-from-gemini.md`.
+## [0.5.0] - 2026-06-15 (Phase 5)
+### Added
+- Thesis-grade `docs/methodology.md` detailing formulas, constants, and sources.
+- GitHub Actions CI for daily data fetching and automated deployment to GitHub Pages.
 
-### Not yet implemented
-- Pipeline Phases 1–5 (ingestion, energy, carbon, output assembly, frontend app,
-  CI cron, deploy). Stubs are listed in the README manifest, not coded.
+## [0.4.0] - 2026-06-15 (Phase 4)
+### Added
+- Vite + React static frontend dashboard.
+- `build_outputs.py` for aggregating pipeline output into `latest.json` and `timeseries.json`.
+
+## [0.3.0] - 2026-06-15 (Phase 3)
+### Added
+- Grid carbon intensity integration (Electricity Maps and annual fallbacks).
+- What-If Scenario Simulator for spatial workload shifting.
+
+## [0.2.0] - 2026-06-15 (Phase 2)
+### Added
+- Energy estimation logic (`estimate_energy.py`) with fallback mechanisms based on model parameter classes.
+
+## [0.1.0] - 2026-06-15 (Phase 1)
+### Added
+- Data ingestion pipeline (`fetch_openrouter.py`) targeting OpenRouter rankings.
+
+## [0.0.1] - 2026-06-15 (Phase 0)
+### Added
+- Project scaffold, `PLAN.md`, `CLAUDE.md`, and initial structural constraints.
