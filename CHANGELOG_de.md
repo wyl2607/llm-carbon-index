@@ -33,3 +33,30 @@ Alle bemerkenswerten Änderungen an diesem Projekt werden in dieser Datei dokume
 ### Hinzugefügt
 - „What If“-Simulator (Was-wäre-wenn-Simulator) für Sensitivitätsanalysen.
 - Strengere Versionsverfolgung und Methodik-Richtlinien.
+
+## [0.5.0] - 2026-06-15 (Phase 5)
+### Hinzugefügt
+- Thesis-grade `docs/methodology.md` mit detaillierten Formeln, Konstanten und Quellen.
+- GitHub Actions CI für tägliches Datenabrufen und automatisiertes Deployment zu GitHub Pages.
+
+## [0.4.0] - 2026-06-15 (Phase 4)
+### Hinzugefügt
+- Vite + React statisches Frontend-Dashboard.
+- `build_outputs.py` zum Aggregieren der Pipeline-Ausgabe in `latest.json` und `timeseries.json`.
+
+## [0.3.0] - 2026-06-15 (Phase 3)
+### Hinzugefügt
+- Integration der Kohlenstoffintensität des Stromnetzes (Electricity Maps und jährliche Fallbacks).
+- What-If-Szenario-Simulator für räumliche Workload-Verschiebung.
+
+## [0.2.0] - 2026-06-15 (Phase 2)
+### Hinzugefügt
+- Energie-Schätzlogik (`estimate_energy.py`) mit Fallback-Mechanismen basierend auf Modell-Parameterklassen.
+
+## [0.1.0] - 2026-06-15 (Phase 1)
+### Hinzugefügt
+- Daten-Ingestion-Pipeline (`fetch_openrouter.py`) für OpenRouter-Rankings.
+
+## [0.0.1] - 2026-06-15 (Phase 0)
+### Hinzugefügt
+- Projekt-Gerüst, `PLAN.md`, `CLAUDE.md` und initiale strukturelle Constraints.

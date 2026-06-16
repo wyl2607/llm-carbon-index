@@ -19,9 +19,77 @@ Die in diesem Projekt generierten Daten sind vollständig quelloffen und für di
 - **ESG- / CSRD-Export**: [`data/output/esg_export.json`](https://raw.githubusercontent.com/wyl2607/llm-carbon-index/main/data/output/esg_export.json) bildet standort- und marktbasierte Summen auf das GHG-Protocol-Scope-2-Dual-Reporting + eine ESRS-E1-Position ab, mit eingebettetem Scope-/Unsicherheitshinweis. Ein JSON/CSV-Download ist auch in der Web-UI verfügbar.
 - **Methodik**: Konsultieren Sie unser detailliertes [Methodik- und Unsicherheitsrahmenwerk](docs/methodology.md) (derzeit auf Englisch), das die Gleichungen, Datenquellen (z. B. EcoLogits, AI Energy Score, Electricity Maps) und Sensitivitätsanalysen erklärt.
 
+## Architektur (festgelegt)
+
+Statisch zuerst, kein Server zum Betreuen (gemäß `PLAN.md`):
+
+```
+OpenRouter rankings ─▶ pipeline (Python) ─▶ output/*.json (committed by CI) ─▶ web/ (Vite+React, static)
+                                  │
+                      EcoLogits + AI Energy Score (energy)
+                      Electricity Maps + annual fallbacks (grid)
+```
+
+Kein Live-Backend für v1. Das Frontend liest committed JSON; Datenaktualisierungen erfolgen über einen GitHub Actions Cron (Phase 5).
+
 ## Status und Versionierung
 
 Bitte konsultieren Sie das [CHANGELOG_de.md](CHANGELOG_de.md) für ein vollständiges Update-Protokoll, das nach Versionsnummern nachvollziehbar ist. Alle zukünftigen Updates erfordern die gleichzeitige Aktualisierung der englischen, chinesischen und deutschen Dokumentation.
+
+## Dateimanifest — was ein vollständiges Projekt hier benötigt
+
+Legende: ✅ existiert · 🟡 Stub/Seed · ⬜ geplant (in seiner Phase erstellt).
+
+```
+llm-carbon-index/
+├── README.md                       ✅ this file (scope + reproduce + manifest)
+├── CLAUDE.md                       ✅ agent guardrails
+├── PLAN.md                         ✅ phased plan (canonical source of truth)
+├── LICENSE                         ✅ MIT + data-is-estimates notice
+├── CONTRIBUTING.md                 ✅ phase workflow + hard constraints
+├── SECURITY.md                     ✅ secrets policy + how to report
+├── CHANGELOG.md                    ✅ Keep-a-Changelog
+├── .gitignore                      ✅ incl. .env, node_modules, data/raw
+├── .editorconfig                   ✅ formatting baseline
+├── .env.example                    ✅ documents env var NAMES only
+├── pyproject.toml                  ✅ deps + pytest + ruff config
+├── data/                           model data ONLY here (Hard Constraint #6)
+│   ├── grid_fallback_factors.yaml  🟡 annual grid factors (seeded, cited)
+│   ├── provider_region_map.yaml    🟡 provider → likely region (seeded, cited)
+│   ├── model_crosswalk.yaml        🟡 schema stub (seeded in Phase 2)
+│   └── closed_model_assumptions.yaml 🟡 schema stub (seeded in Phase 2)
+├── pipeline/                       Python pipeline (Phases 1–4, 6)
+│   ├── README.md                   ✅ module map
+│   ├── fetch_openrouter.py         ✅ Phase 1
+│   ├── electricity.py              ✅ Phase 3
+│   ├── estimate_energy.py          ✅ Phase 2
+│   ├── estimate_carbon.py          ✅ Phase 3
+│   ├── build_outputs.py            ✅ Phase 4
+│   └── sensitivity.py              ✅ Phase 6K
+├── tests/
+│   ├── test_prove_math.py          ✅ conversion guards + sanity + ranges
+│   ├── test_energy.py              ✅ Phase 2
+│   ├── test_carbon.py              ✅ Phase 3
+│   └── fixtures/                   ✅ (.gitkeep)
+├── output/                         generated JSON (committed by CI, Phase 4+)
+│   └── .gitkeep                    ✅
+├── web/                            Vite + React static frontend (Phase 4, 6)
+│   └── README.md                   ✅ planned views + absorbed UI design
+├── docs/
+│   ├── methodology.md              ✅ thesis methodology (scope/formulas/sources)
+│   ├── absorbed-from-gemini.md     ✅ merge provenance + constraint reconciliation
+│   ├── DATA_SCHEMAS.md             ✅ Phase 6 docs
+│   ├── ASSUMPTIONS.md              ✅ Phase 6 docs
+│   ├── PROJECT_STATUS.md           ✅ Phase 6 docs
+│   ├── BOUNDARY.md                 ✅ Phase 6I
+│   └── FAIRNESS.md                 ✅ Phase 6I
+└── .github/
+    ├── workflows/
+    │   ├── ci.yml                  ✅ run tests + ruff on push/PR
+    │   └── update-data.yml         ✅ Phase 5 daily cron → commit JSON
+    ├── ISSUE_TEMPLATE/             ✅ bug + data-correction templates
+    └── PULL_REQUEST_TEMPLATE.md    ✅ constraint checklist
+```
 
 ## Reproduktion
 

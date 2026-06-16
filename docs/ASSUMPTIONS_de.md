@@ -67,6 +67,29 @@ Diese speisen `data/energy/intensity.yaml`. Jeder Modell-/Klassen-Eintrag muss z
 ### E-CLAUDE-35-SONNET (Phase 2 A1 seed, closed)
 - **E-CLAUDE-35-SONNET** — 0.0025–0.0060–0.0150 Wh pro Output-Token. *Quelle:* EcoLogits LCA-basierte Schätzung für Frontier-Closed-Modell (Claude 3.5 Sonnet); Bereich >2× breiter als Open 70B, um nicht offengelegte Parameterzahl, Hardware und Datacenter-Effizienz widerzuspiegeln. *Unsicherheit:* sehr hoch. *Wo verwendet:* intensity.yaml (ecologits tag); us-east Netz + CLOSED_MODEL_ASSUMED. *Zuletzt geprüft:* 2026-06-15。
 
+### E-MINIMAX-M3 (Phase 6j)
+- **E-MINIMAX-M3** — 0.0008–0.0015–0.003 Wh pro Output-Token (gleiches Band wie E-MINIMAX-M2.5). *Quelle:* AI Energy Score v2 MoE ~10B active class; über Familienkontinuität auf aktuellen High-Traffic MiniMax M3 angewendet (kein Hinweis auf Regression in öffentlichen Karten). *Unsicherheit:* mittel (Klassen-Match). *Wo verwendet:* intensity.yaml für minimax/minimax-m3 (norm); Top-Token-Anteil-Beitragender am 2026-06-14. *Zuletzt geprüft:* 2026-06-16。
+
+### E-DEEPSEEK-V4-FLASH (Phase 6j)
+- **E-DEEPSEEK-V4-FLASH** — 0.0015–0.0035–0.0080 Wh pro Output-Token (gleiches Band wie E-DEEPSEEK-67B). *Quelle:* AI Energy Score v2 60-70B dense/MoE-Klasse; auf DeepSeek V4 Flash (High-Traffic Open) per Familie angewendet. *Unsicherheit:* hoch (Flash-Variante könnte effizienter sein; konservative Nutzung des vollen Klassenbands). *Wo verwendet:* intensity.yaml; zweithöchstes Open-Token-Volumen am 2026-06-14. *Zuletzt geprüft:* 2026-06-16。
+
+### E-DEEPSEEK-V4-PRO (Phase 6j)
+- **E-DEEPSEEK-V4-PRO** — 0.0015–0.0035–0.0080 Wh pro Output-Token (gleiches Band wie E-DEEPSEEK-67B). *Quelle:* AI Energy Score v2 60-70B dense/MoE-Klasse; per Familie auf DeepSeek V4 Pro angewendet. *Unsicherheit:* mittel. *Wo verwendet:* intensity.yaml; signifikanter Open-Token-Anteil. *Zuletzt geprüft:* 2026-06-16。
+
+### E-IDLE (Phase 6j; wired into estimate Phase 7)
+- **E-IDLE** — idle_kwh_per_day-Band {3000, 8500, 18000} kWh/Tag für ein vergleichbares großes Modell-Deployment-Slice, angewendet mit **idle_share_of_day = 0.2**. *Quelle:* BLOOM all-in vs. token-only Lücke (Luccioni et al. arXiv:2211.02001: 914 kWh / 230.768 Queries ergibt ~3.96 Wh/Query gesamt; ~1.25 auf per-Token-only zurückgeführt lässt Residual für Idle + Overhead nach E-PREFILL/C-EMBODIED). In tägliche kWh für repräsentatives Query-Volumen umgerechnet; der 0.2-Anteil ist **kalibriert**, sodass das implizierte all-in Wh/Query-Band BLOOMs ~3.96-Figur enthält (siehe Idle-Regression in test_energy.py). *Unsicherheit:* sehr hoch (Slice-Allokation approximativ; nur an Modelle mit starkem Klassen-Analogon angehängt). *Wo verwendet:* intensity.yaml (deepseek/deepseek-chat trägt idle_kwh_per_day + idle_share_of_day + idle_source_id); aufgelöst durch `energy.idle_for_slug` und in `estimate.py` hinzugefügt (markiert **IDLE_INCLUDED**); Modelle ohne Idle-Daten nehmen den rein-dynamischen Pfad (kein stilles Idle). *Zuletzt geprüft:* 2026-06-16。
+
+## R — Dynamisches Regime / Batching / Prompt-Länge (P6)
+P6 führt einen einstellbaren Regime-Multiplikator ein (ersetzt die Annahme fester Wh/Token), um Batch-Größe, Auslastung, KV-Cache-Druck und die Nichtlinearität von Prefill/Decode zu erfassen, die eine statische pro-Output-Token-Zahl ignoriert. Das bestehende prefill_alpha (E-PREFILL) ist nun eine Achse innerhalb eines breiteren Regimes.
+
+- **R-REGIME-\*** — Sechs diskrete Regime-Bänder (kurz/mittel/lang Prompt × hoch/niedrig Batch). Jedes ist ein {low,mid,high}-Multiplikator auf die Referenz-Energie pro Output-Token aus intensity (Referenz ≈ mittleres Prompt + hohes Batch/Util). Angewendet in `energy_kwh(regime_multiplier=...)` (Range-Multiplikation, end-to-end) und in web `scenario.ts` What-If-Mathematik. *Quelle:* Synthese verankert an Jegham et al. (arXiv:2505.09598: Long-Prompt-Workloads erreichen ~29 Wh/Query vs. short ~0.42 Wh über >30 Modelle) + Prefill/Decode-Asymmetrie (arXiv:2507.11417 Quantifying Energy & Carbon...; TokenPowerBench arXiv:2512.03024) + Util-Beobachtungen aus Inference-Benchmarking. Multiplikatoren konservativ gesetzt, sodass skalierte Query-Energie (E-METHOD ~150 Output-Tok) innerhalb/nahe publizierter Extreme bleibt, ohne Erfindung. *Monotonie (erforderlich):* strikt längere Prompt-Klasse oder niedrigere Batch-Klasse erzeugt höheres Multiplikator-Band (keine Überlappungsinversion). *Unsicherheit:* sehr hoch (workload-abhängig; nicht pro-Modell). *Wo verwendet:* `data/assumptions/regime_factors.yaml`; `pipeline/energy.py`; `web/src/lib/scenario.ts` + `scenario.test.ts`; WhatIfSimulator Regime/Prompt-Schieberegler. *Zuletzt geprüft:* 2026-06-16。
+
+### R-REGIME-SHORT-HIGH
+- Kurzes Prompt (kleiner Input, leichter KV/Prefill) + hohes Batch (gute Amortisation, hohe Util) → Multiplikator nahe oder unter 1.0 (etwas besser als Referenz-Benchmark-Mix). R-REGIME-SHORT-HIGH。
+
+### R-REGIME-SHORT-LOW / MED-LOW / LONG-HIGH / LONG-LOW
+- Progressiver Anstieg: niedriges Batch erhöht Kosten durch Util-Abfall; langes Prompt erhöht durch KV-Cache-Residency + Prefill-Anteil (Input/Output-Ratio-Nichtlinearität). LONG-LOW ist höchstes (Worst-Case niedrige Util, langer Kontext). Siehe regime_factors.yaml für exakte Bänder; alle R-* Einträge in sources.yaml.
+
 ---
 
 ## C — Physikalische / Netz-Konstanten (seit Phase 0 gesetzt; weiter zitieren)
@@ -131,6 +154,12 @@ Diese speisen `data/assumptions/closed_models.yaml`. Jede Closed-Model-Zeile erh
 - **V-OPENAI** — 100 % jährlicher Renewable-Match. *Quelle:* Microsoft Azure Environmental Sustainability Report (matched seit 2014). *Unsicherheit:* niedrig. *Wo verwendet:* vendor_claims.yaml。
 - **V-ANTHROPIC** — 100 % jährlicher Renewable-Match. *Quelle:* Angenommen basierend auf Hosting via Google Cloud und AWS, die beide 100 % Renewable-Matching claimen. *Unsicherheit:* mittel (nimmt an, dass die gesamte Inferenz-Infrastruktur durch Host-Claims abgedeckt ist). *Wo verwendet:* vendor_claims.yaml。
 - **V-META** — 100 % jährlicher Renewable-Match. *Quelle:* Meta Sustainability Report (matched seit 2020). *Unsicherheit:* niedrig. *Wo verwendet:* vendor_claims.yaml。
+
+### C-MARKET-RESIDUAL — Market-based residual floor *(Phase 7)*
+- **C-MARKET-RESIDUAL** — `market_factor = max(market_residual_floor, 1 − match%/100)` mit **market_residual_floor = 0.10**. Ein 100 % jährliches Renewable-Match eines Vendors würde market-based (Scope 2) CO₂ sonst exakt auf **0** treiben — eine durch die Projektregel „no silent zeros“ verbotene falsche Präzision. Jährliches Matching ist **nicht** 24/7 carbon-free: stündliche Erzeugungs-/Verbrauchsmismatch hinterlässt reale Residual-Emissionen (Google berichtete ~64 % global 24/7 CFE in 2023 **trotz** 100 % jährlichem Matching). 0.10 ist eine **konservative Untergrenze** für das Residual (tatsächlich wahrscheinlich höher); Zeilen, bei denen die Floor greift, werden als **MARKET_RESIDUAL_FLOOR** markiert. *Unsicherheit:* hoch (einzelne globale Floor; pro-Provider-Stundenprofile variieren). *Wo verwendet:* `methodology_factors.yaml` `market_residual_floor`; `estimate.py` market step; `data/provenance/sources.yaml#C-MARKET-RESIDUAL`. *Zuletzt geprüft:* 2026-06-16。
+
+### C-AGG-CORRELATION — Aggregation of uncertainty *(Phase 7)*
+- **C-AGG-CORRELATION** — Pro-Modell `{low,mid,high}`-Bereiche werden auf zwei Arten zu Ökosystem-Totals summiert. **`totals.co2_kg`** (Schlagzeile) summiert Endpunkte linear (low+low, high+high) — die konservative **perfect-correlation envelope**, gerechtfertigt, weil die dominanten Unsicherheiten (PUE-Band, Energieklassen-Intensität, Grid-Faktor) *shared systematic* Annahmen sind, die identisch auf jedes Modell angewendet werden, sodass ihre Fehler kohärent addieren. **`totals.co2_kg_independent`** kombiniert die Halbbreiten in **Quadratur** (√Σ der Quadrate), das schmalere Band, das gelten würde, wenn pro-Modell-Fehler statistisch *independent* wären und sich teilweise aufheben. Die Realität liegt dazwischen; die Schlagzeile verwendet das konservative `co2_kg`. *Wo verwendet:* `output._sum_co2` / `output._sum_co2_independent`; `totals.co2_kg` + `totals.co2_kg_independent`. *Zuletzt geprüft:* 2026-06-16。
 
 ---
 

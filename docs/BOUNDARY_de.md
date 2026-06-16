@@ -4,7 +4,7 @@
 
 Dieses Dokument definiert die Life Cycle Assessment (LCA) Systemgrenze für den LLM Carbon Index. Wie im Projekt-Scope (`CLAUDE.md`) festgelegt, schätzt dieser Index nur den Fußabdruck der **OpenRouter-sichtbaren LLM-Inferenz**.
 
-## System Boundary Diagram
+## Systemgrenzen-Diagramm
 
 ```text
        UNIVERSE OF AI IMPACTS
@@ -39,7 +39,7 @@ Dieses Dokument definiert die Life Cycle Assessment (LCA) Systemgrenze für den 
 +---------------------------------------+
 ```
 
-## Included in Boundary (IN)
+## In der Grenze enthalten (IN)
 
 Die folgenden operativen Komponenten sind in der primären Schätzkette enthalten:
 
@@ -48,7 +48,7 @@ Die folgenden operativen Komponenten sind in der primären Schätzkette enthalte
 - **Operational Location-Based Grid Emissions**: Die Kohlenstoffintensität (gCO2e/kWh) des lokalen Stromnetzes, an dem die Inferenz stattfindet [A3], unter Verwendung von Live- oder Jahresfaktoren.
 - **Operational Water**: Das sowohl on-site (Kühlungsverdunstung) als auch off-site (Stromerzeugung) mit der Inferenzenergie verbundene verbrauchte Wasser [W-WATER].
 
-## Excluded from Boundary (OUT)
+## Aus der Grenze ausgeschlossen (OUT)
 
 Um den Fokus auf die marginalen Auswirkungen der Inferenz zu erhalten, sind folgende ausgeschlossen:
 
@@ -59,6 +59,6 @@ Um den Fokus auf die marginalen Auswirkungen der Inferenz zu erhalten, sind folg
 - **Idle / Over-provisioning**: Ausgeschlossen, weil der Index die marginalen Kosten pro Token modelliert; anlagenweite Grundlast wird nicht einzelnen Inferenz-Requests zugeordnet.
 - **ALLE non-OpenRouter-Traffic**: Ausgeschlossen, um den strikten Scope des Projekts zu respektieren — nur die repräsentative Nutzungsscheibe zu modellieren, die über OpenRouter-Rankings sichtbar ist.
 
-## Alignment with Project Scope
+## Abgleich mit dem Projektumfang
 
 Diese Grenze ist streng mit der Scope-Aussage in `CLAUDE.md` abgestimmt: *"This project estimates the CO2 footprint of OpenRouter-visible LLM inference — a representative but partial slice of global AI usage."* Durch den Ausschluss von Upstream-Training und Downstream-Netzwerken liefern wir eine hochsignifikante Schätzung der spezifischen Umweltkosten der AI-Textgenerierung.
