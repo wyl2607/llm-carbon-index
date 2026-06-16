@@ -107,7 +107,8 @@ def build_output(
     co2_list = [m["co2_kg"] for m in estimates]
     co2_kg = _sum_co2(co2_list)
 
-    co2_embodied_list = [m.get("co2_kg_embodied", {"low": 0.0, "mid": 0.0, "high": 0.0}) for m in estimates]
+    _zero = {"low": 0.0, "mid": 0.0, "high": 0.0}
+    co2_embodied_list = [m.get("co2_kg_embodied", _zero) for m in estimates]
     co2_kg_embodied = _sum_co2(co2_embodied_list)
 
     co2_total_list = [m.get("co2_kg_total", m["co2_kg"]) for m in estimates]

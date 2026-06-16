@@ -29,10 +29,11 @@ def water_liters(
     WUE terms may be scalars or Ranges; a Range total WUE widens the band
     endpoint-wise (conservative).
     """
+    def _as_range(v: Union[float, Range]) -> Range:
+        return v if isinstance(v, Range) else Range(v, v, v)
+
     if isinstance(onsite_wue, Range) or isinstance(offsite_ewif, Range):
-        on = onsite_wue if isinstance(onsite_wue, Range) else Range(onsite_wue, onsite_wue, onsite_wue)
-        off = offsite_ewif if isinstance(offsite_ewif, Range) else Range(offsite_ewif, offsite_ewif, offsite_ewif)
-        total_wue: Union[float, Range] = on + off
+        total_wue: Union[float, Range] = _as_range(onsite_wue) + _as_range(offsite_ewif)
     else:
         total_wue = onsite_wue + offsite_ewif
     return facility_energy_kwh * total_wue
