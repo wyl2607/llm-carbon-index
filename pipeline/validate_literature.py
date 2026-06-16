@@ -36,7 +36,9 @@ from pipeline.ranges import Range
 from pipeline.slugs import normalize_slug
 
 # Local paths (robust; not added to provenance gate per scope)
-LITERATURE_ANCHORS_PATH = Path(__file__).resolve().parents[1] / "data" / "validation" / "literature_anchors.yaml"
+LITERATURE_ANCHORS_PATH = (
+    Path(__file__).resolve().parents[1] / "data" / "validation" / "literature_anchors.yaml"
+)
 CROSSWALK_PATH = Path(__file__).resolve().parents[1] / "data" / "crosswalk" / "model_crosswalk.yaml"
 INTENSITY_PATH = Path(__file__).resolve().parents[1] / "data" / "energy" / "intensity.yaml"
 LATEST_PATH = OUTPUT_DIR / "latest.json"
@@ -58,7 +60,7 @@ def _load_yaml_list_robust(path: Path) -> list[dict]:
                 inner = loaded.get("anchors")
                 if isinstance(inner, list):
                     return [e for e in inner if isinstance(e, dict)]
-    except Exception:
+    except Exception:  # noqa: S110 - robust load: missing/unreadable anchors -> []
         pass
     return []
 
@@ -72,7 +74,7 @@ def _load_yaml_dict_robust(path: Path) -> dict:
             loaded = yaml.safe_load(f)
             if isinstance(loaded, dict):
                 return loaded
-    except Exception:
+    except Exception:  # noqa: S110 - robust load: missing/unreadable -> {}
         pass
     return {}
 
@@ -87,7 +89,7 @@ def _load_doc_robust(doc: dict | None) -> dict:
                 loaded = json.load(f)
                 if isinstance(loaded, dict):
                     return loaded
-    except Exception:
+    except Exception:  # noqa: S110 - robust load: missing/unreadable latest.json -> {}
         pass
     return {}
 
@@ -182,7 +184,10 @@ def _derive_wh_per_query_band(
 def _derive_co2_g_per_query_band(
     wh_per_q: Range, pue: float, gco2_per_kwh: float
 ) -> Range:
-    """co2_g_per_q = (wh_per_q / 1000) * pue * gco2_per_kwh   [from co2_kg = kwh * pue * g / 1000]"""
+    """co2_g_per_q = (wh_per_q / 1000) * pue * gco2_per_kwh.
+
+    [from co2_kg = kwh * pue * g / 1000]
+    """
     kwh_q = wh_per_q / 1000.0
     pue_r = float(pue) if pue else 1.25
     g = float(gco2_per_kwh) if gco2_per_kwh else 400.0
@@ -191,11 +196,14 @@ def _derive_co2_g_per_query_band(
     return co2_g
 
 
-def validate_literature(doc: dict | None = None) -> dict:
-    """Core entrypoint. Returns validation report dict; writes validation.json as side effect.
+def validate_literature(doc: dict | None = None, *, out_path: Path = VALIDATION_PATH) -> dict:
+    """Core entrypoint. Returns validation report dict; writes out_path as side effect.
 
     If reading anchors/crosswalk/doc/intensity fails for a given anchor, that anchor
     is skipped (status omitted for it) and processing continues.
+
+    out_path defaults to the committed data/output/validation.json; tests inject a
+    tmp_path so they never overwrite the committed artifact.
     """
     doc = _load_doc_robust(doc)
     models: list[dict] = doc.get("models", []) if isinstance(doc.get("models"), list) else []
@@ -204,8 +212,6 @@ def validate_literature(doc: dict | None = None) -> dict:
     crosswalk = _load_yaml_list_robust(CROSSWALK_PATH)
     intensity = _load_yaml_dict_robust(INTENSITY_PATH)
     cw_map = _get_cw_map(crosswalk)
-
-    sources = _load_sources_for_test()  # for optional internal use; real checks in test
 
     results: list[dict] = []
     for a in anchors_raw:
@@ -285,14 +291,18 @@ def validate_literature(doc: dict | None = None) -> dict:
                 "status": status,
                 "source_id": src,
                 "verified": verified,
-                "used": {"source": used_source, "pue": rep_pue, "gco2_kwh": rep_gco2, "query_output_tokens": qtok},
+                "used": {
+                    "source": used_source,
+                    "pue": rep_pue,
+                    "gco2_kwh": rep_gco2,
+                    "query_output_tokens": qtok,
+                },
                 "note": a.get("note"),
             }
             if co2_band is not None:
                 rec["co2_band"] = co2_band.to_dict()
             results.append(rec)
-        except Exception:
-            # per-anchor failure: SKIP this anchor, continue
+        except Exception:  # noqa: S112 - per-anchor failure: SKIP this anchor, continue
             continue
 
     out: dict[str, Any] = {
@@ -304,10 +314,10 @@ def validate_literature(doc: dict | None = None) -> dict:
 
     # Emit alongside other outputs (robust write; failure does not raise to caller)
     try:
-        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        with open(VALIDATION_PATH, "w", encoding="utf-8") as f:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(out_path, "w", encoding="utf-8") as f:
             json.dump(out, f, indent=2, ensure_ascii=False)
-    except Exception:
+    except Exception:  # noqa: S110 - robust write: emit failure must not raise to caller
         pass
 
     return out

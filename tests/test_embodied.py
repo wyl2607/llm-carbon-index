@@ -27,7 +27,8 @@ from pipeline.carbon import (
     physical_embodied_co2_kg,
     total_lca_co2_kg,
 )
-from pipeline.embodied import _load_hardware_embodied, physical_embodied_co2_kg as phys_impl
+from pipeline.embodied import _load_hardware_embodied
+from pipeline.embodied import physical_embodied_co2_kg as phys_impl
 from pipeline.ranges import Range
 
 
@@ -39,7 +40,7 @@ def _load_sources_ids() -> set[str]:
             docs = yaml.safe_load(f)
             if isinstance(docs, list):
                 return {str(d.get("id")) for d in docs if isinstance(d, dict) and d.get("id")}
-    except Exception:
+    except Exception:  # noqa: S110 - test helper: missing/unreadable sources -> empty set
         pass
     return set()
 
@@ -61,7 +62,6 @@ def _load_methodology_envelope() -> Range:
 
 def _share_of_total(emb: Range, op: Range) -> Range:
     """emb / (op + emb) as Range (endpoint-wise)."""
-    tot = op + emb
     # manual since no direct / for safety, but use scalar-like; construct conservatively
     # low share uses low_emb / high_tot etc for extremes, but keep simple mid focus + check
     slo = emb.low / (op.high + emb.low) if (op.high + emb.low) > 0 else 0.0
@@ -140,7 +140,7 @@ def test_ratio_proxy_and_physical_land_in_22_35_envelope_independently():
     # proxy (ratio method) — by construction of C-EMBODIED always lands in envelope
     ratio = Range(0.28, 0.39, 0.54)  # same as methodology
     emb_proxy = embodied_co2_kg(op, ratio)
-    tot_proxy = total_lca_co2_kg(op, emb_proxy)
+    total_lca_co2_kg(op, emb_proxy)  # smoke: composes without error
     share_proxy = _share_of_total(emb_proxy, op)
     # mids must be inside
     assert envelope.low - 0.01 <= share_proxy.mid <= envelope.high + 0.01
@@ -148,7 +148,7 @@ def test_ratio_proxy_and_physical_land_in_22_35_envelope_independently():
 
     # physical (A100 config)
     emb_phys = physical_embodied_co2_kg(energy, "A100-80GB")
-    tot_phys = total_lca_co2_kg(op, emb_phys)
+    total_lca_co2_kg(op, emb_phys)  # smoke: composes without error
     share_phys = _share_of_total(emb_phys, op)
     assert envelope.low - 0.05 <= share_phys.mid <= envelope.high + 0.05  # tol for range arith
     assert emb_phys.low <= emb_phys.mid <= emb_phys.high

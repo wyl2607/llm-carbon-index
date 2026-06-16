@@ -29,7 +29,7 @@ import pytest
 # (matches pattern used by Phase 0 tests/test_prove_math.py).
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from pipeline.energy import energy_kwh, wh_per_output_token
+from pipeline.energy import energy_kwh, idle_for_slug, wh_per_output_token
 from pipeline.ranges import Range
 
 # --- small table fixtures (no fs, pure) ---
@@ -252,6 +252,43 @@ def test_unupgraded_models_retain_fallback_flag():
     assert src2 == "parameter_class_fallback"
     assert "UNKNOWN_MODEL" in flags2
     assert "FALLBACK_ENERGY_CLASS" in flags2
+
+
+def test_idle_for_slug_returns_range_share_and_id_when_present():
+    """E-IDLE plumbing: a row carrying idle_kwh_per_day + idle_share_of_day +
+    idle_source_id is resolved so estimate.py can add the idle term."""
+    intensity = {
+        "models": [
+            {
+                "openrouter_slug": "deepseek/deepseek-chat",
+                "wh_per_output_token": {"low": 0.0015, "mid": 0.0035, "high": 0.008},
+                "idle_kwh_per_day": {"low": 3000, "mid": 8500, "high": 18000},
+                "idle_share_of_day": 0.2,
+                "idle_source_id": "E-IDLE",
+            }
+        ]
+    }
+    idle, share, sid = idle_for_slug("deepseek/deepseek-chat", intensity)
+    assert idle is not None
+    assert (idle.low, idle.mid, idle.high) == (3000.0, 8500.0, 18000.0)
+    assert share == 0.2
+    assert sid == "E-IDLE"
+
+
+def test_idle_for_slug_none_when_no_idle_field():
+    """Rows without idle data must yield the pure-dynamic path (no silent idle)."""
+    intensity = {
+        "models": [
+            {"openrouter_slug": "x/y", "wh_per_output_token": {"low": 1, "mid": 1, "high": 1}}
+        ]
+    }
+    idle, share, sid = idle_for_slug("x/y", intensity)
+    assert idle is None and share == 0.0 and sid is None
+
+
+def test_idle_for_slug_none_when_slug_absent():
+    idle, share, sid = idle_for_slug("not/here", {"models": []})
+    assert idle is None and share == 0.0 and sid is None
 
 
 def test_idle_regression_large_model_implied_wh_per_query_contains_bloom_3_96():

@@ -37,8 +37,7 @@ def _load_hardware_embodied() -> dict:
             loaded = yaml.safe_load(f)
             if isinstance(loaded, dict):
                 return loaded
-    except Exception:
-        # SKIP and continue per hard rule
+    except Exception:  # noqa: S110 - SKIP and continue per hard rule (missing/unreadable -> {})
         pass
     return {}
 

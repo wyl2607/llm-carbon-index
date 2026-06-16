@@ -4,22 +4,30 @@
 #
 # region keys are the canonical identifiers used in crosswalk assumed_region.
 # Every number here has a corresponding entry in docs/ASSUMPTIONS.md (C-GRID-*).
+#
+# electricitymaps_zone: the Electricity Maps zone code used for the LIVE query
+# (region keys above are NOT valid EM zones). Representative data-center zone per
+# region; absent => no live query for that region (annual factor used). Zone codes
+# from app.electricitymaps.com zone list. See ASSUMPTIONS.md#C-GRID-EM-ZONES.
 
 - region: "us-east"
   gco2_per_kwh: 380
   year: 2022
+  electricitymaps_zone: "US-MIDA-PJM"  # PJM Interconnection (Mid-Atlantic/eastern US DC hub)
   source: "EPA eGRID2022 (U.S. average output emission rate); see ASSUMPTIONS.md#C-GRID-US-EAST-380 and C-GRID-EGRID"
   source_id: "C-GRID-EGRID"
 
 - region: "europe-west"
   gco2_per_kwh: 230
   year: 2024
+  electricitymaps_zone: "IE"  # Ireland — dominant western-EU cloud region (AWS/Azure/GCP eu-west)
   source: "Ember 2024 Europe West annual factor; see ASSUMPTIONS.md#C-GRID-EUROPE-WEST-230"
   source_id: "C-GRID-EUROPE-WEST-230"
 
 - region: "cn-north"
   gco2_per_kwh: 537
   year: 2023
+  electricitymaps_zone: "CN"  # China aggregate zone
   source: "Ember 2023 China national annual; see ASSUMPTIONS.md#C-GRID-CN-NORTH-537"
   source_id: "C-GRID-CN-NORTH-537"
 

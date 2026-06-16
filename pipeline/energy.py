@@ -17,7 +17,8 @@ def wh_per_output_token(
     """Return (wh_per_output_token Range, energy_source, flags, source_id).
 
     Lookup order (Phase 6j update):
-    - First: exact normalized match in intensity "models" (measured ai_energy_score/ecologits entries)
+    - First: exact normalized match in intensity "models" (measured
+      ai_energy_score/ecologits entries)
       take priority over cw "parameter_class_fallback" declaration. This wires sourced
       measured values so energy_measured_fraction climbs for top-traffic models that
       have defensible data.
@@ -59,7 +60,8 @@ def wh_per_output_token(
             whd = m["wh_per_output_token"]
             src = m.get("energy_source") or declared_source
             if src == "parameter_class_fallback" or not src:
-                # explicit measured row in intensity -> treat as sourced (prefer ai for open; ecologits only for known closed)
+                # explicit measured row in intensity -> treat as sourced
+                # (prefer ai for open; ecologits only for known closed)
                 src = "ecologits" if "claude" in norm else "ai_energy_score"
             sid = m.get("source_id", "E-CLASS-LARGE")
             return (
@@ -90,7 +92,8 @@ def wh_per_output_token(
             band.get("source_id", "E-CLASS-LARGE"),
         )
 
-    # cw declared measured source but intensity has no row -> graceful class fallback (existing behavior)
+    # cw declared measured source but intensity has no row -> graceful class
+    # fallback (existing behavior)
     flags.append("FALLBACK_ENERGY_CLASS")
     bands = (intensity_table or {}).get("parameter_class_fallback", [])
     active_b: float | None = None
@@ -106,6 +109,39 @@ def wh_per_output_token(
         flags,
         band.get("source_id", "E-CLASS-LARGE"),
     )
+
+
+def idle_for_slug(
+    slug: str, intensity_table: dict
+) -> tuple[Range | None, float, str | None]:
+    """Return (idle_kwh_per_day Range | None, idle_share_of_day, idle_source_id).
+
+    Looks up the slug's measured intensity row (same normalized match as
+    wh_per_output_token). A row carries the optional always-on/idle term only
+    when a defensible per-model figure exists (ASSUMPTIONS.md#E-IDLE), e.g.::
+
+        idle_kwh_per_day: { low: 3000, mid: 8500, high: 18000 }
+        idle_share_of_day: 0.2
+        idle_source_id: "E-IDLE"
+
+    When the row has no `idle_kwh_per_day`, returns (None, 0.0, None) so callers
+    fall back to the pure dynamic energy path (no silent idle attribution). All
+    idle numbers live in intensity.yaml; this function does no I/O.
+    """
+    norm = normalize_slug(slug)
+    for m in (intensity_table or {}).get("models", []):
+        if normalize_slug(m.get("openrouter_slug", "")) != norm:
+            continue
+        idle = m.get("idle_kwh_per_day")
+        if not idle:
+            return None, 0.0, None
+        share = float(m.get("idle_share_of_day", 0.0))
+        return (
+            Range(idle["low"], idle["mid"], idle["high"]),
+            share,
+            m.get("idle_source_id"),
+        )
+    return None, 0.0, None
 
 
 def _choose_fallback_band(bands: list[dict], active_params_b: float | None = None) -> dict:
