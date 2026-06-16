@@ -150,7 +150,7 @@ function App() {
               <option value="en">{tt.langEn}</option>
             </select>
 
-            <AccountingToggle method={accountingMethod} onChange={setAccountingMethod} />
+            <AccountingToggle method={accountingMethod} onChange={setAccountingMethod} lang={lang} />
 
             <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/docs/methodology.md" target="_blank" rel="noreferrer" className="btn btn-secondary hidden sm:inline-flex text-xs py-1.5 px-4">{tt.methodology}</a>
             <a href="https://github.com/wyl2607/llm-carbon-index" target="_blank" rel="noreferrer" className="btn btn-secondary text-xs py-1.5 px-4">{tt.github}</a>
@@ -295,7 +295,7 @@ function App() {
                   <p className="text-xs text-[#9ba19b] mt-0.5">{tt.vizAllNote}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <GroupToggle groupBy={groupBy} onChange={setGroupBy} />
+                  <GroupToggle groupBy={groupBy} onChange={setGroupBy} lang={lang} />
                   <select 
                     value="15" 
                     onChange={() => { /* top-N wired if desired */ }} 
@@ -308,7 +308,7 @@ function App() {
 
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                 <div className="lg:col-span-3 min-h-[360px]">
-                  <Co2BarChart models={models} groupBy={groupBy} showAll={showAllModels} onToggleShowAll={() => setShowAllModels(!showAllModels)} />
+                  <Co2BarChart models={models} groupBy={groupBy} showAll={showAllModels} onToggleShowAll={() => setShowAllModels(!showAllModels)} lang={lang} />
                 </div>
                 <div className="lg:col-span-2 card p-4 border-[#242924]">
                   <div className="text-xs font-bold tracking-widest text-[#a1a6a1] mb-1.5">{tt.vizOriginBreakdown}</div>
@@ -362,7 +362,7 @@ function App() {
                   </div>
                 </div>
                 <div className="mt-5 pt-4 border-t border-white/5 text-xs text-[#a1a6a1] leading-relaxed space-y-2">
-                  <p><strong className="text-emerald-400">CSRD / ESRS E1 — </strong>{tt.csrdExample}</p>
+                  <p><strong className="text-emerald-400">{tt.csrdPrefix}</strong>{tt.csrdExample}</p>
                   <p className="text-[#9ba19b] italic">{tt.thesisScopeNote}</p>
                 </div>
               </section>
@@ -375,14 +375,14 @@ function App() {
                 <span className="opacity-60">{tt.footerCopyright}</span>
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-1">
-                <a href="https://linkedin.com/in/wyl2607" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] transition-colors">LinkedIn</a>
-                <a href="https://github.com/wyl2607/llm-carbon-index" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] transition-colors">GitHub</a>
-                <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] transition-colors">CHANGELOG</a>
+                <a href="https://linkedin.com/in/wyl2607" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] transition-colors">{tt.linkedin}</a>
+                <a href="https://github.com/wyl2607/llm-carbon-index" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] transition-colors">{tt.github}</a>
+                <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] transition-colors">{tt.changelog}</a>
                 <a href={`${import.meta.env.BASE_URL}data/latest.json`} className="hover:text-[#e4e7e4] underline-offset-2 hover:underline" target="_blank" rel="noreferrer">{tt.rawJson}</a>
                 <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/docs/methodology.md" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] underline-offset-2 hover:underline">{tt.methodologyFull}</a>
                 {sensData && sensData.drivers && (
                   <span className="text-emerald-500/80">
-                    {tt.sensitivityLabel} {sensData.dominant} (±{Math.round(Math.max(...sensData.drivers.map(d => d.total_co2_swing_pct.high)))}%)
+                    {tt.sensitivityLabel} {tt.sensitivityDetail(sensData.dominant, Math.round(Math.max(...sensData.drivers.map(d => d.total_co2_swing_pct.high))))}
                   </span>
                 )}
               </div>

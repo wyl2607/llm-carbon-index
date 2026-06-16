@@ -207,7 +207,7 @@ export const WhatIfSimulator: React.FC<Props> = ({
                   ? tt.impactNote(reductionPercent)
                   : tt.impactNoteMarket(reductionPercent)
               ) : (
-                <span className="text-emerald-300/50 italic">{lang === 'zh' ? '移动滑块探索情景影响。' : 'Move the slider to explore decarbonization impact.'}</span>
+                <span className="text-emerald-300/50 italic">{tt.sliderHint}</span>
               )}
               <div className="mt-2 text-[11px] text-emerald-300/60">{tt.deEuHint}</div>
             </div>

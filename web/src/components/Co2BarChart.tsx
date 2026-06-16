@@ -12,22 +12,25 @@ import {
 } from 'recharts';
 import type { Model } from '../types';
 import type { GroupBy } from './GroupToggle';
+import type { Lang } from '../lib/i18n';
+import { useI18n } from '../lib/i18n';
 
 interface Props {
   models: Model[];
   groupBy: GroupBy;
   showAll?: boolean;
   onToggleShowAll?: () => void;
+  lang: Lang;
 }
 
-const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payload: { full: string; co2: number; open_or_closed: string; origin: string; } }[] }) => {
+const CustomTooltip = ({ active, payload, co2Label }: { active?: boolean; payload?: { payload: { full: string; co2: number; open_or_closed: string; origin: string; } }[]; co2Label: string }) => {
   if (!active || !payload || !payload.length) return null;
   const p = payload[0].payload;
   return (
     <div className="bg-[#121512] border border-[#242924] p-3 rounded-lg shadow-lg text-sm text-[#e4e7e4]">
       <div className="font-semibold text-white mb-1">{p.full}</div>
       <div className="mb-1">
-        <span className="font-medium">CO₂:</span> {p.co2.toLocaleString()} kg
+        <span className="font-medium">{co2Label}</span> {p.co2.toLocaleString()} kg
       </div>
       <div className="text-xs text-[#a1a6a1] mt-2">
         <span className="inline-block px-1.5 py-0.5 bg-[#1a1f1a] rounded mr-1 border border-[#242924]">
@@ -46,7 +49,8 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payl
  * Colors are driven by the GroupToggle (open/closed or origin).
  * ErrorBar uses deltas for asymmetric ranges.
  */
-export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false, onToggleShowAll }) => {
+export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false, onToggleShowAll, lang }) => {
+  const tt = useI18n(lang);
   // Sort by impact and take top 15 by default for readability (50 models is too many on x-axis)
   const sortedModels = [...models].sort((a, b) => b.co2_kg.mid - a.co2_kg.mid);
   const displayModels = showAll ? sortedModels : sortedModels.slice(0, 15);
@@ -73,12 +77,12 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false,
       chartData = [
         ...chartData,
         {
-          name: `+${sortedModels.length - 15} others`,
+          name: tt.othersLabel(sortedModels.length - 15),
           co2: othersMid,
           error: [0, 0],
           origin: 'OTHER',
           open_or_closed: 'open',
-          full: `Remaining ${sortedModels.length - 15} models (aggregated)`,
+          full: tt.remainingAggregated(sortedModels.length - 15),
         },
       ];
     }
@@ -101,6 +105,8 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false,
     }
   };
 
+  const groupPhrase = groupBy === 'open_or_closed' ? tt.groupOpenClosed : tt.groupOrigin;
+
   return (
     <div className="w-full h-full flex flex-col">
       <div className="flex justify-end mb-1">
@@ -109,7 +115,7 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false,
             onClick={onToggleShowAll}
             className="text-xs px-3 py-1 rounded-lg border border-[#242924] hover:bg-[#1a1e1a] text-[#a1a6a1]"
           >
-            {showAll ? 'Show Top 15' : `Show All (${models.length})`}
+            {showAll ? tt.showTop15 : tt.showAll(models.length)}
           </button>
         )}
       </div>
@@ -133,7 +139,7 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false,
             tickLine={{ stroke: '#242924' }}
             axisLine={{ stroke: '#242924' }}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(16,185,129,0.06)' }} />
+          <Tooltip content={<CustomTooltip co2Label={tt.tooltipCo2} />} cursor={{ fill: 'rgba(16,185,129,0.06)' }} />
           <Bar dataKey="co2" radius={[2,2,0,0]}>
             {chartData.map((entry, index) => <Cell key={`cell-${index}`} fill={getColor(entry)} />)}
             <ErrorBar dataKey="error" direction="y" strokeWidth={1} stroke="#334155" />
@@ -141,7 +147,7 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false,
         </BarChart>
       </ResponsiveContainer>
       <div className="text-[10px] text-[#9ba19b] mt-1 text-center">
-        Mid + low/high whiskers. Grouped by {groupBy.replace('_', ' ')}. {showAll ? 'All models shown.' : 'Top 15 + others aggregated for readability.'}
+        {tt.chartMidWhiskers}{groupPhrase}. {showAll ? tt.chartAllShown : tt.chartTopAggregated}
       </div>
     </div>
   );
