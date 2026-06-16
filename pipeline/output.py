@@ -47,7 +47,10 @@ def build_output(
     )
     assumptions = {
         "input_output_ratio": "80:20",
-        "default_pue": 1.2,
+        "pue_band": "1.1 / 1.25 / 1.56",
+        "prefill_alpha": "0.1 / 0.2 / 0.3",
+        "embodied_ratio_of_operational": "0.28 / 0.39 / 0.54",
+        "water_l_per_kwh": "onsite 0.3/0.9/1.8 + offsite EWIF 2.0/3.14/4.35",
     }
 
     # Totals from ALL records for the day (incl. the other aggregate)
@@ -103,6 +106,12 @@ def build_output(
 
     co2_list = [m["co2_kg"] for m in estimates]
     co2_kg = _sum_co2(co2_list)
+
+    co2_embodied_list = [m.get("co2_kg_embodied", {"low": 0.0, "mid": 0.0, "high": 0.0}) for m in estimates]
+    co2_kg_embodied = _sum_co2(co2_embodied_list)
+
+    co2_total_list = [m.get("co2_kg_total", m["co2_kg"]) for m in estimates]
+    co2_kg_total = _sum_co2(co2_total_list)
 
     co2_market_list = [m.get("co2_kg_market", m["co2_kg"]) for m in estimates]
     co2_kg_market = _sum_co2(co2_market_list)
@@ -164,6 +173,8 @@ def build_output(
         "est_output_tokens": est_output_tokens,
         "energy_kwh": energy_kwh,
         "co2_kg": co2_kg,
+        "co2_kg_embodied": co2_kg_embodied,
+        "co2_kg_total": co2_kg_total,
         "co2_kg_market": co2_kg_market,
         "water_liters": water_liters,
         "by_origin": by_origin,

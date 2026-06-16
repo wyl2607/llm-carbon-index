@@ -65,6 +65,8 @@ class ModelEstimate(TypedDict):
     grid_source: GridSource
     pue: float
     co2_kg: RangeDict
+    co2_kg_embodied: RangeDict
+    co2_kg_total: RangeDict
     renewable_match_pct: float | None
     co2_kg_market: RangeDict
     wue: float
@@ -93,5 +95,7 @@ class Totals(TypedDict):
     est_output_tokens: int
     energy_kwh: RangeDict
     co2_kg: RangeDict
+    co2_kg_embodied: RangeDict
+    co2_kg_total: RangeDict
     co2_kg_market: RangeDict
     water_liters: RangeDict

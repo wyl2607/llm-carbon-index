@@ -34,10 +34,14 @@
     "scope_note": { "type": "string" },
     "assumptions": {
       "type": "object",
-      "required": ["input_output_ratio", "default_pue"],
+      "required": ["input_output_ratio"],
       "properties": {
         "input_output_ratio": { "type": "string" },
-        "default_pue": { "type": "number" }
+        "default_pue": { "type": "number" },
+        "pue_band": { "type": "string" },
+        "prefill_alpha": { "type": "string" },
+        "embodied_ratio_of_operational": { "type": "string" },
+        "water_l_per_kwh": { "type": "string" }
       },
       "additionalProperties": false
     },
@@ -60,6 +64,8 @@
           "grid_source",
           "pue",
           "co2_kg",
+          "co2_kg_embodied",
+          "co2_kg_total",
           "renewable_match_pct",
           "co2_kg_market",
           "wue",
@@ -83,6 +89,8 @@
           "grid_source": { "enum": ["electricity_maps_live", "annual_factor"] },
           "pue": { "type": "number" },
           "co2_kg": { "$ref": "#/definitions/Range" },
+          "co2_kg_embodied": { "$ref": "#/definitions/Range" },
+          "co2_kg_total": { "$ref": "#/definitions/Range" },
           "renewable_match_pct": { "type": ["number", "null"] },
           "co2_kg_market": { "$ref": "#/definitions/Range" },
           "wue": { "type": "number" },
@@ -116,6 +124,8 @@
         "est_output_tokens",
         "energy_kwh",
         "co2_kg",
+        "co2_kg_embodied",
+        "co2_kg_total",
         "co2_kg_market",
         "water_liters",
         "by_origin",
@@ -143,6 +153,8 @@
         "est_output_tokens": { "type": "integer" },
         "energy_kwh": { "$ref": "#/definitions/Range" },
         "co2_kg": { "$ref": "#/definitions/Range" },
+        "co2_kg_embodied": { "$ref": "#/definitions/Range" },
+        "co2_kg_total": { "$ref": "#/definitions/Range" },
         "co2_kg_market": { "$ref": "#/definitions/Range" },
         "water_liters": { "$ref": "#/definitions/Range" },
         "by_origin": {

@@ -11,11 +11,13 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
+
 # Make local pipeline package importable when running pytest from repo root
 # (matches pattern used by Phase 0 tests/test_prove_math.py).
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from pipeline.carbon import co2_kg
+from pipeline.carbon import co2_kg, embodied_co2_kg, total_lca_co2_kg
 from pipeline.ranges import Range
 
 
@@ -51,3 +53,30 @@ def test_co2_kg_g_to_kg_guard_on_known():
     # 0.5 kWh * 2 * 1000 /1000 = 1 kg
     c2 = co2_kg(Range(0.5, 0.5, 0.5), 1000.0, 2.0)
     assert c2.mid == 1.0
+
+
+def test_co2_kg_accepts_pue_range_and_widens_band():
+    # v0.2 A4: PUE as a Range multiplies endpoint-wise -> wider band than a point PUE.
+    e = Range(100.0, 100.0, 100.0)  # flat energy isolates the PUE effect
+    pue_band = Range(1.1, 1.25, 1.56)
+    c = co2_kg(e, 1000.0, pue_band)
+    # 100 * {1.1,1.25,1.56} * 1000 / 1000 = {110, 125, 156}
+    assert c.low == pytest.approx(110.0)
+    assert c.mid == pytest.approx(125.0)
+    assert c.high == pytest.approx(156.0)
+    assert c.low <= c.mid <= c.high
+
+
+def test_embodied_and_total_lca():
+    # embodied = operational * ratio ; total = operational + embodied (C-EMBODIED)
+    op = Range(100.0, 200.0, 400.0)
+    ratio = Range(0.28, 0.39, 0.54)
+    emb = embodied_co2_kg(op, ratio)
+    assert emb.low == pytest.approx(28.0)
+    assert emb.mid == pytest.approx(78.0)
+    assert emb.high == pytest.approx(216.0)
+    tot = total_lca_co2_kg(op, emb)
+    assert tot.low == pytest.approx(128.0)
+    assert tot.mid == pytest.approx(278.0)
+    assert tot.high == pytest.approx(616.0)
+    assert tot.low <= tot.mid <= tot.high

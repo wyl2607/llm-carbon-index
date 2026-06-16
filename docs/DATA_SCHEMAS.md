@@ -20,9 +20,12 @@ The single source of truth for every artifact shape. If a phase needs to change 
   "data_date": "2026-06-14",                    // the OpenRouter day this reflects
   "source_citation": "Source: OpenRouter (openrouter.ai/rankings), as of 2026-06-14",
   "scope_note": "Estimated CO2 footprint of LLM-inference traffic visible through OpenRouter. NOT global data-center emissions. All figures are estimates with uncertainty.",
-  "assumptions": {
+  "assumptions": {                              // v0.2 snapshot of cross-cutting factors
     "input_output_ratio": "80:20",              // A2; see ASSUMPTIONS.md
-    "default_pue": 1.2                           // A4
+    "pue_band": "1.1 / 1.25 / 1.56",            // A4 (revised to a band)
+    "prefill_alpha": "0.1 / 0.2 / 0.3",         // E-PREFILL
+    "embodied_ratio_of_operational": "0.28 / 0.39 / 0.54", // C-EMBODIED
+    "water_l_per_kwh": "onsite 0.3/0.9/1.8 + offsite EWIF 2.0/3.14/4.35"  // W-WATER
   },
   "models": [
     {
@@ -38,8 +41,13 @@ The single source of truth for every artifact shape. If a phase needs to change 
       "region": "us-east",
       "carbon_intensity_gco2_kwh": 380,
       "grid_source": "electricity_maps_live",   // electricity_maps_live | annual_factor
-      "pue": 1.2,
-      "co2_kg": { "low": 332, "mid": 622, "high": 1245 },
+      "pue": 1.25,                              // representative scalar (mid of A4 band)
+      "co2_kg": { "low": 332, "mid": 622, "high": 1245 },          // operational, location-based
+      "co2_kg_embodied": { "low": 93, "mid": 243, "high": 672 },   // C-EMBODIED (amortised manufacturing)
+      "co2_kg_total": { "low": 425, "mid": 865, "high": 1917 },    // operational + embodied (full lifecycle)
+      "co2_kg_market": { "low": 332, "mid": 622, "high": 1245 },   // market-based (vendor renewable match)
+      "wue": 4.04,                              // representative combined L/kWh (W-WATER)
+      "water_liters": { "low": 2300, "mid": 4040, "high": 6150 },
       "flags": []
     }
   ],
@@ -52,6 +60,8 @@ The single source of truth for every artifact shape. If a phase needs to change 
     "unmapped_traffic_fraction": 0.0,            // Phase 6E: unmapped_tokens / total_tokens
     "unmapped_slugs": [ { "slug": "vendor/new-x", "total_tokens": 0 } ],  // Phase 6E maintenance to-do: add these to the crosswalk (sorted desc by tokens)
     "co2_kg": { "low": 0, "mid": 0, "high": 0 },
+    "co2_kg_embodied": { "low": 0, "mid": 0, "high": 0 },   // C-EMBODIED total
+    "co2_kg_total": { "low": 0, "mid": 0, "high": 0 },      // operational + embodied total
     "by_origin": { "CN": { "co2_kg": {"low":0,"mid":0,"high":0} } },
     "by_open_closed": { "open": { "co2_kg": {"low":0,"mid":0,"high":0} }, "closed": { "co2_kg": {"low":0,"mid":0,"high":0} } }
   }

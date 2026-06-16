@@ -1,0 +1,64 @@
+# Global methodology factors (v0.2.0). One source of truth for the cross-cutting
+# coefficients added in the v0.2 research-logic refinement. Every value carries a
+# source string here AND a matching entry in docs/ASSUMPTIONS.md. No pipeline/*.py
+# file may hardcode these numbers — estimate.py loads this file and injects them
+# into the pure math functions.
+
+# A4 (revised) — Power Usage Effectiveness as a conservative band, not a point.
+# OpenRouter routes to a MIX of hyperscaler and non-hyperscaler backends, so a flat
+# 1.2 understates the fleet. low = best-in-class hyperscaler fleet; mid = typical
+# modern facility; high = industry global average.
+pue:
+  low: 1.1
+  mid: 1.25
+  high: 1.56
+  source: >-
+    low 1.1 (Google/hyperscaler fleet PUE reporting); mid 1.25 (typical modern
+    facility); high 1.56 (Uptime Institute Global Data Center Survey 2024 industry
+    average, flat 5 yrs). See ASSUMPTIONS.md#A4.
+
+# E-PREFILL — input (prefill) tokens are NOT free. Inference energy depends on both
+# input and output token counts; prefill is compute-bound and runs all input tokens
+# in parallel (higher hardware utilisation), so per-token it is CHEAPER than the
+# memory-bandwidth-bound decode phase, but it is not zero. alpha = wh_per_input_token
+# / wh_per_output_token. Wide band: very high uncertainty (no public per-model split).
+prefill_alpha:
+  low: 0.1
+  mid: 0.2
+  high: 0.3
+  source: >-
+    Prefill is compute-bound / parallel vs memory-bound decode; per-input-token
+    energy modelled as 0.1-0.2-0.3x the per-output-token energy. Informed by
+    LLM-inference energy decomposition (arXiv:2507.11417; TokenPowerBench
+    arXiv:2512.03024). See ASSUMPTIONS.md#E-PREFILL.
+
+# C-EMBODIED — amortised embodied (hardware manufacturing) carbon, expressed as a
+# ratio of OPERATIONAL CO2. Literature puts embodied at ~22-35% of TOTAL LLM carbon;
+# share/(1-share) converts that to a fraction of operational: 22%->0.28, 28%->0.39,
+# 35%->0.54. Used as a documented proxy (embodied scales with hardware-hours, here
+# approximated by operational energy).
+embodied_ratio:
+  low: 0.28
+  mid: 0.39
+  high: 0.54
+  source: >-
+    Embodied/manufacturing carbon ~22-35% of total LLM footprint (BLOOM LCA ~22%;
+    CarbonScaling arXiv:2508.06524; arXiv:2501.15829), converted to fraction of
+    operational via share/(1-share). See ASSUMPTIONS.md#C-EMBODIED.
+
+# W-WATER — water footprint split into on-site (cooling evaporation, scales with
+# facility energy) + off-site (water evaporated generating the electricity, EWIF).
+# Replaces the flat 1.5 L/kWh, which conflated and undercounted off-site water.
+water:
+  onsite_wue:        # L per kWh of facility energy (cooling)
+    low: 0.3
+    mid: 0.9
+    high: 1.8
+  offsite_ewif:      # L per kWh of electricity generated (power-plant water)
+    low: 2.0
+    mid: 3.14
+    high: 4.35
+  source: >-
+    On-site WUE 0.3-0.9-1.8 L/kWh (datacenter cooling, industry range) + off-site
+    EWIF 2.0-3.14-4.35 L/kWh (US power-generation water; 3.14 mid). Li et al.,
+    "Making AI Less Thirsty" (arXiv:2304.03271). See ASSUMPTIONS.md#W-WATER.

@@ -90,12 +90,30 @@ def _choose_fallback_band(bands: list[dict]) -> dict:
     return max(bands, key=lambda b: b.get("max_active_params_b") or 0)
 
 
-def energy_kwh(wh_per_token: Range, output_tokens: int) -> Range:
-    """Total facility energy in kWh for the day's output tokens.
+def energy_kwh(
+    wh_per_token: Range,
+    output_tokens: int,
+    input_tokens: int = 0,
+    prefill_alpha: Range | None = None,
+) -> Range:
+    """Total IT energy in kWh for the day's tokens.
 
-    = wh_per_output_token * output_tokens / 1000
-    (the /1000 is the explicit Wh->kWh guard required by ENGINEERING_STANDARDS §5).
+    Decode (output) energy is the primary driver; the prefill (input) phase is
+    cheaper per token but NOT zero (ASSUMPTIONS.md#E-PREFILL):
+
+        wh = wh_per_output_token * output_tokens
+           + (prefill_alpha * wh_per_output_token) * input_tokens
+        energy_kwh = wh / 1000        # explicit Wh->kWh guard (ENG_STANDARDS §5)
+
+    `prefill_alpha` is a Range (wh_per_input / wh_per_output). When it or
+    input_tokens is absent, the result reduces to the legacy output-only model,
+    so existing callers/tests are unaffected.
     """
-    # tokens is a positive scalar here
-    scaled = wh_per_token * output_tokens
-    return scaled / 1000.0
+    decode = wh_per_token * output_tokens
+    if input_tokens and prefill_alpha is not None:
+        wh_per_input = wh_per_token * prefill_alpha  # Range * Range, endpoint-wise
+        prefill = wh_per_input * input_tokens
+        total_wh = decode + prefill
+    else:
+        total_wh = decode
+    return total_wh / 1000.0

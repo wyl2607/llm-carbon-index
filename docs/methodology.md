@@ -27,25 +27,42 @@ total_tokens (OpenRouter rankings-daily)
                             └─ / 1000 ────▶ co2_kg         [g→kg guard]
 ```
 
-Formally, per model per day:
+Formally, per model per day (**v0.2**):
 
 ```
-energy_kwh = wh_per_output_token × est_output_tokens / 1000
-co2_kg     = energy_kwh × PUE × carbon_intensity_gco2_kwh / 1000
+energy_kwh   = (wh_per_output_token × est_output_tokens
+              + α × wh_per_output_token × est_input_tokens) / 1000   [E-PREFILL]
+co2_kg       = energy_kwh × PUE × carbon_intensity_gco2_kwh / 1000   [PUE is a band, A4]
+co2_embodied = co2_kg × embodied_ratio                                [C-EMBODIED]
+co2_total    = co2_kg + co2_embodied
+water_L      = energy_kwh × PUE × (onsite_WUE + offsite_EWIF)         [W-WATER]
 ```
 
-Output (decode) tokens dominate inference energy, so energy is estimated on the
-output-token estimate; the 80:20 split (A2) is a documented sensitivity axis,
-not a measured ratio.
+Output (decode) tokens dominate per-token energy, but v0.2 no longer treats the
+~80 % input tokens as free: the prefill phase is compute-bound and cheaper per
+token (α = 0.1–0.2–0.3 of the decode rate, E-PREFILL) but not zero. The 80:20
+split (A2) and α are documented sensitivity axes, not measured ratios.
+
+**What changed in v0.2 (vs v0.1):** (1) input/prefill energy is counted; (2) PUE
+is a band `{1.1, 1.25, 1.56}` not a flat 1.2 (A4); (3) an amortised **embodied**
+(manufacturing) carbon term is added alongside operational (C-EMBODIED); (4) water
+is split into on-site cooling + off-site generation (W-WATER). The headline
+`co2_kg` remains **operational, location-based**; `co2_kg_total` is the
+full-lifecycle figure. These changes raise the central estimate and *widen* the
+band — multiple independent uncertainties multiplied endpoint-wise compound into a
+deliberately conservative envelope (see §4).
 
 ## 3. Assumptions (full registry in `ASSUMPTIONS.md`)
 
 | ID | What | Value | Source |
 |---|---|---|---|
 | A1 | Model subset (MVP) | OpenRouter top open models w/ AI Energy Score data + 1–2 closed via EcoLogits | `model_crosswalk.yaml` |
-| A2 | Input:output token ratio | 80:20 → `est_output_tokens = total × 0.20` | OpenRouter usage study (refine) |
+| A2 | Input:output token ratio | 80:20 → `est_output_tokens = total × 0.20`; input = total − output | OpenRouter usage study (refine) |
 | A3 | DC region per model | one assumed region/provider; closed = `CLOSED_MODEL_ASSUMED` | DC-series |
-| A4 | PUE | 1.2 default (band ~1.1–1.6) | Google / Uptime Institute |
+| A4 | PUE | **band 1.1 / 1.25 / 1.56** (was flat 1.2) | Uptime Institute 2024 / Google |
+| E-PREFILL | Input-token energy | `α·wh_out`, α = 0.1 / 0.2 / 0.3 | arXiv:2507.11417, 2512.03024 |
+| C-EMBODIED | Embodied carbon | `op × {0.28,0.39,0.54}` (≈22–35 % of total) | BLOOM LCA; arXiv:2508.06524, 2501.15829 |
+| W-WATER | Water (L/kWh) | on-site 0.3/0.9/1.8 + off-site EWIF 2.0/3.14/4.35 | Li et al. arXiv:2304.03271 |
 | E-CLASS-* | Param-class fallback Wh/token | small 0.0005–0.0012–0.0025; large 0.002–0.005–0.012 | AI Energy Score v2 + EcoLogits |
 | E-{model} | Per-model Wh/token | e.g. closed Claude-class 0.0025–0.006–0.015 (widest) | per-model entries |
 | C-GRID-* | Annual grid factors (gCO₂/kWh) | us-east 380 (EPA eGRID2022), europe-west 230 (Ember 2024), cn-north 537 (Ember 2023), eu-27 242, default 400 | EPA / Ember |

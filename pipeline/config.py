@@ -21,6 +21,7 @@ CROSSWALK_PATH = DATA_DIR / "crosswalk" / "model_crosswalk.yaml"
 INTENSITY_PATH = DATA_DIR / "energy" / "intensity.yaml"
 CLOSED_MODELS_PATH = DATA_DIR / "assumptions" / "closed_models.yaml"
 VENDOR_CLAIMS_PATH = DATA_DIR / "assumptions" / "vendor_claims.yaml"
+METHODOLOGY_FACTORS_PATH = DATA_DIR / "assumptions" / "methodology_factors.yaml"
 ANNUAL_FACTORS_PATH = DATA_DIR / "grid" / "annual_factors.yaml"
 
 OUTPUT_DIR = DATA_DIR / "output"

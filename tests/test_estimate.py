@@ -270,10 +270,14 @@ def test_conversion_guards_large_numbers():
     ]
     out = estimate(recs)
     m = out[0]
-    # energy mid approx 1.365M kWh (within 1%)
-    assert 1_300_000 < m["energy_kwh"]["mid"] < 1_400_000
-    # co2 uses 537 g (cn) + pue 1.2 -> mid around 880k kg
+    # v0.2: energy = decode(910B out) + prefill(3.64T in * alpha_mid 0.2) at 0.0015 mid wh
+    #       = (910e9 + 0.2*3.64e12) * 0.0015 / 1000 ≈ 2.457M kWh mid
+    assert 2_400_000 < m["energy_kwh"]["mid"] < 2_520_000
+    # co2 uses 537 g (cn) + pue band mid 1.25 -> mid well above 100k kg
     assert m["co2_kg"]["mid"] > 100_000
+    # v0.2 fields present and consistent
+    assert m["co2_kg_total"]["mid"] > m["co2_kg"]["mid"]  # operational + embodied
+    assert m["water_liters"]["mid"] > 0
 
 
 def test_no_model_slug_literal_in_pipeline_py():

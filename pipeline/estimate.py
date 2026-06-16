@@ -11,19 +11,21 @@ from __future__ import annotations
 
 import yaml
 
-from pipeline.carbon import co2_kg
+from pipeline.carbon import co2_kg, embodied_co2_kg, total_lca_co2_kg
 from pipeline.config import (
     CLOSED_MODELS_PATH,
     CROSSWALK_PATH,
     INTENSITY_PATH,
+    METHODOLOGY_FACTORS_PATH,
     VENDOR_CLAIMS_PATH,
 )
 from pipeline.energy import energy_kwh, wh_per_output_token
 from pipeline.grid import carbon_intensity
 from pipeline.ranges import Range
 from pipeline.slugs import normalize_slug
-from pipeline.tokens import output_tokens
+from pipeline.tokens import input_tokens, output_tokens
 from pipeline.types import ModelEstimate, NormalizedRecord
+from pipeline.water import water_liters
 
 
 def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
@@ -78,6 +80,30 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
         for e in vendor_claims_list if e.get("provider")
     }
 
+    # v0.2 methodology factors (PUE band, prefill alpha, embodied ratio, water split).
+    # Loaded here at the I/O boundary; pure math funcs receive Ranges/scalars.
+    factors: dict = {}
+    try:
+        with open(METHODOLOGY_FACTORS_PATH, encoding="utf-8") as f:
+            loaded = yaml.safe_load(f)
+            if isinstance(loaded, dict):
+                factors = loaded
+    except Exception:
+        factors = {}
+
+    def _range(d: dict | None, lo: float, mi: float, hi: float) -> Range:
+        d = d or {}
+        return Range(
+            float(d.get("low", lo)), float(d.get("mid", mi)), float(d.get("high", hi))
+        )
+
+    pue_range = _range(factors.get("pue"), 1.1, 1.25, 1.56)
+    prefill_alpha = _range(factors.get("prefill_alpha"), 0.1, 0.2, 0.3)
+    embodied_ratio = _range(factors.get("embodied_ratio"), 0.28, 0.39, 0.54)
+    water_cfg = factors.get("water") or {}
+    onsite_wue = _range(water_cfg.get("onsite_wue"), 0.3, 0.9, 1.8)
+    offsite_ewif = _range(water_cfg.get("offsite_ewif"), 2.0, 3.14, 4.35)
+
     results: list[ModelEstimate] = []
 
     for rec in records:
@@ -104,45 +130,46 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
             region = "us-east"
             assumed_provider = None
 
-        # 1. output tokens (A2)
+        # 1. tokens (A2): output drives decode, input drives prefill (E-PREFILL)
         est_out = output_tokens(total_tokens)
+        est_in = input_tokens(total_tokens, est_out)
 
         # 2. wh per output token (with fallback labels)
         wh_r, energy_src, eflags = wh_per_output_token(slug, crosswalk, intensity)
 
-        # 3. kWh (pure; /1000 guard inside)
-        energy_r = energy_kwh(wh_r, est_out)
+        # 3. kWh = decode(output) + prefill(input) (pure; /1000 guard inside)
+        energy_r = energy_kwh(wh_r, est_out, est_in, prefill_alpha)
 
         # 4. grid (live or annual labelled)
         gco2, grid_src = carbon_intensity(region)
 
-        # 5. pue (default 1.2 per A4; override only for closed via closed_models)
-        pue = 1.2  # default hyperscaler per ASSUMPTIONS.md#A4 / DATA_SCHEMAS
+        # 5. PUE as a band (A4 revised). A known provider PUE centres the band's mid;
+        #    low/high come from the Uptime-informed global band.
+        pue_mid = pue_range.mid
         if open_or_closed == "closed" and assumed_provider and assumed_provider in closed_map:
-            pue = float(closed_map[assumed_provider].get("pue", 1.2))
+            pue_mid = float(closed_map[assumed_provider].get("pue", pue_range.mid))
+        model_pue_range = Range(pue_range.low, pue_mid, pue_range.high)
+        pue = pue_mid  # representative scalar emitted for display/scenario
 
-        # 6. CO2 (pure location-based)
-        co2_r = co2_kg(energy_r, gco2, pue)
+        # 6. Operational CO2 (location-based), PUE band widens the spread
+        co2_r = co2_kg(energy_r, gco2, model_pue_range)
 
-        # 7. Market-based CO2
+        # 6b. Embodied (amortised manufacturing) CO2 + full-lifecycle total (C-EMBODIED)
+        co2_embodied_r = embodied_co2_kg(co2_r, embodied_ratio)
+        co2_total_r = total_lca_co2_kg(co2_r, co2_embodied_r)
+
+        # 7. Market-based CO2 (operational; vendor renewable match)
         match_pct = None
         if assumed_provider and assumed_provider in vendor_claims_map:
             match_pct = vendor_claims_map[assumed_provider]
-            
-        market_low = co2_r.low * (1 - (match_pct or 0.0) / 100.0)
-        market_mid = co2_r.mid * (1 - (match_pct or 0.0) / 100.0)
-        market_high = co2_r.high * (1 - (match_pct or 0.0) / 100.0)
-        co2_market_r = Range(market_low, market_mid, market_high)
 
-        # 8. Water Footprint (WUE)
-        wue = 1.5  # default ASSUMPTIONS.md global average
-        if open_or_closed == "closed" and assumed_provider and assumed_provider in closed_map:
-            wue = float(closed_map[assumed_provider].get("wue", 1.5))
-            
-        water_low = energy_r.low * wue
-        water_mid = energy_r.mid * wue
-        water_high = energy_r.high * wue
-        water_r = Range(water_low, water_mid, water_high)
+        market_factor = 1 - (match_pct or 0.0) / 100.0
+        co2_market_r = co2_r * market_factor
+
+        # 8. Water footprint: facility energy * (on-site WUE + off-site EWIF) (W-WATER)
+        facility_energy_r = energy_r * pue_mid
+        water_r = water_liters(facility_energy_r, onsite_wue, offsite_ewif)
+        wue = onsite_wue.mid + offsite_ewif.mid  # representative combined L/kWh
 
         # flags assembly
         flags: list[str] = list(eflags)
@@ -177,6 +204,8 @@ def estimate(records: list[NormalizedRecord]) -> list[ModelEstimate]:
             "grid_source": grid_src,
             "pue": pue,
             "co2_kg": co2_r.to_dict(),
+            "co2_kg_embodied": co2_embodied_r.to_dict(),
+            "co2_kg_total": co2_total_r.to_dict(),
             "renewable_match_pct": match_pct,
             "co2_kg_market": co2_market_r.to_dict(),
             "wue": wue,

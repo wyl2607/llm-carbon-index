@@ -16,3 +16,13 @@ def output_tokens(total_tokens: int, ratio: float = 0.20) -> int:
         total_tokens = 0
     # ratio documented in ASSUMPTIONS; no other magic ratio allowed here
     return int(round(total_tokens * ratio))
+
+
+def input_tokens(total_tokens: int, est_output_tokens: int) -> int:
+    """Derive estimated input (prompt) tokens as total - output (A2).
+
+    Input tokens are NOT energy-free: they drive the prefill phase (see
+    ASSUMPTIONS.md#E-PREFILL). Kept consistent with `output_tokens` so
+    input + output == total. Non-negative.
+    """
+    return max(0, int(total_tokens) - int(est_output_tokens))

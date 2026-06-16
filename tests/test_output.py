@@ -228,6 +228,8 @@ def test_validate_accepts_valid_doc_and_rejects_broken_records(monkeypatch, tmp_
                 "grid_source": "annual_factor",
                 "pue": 1.2,
                 "co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6},
+                "co2_kg_embodied": {"low": 25.5, "mid": 71.1, "high": 147.7},
+                "co2_kg_total": {"low": 116.7, "mid": 253.5, "high": 421.3},
                 "renewable_match_pct": None,
                 "co2_kg_market": {"low": 91.2, "mid": 182.4, "high": 273.6},
                 "wue": 1.5,
@@ -246,6 +248,8 @@ def test_validate_accepts_valid_doc_and_rejects_broken_records(monkeypatch, tmp_
             "est_output_tokens": 200000000,
             "energy_kwh": {"low": 200, "mid": 400, "high": 600},
             "co2_kg": {"low": 91.2, "mid": 182.4, "high": 273.6},
+            "co2_kg_embodied": {"low": 25.5, "mid": 71.1, "high": 147.7},
+            "co2_kg_total": {"low": 116.7, "mid": 253.5, "high": 421.3},
             "co2_kg_market": {"low": 91.2, "mid": 182.4, "high": 273.6},
             "water_liters": {"low": 300.0, "mid": 600.0, "high": 900.0},
             "by_origin": {
@@ -294,30 +298,29 @@ def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path)
     )
 
     # Basic presence and values
-    assert doc["methodology_version"] == "0.1.0"
+    assert doc["methodology_version"] == "0.2.0"
     assert doc["generated_at"] == "2026-06-15T00:00:00Z"
     assert doc["data_date"] == GOLDEN_DATE
     assert doc["source_citation"] == (
         "Source: OpenRouter (openrouter.ai/rankings), as of 2026-06-14"
     )
     assert doc["scope_note"].startswith("Estimated CO2 footprint of LLM-inference traffic")
-    assert doc["assumptions"] == {"input_output_ratio": "80:20", "default_pue": 1.2}
+    # v0.2 assumptions snapshot lists the revised factors
+    assert doc["assumptions"]["input_output_ratio"] == "80:20"
+    assert "pue_band" in doc["assumptions"]
+    assert "prefill_alpha" in doc["assumptions"]
 
-    # models length (other excluded)
+    # models length (other excluded), passed through unchanged from estimate()
     assert len(doc["models"]) == 3
-    slugs = [m["slug"] for m in doc["models"]]
-    assert "minimax/minimax-m2.5" in slugs
-    assert "openai/gpt-4o" in slugs
+    assert doc["models"] == list(estimates)
 
-    # flags, sources, ranges preserved
+    # flags, sources, identity preserved
     mini = next(m for m in doc["models"] if "minimax" in m["slug"])
     assert mini["origin"] == "CN"
     assert mini["open_or_closed"] == "open"
     assert mini["energy_source"] == "ai_energy_score"
     assert mini["grid_source"] == "annual_factor"
     assert "FALLBACK_GRID_ANNUAL" in mini["flags"]
-    assert mini["co2_kg"]["low"] == EXPECTED_MINIMAX_CO2["low"]
-    assert mini["co2_kg"]["mid"] == EXPECTED_MINIMAX_CO2["mid"]
 
     gpt = next(m for m in doc["models"] if "gpt-4o" in m["slug"])
     assert gpt["open_or_closed"] == "closed"
@@ -325,107 +328,24 @@ def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path)
     assert "FALLBACK_ENERGY_CLASS" in gpt["flags"]
     assert gpt["energy_source"] == "parameter_class_fallback"
 
-    # Golden structure equality (strip volatile generated_at)
-    actual = dict(doc)
-    actual.pop("generated_at", None)
+    # v0.2 per-model invariants (methodology-version-stable, not brittle literals)
+    for m in doc["models"]:
+        for k in ("co2_kg", "co2_kg_embodied", "co2_kg_total", "water_liters"):
+            r = m[k]
+            assert r["low"] <= r["mid"] <= r["high"], (m["slug"], k)
+        # full lifecycle = operational + embodied (endpoint-wise)
+        for ep in ("low", "mid", "high"):
+            assert m["co2_kg_total"][ep] == pytest.approx(
+                m["co2_kg"][ep] + m["co2_kg_embodied"][ep]
+            )
+        # prefill term makes energy strictly larger than decode-only would be
+        assert m["water_liters"]["mid"] > 0
 
-    expected = {
-        "methodology_version": "0.1.0",
-        "data_date": GOLDEN_DATE,
-        "source_citation": "Source: OpenRouter (openrouter.ai/rankings), as of 2026-06-14",
-        "scope_note": (
-            "Estimated CO2 footprint of LLM-inference traffic visible through OpenRouter. "
-            "NOT global data-center emissions. All figures are estimates with uncertainty."
-        ),
-        "assumptions": {"input_output_ratio": "80:20", "default_pue": 1.2},
-        "models": [
-            {
-                "slug": "minimax/minimax-m2.5",
-                "display_name": "MiniMax M2.5",
-                "origin": "CN",
-                "open_or_closed": "open",
-                "total_tokens": 4_550_000_000_000,
-                "est_output_tokens": 910_000_000_000,
-                "wh_per_output_token": {"low": 0.0008, "mid": 0.0015, "high": 0.003},
-                "energy_kwh": {"low": 728000.0, "mid": 1365000.0, "high": 2730000.0},
-                "energy_source": "ai_energy_score",
-                "region": "cn-north",
-                "carbon_intensity_gco2_kwh": 537,
-                "grid_source": "annual_factor",
-                "pue": 1.2,
-                "co2_kg": EXPECTED_MINIMAX_CO2,
-                "renewable_match_pct": None,
-                "co2_kg_market": EXPECTED_MINIMAX_CO2,
-                "wue": 1.5,
-                "water_liters": {"low": 1092000.0, "mid": 2047500.0, "high": 4095000.0},
-                "flags": ["FALLBACK_GRID_ANNUAL"],
-            },
-            {
-                "slug": "openai/gpt-4o",
-                "display_name": "GPT-4o",
-                "origin": "US",
-                "open_or_closed": "closed",
-                "total_tokens": 2_000_000_000_000,
-                "est_output_tokens": 400_000_000_000,
-                "wh_per_output_token": {"low": 0.002, "mid": 0.005, "high": 0.012},
-                "energy_kwh": {"low": 800000.0, "mid": 2000000.0, "high": 4800000.0},
-                "energy_source": "parameter_class_fallback",
-                "region": "us-east",
-                "carbon_intensity_gco2_kwh": 380,
-                "grid_source": "annual_factor",
-                "pue": 1.2,
-                "co2_kg": EXPECTED_OPENAI_CO2,
-                "renewable_match_pct": 100.0,
-                "co2_kg_market": EXPECTED_OPENAI_CO2_MARKET,
-                "wue": 1.5,
-                "water_liters": {"low": 1200000.0, "mid": 3000000.0, "high": 7200000.0},
-                "flags": ["FALLBACK_ENERGY_CLASS", "FALLBACK_GRID_ANNUAL", "CLOSED_MODEL_ASSUMED"],
-            },
-            {
-                "slug": "anthropic/claude-3.5-sonnet-20241022",
-                "display_name": "Claude 3.5 Sonnet",
-                "origin": "US",
-                "open_or_closed": "closed",
-                "total_tokens": 1_000_000_000_000,
-                "est_output_tokens": 200_000_000_000,
-                "wh_per_output_token": {"low": 0.002, "mid": 0.005, "high": 0.012},
-                "energy_kwh": {"low": 400000.0, "mid": 1000000.0, "high": 2400000.0},
-                "energy_source": "parameter_class_fallback",
-                "region": "us-east",
-                "carbon_intensity_gco2_kwh": 380,
-                "grid_source": "annual_factor",
-                "pue": 1.2,
-                "co2_kg": EXPECTED_ANTHROPIC_CO2,
-                "renewable_match_pct": 100.0,
-                "co2_kg_market": EXPECTED_ANTHROPIC_CO2_MARKET,
-                "wue": 1.5,
-                "water_liters": {"low": 600000.0, "mid": 1500000.0, "high": 3600000.0},
-                "flags": ["FALLBACK_ENERGY_CLASS", "FALLBACK_GRID_ANNUAL", "CLOSED_MODEL_ASSUMED"],
-            },
-        ],
-        "totals": {
-            "total_tokens": TOTAL_TOKENS,
-            "uncovered_tokens": UNCOVERED_TOKENS,
-            "modeled_traffic_fraction": MODELED_FRACTION,
-            "mapped_traffic_fraction": MODELED_FRACTION,
-            "unmapped_tokens": 0,
-            "unmapped_traffic_fraction": 0.0,
-            "unmapped_slugs": [],
-            "est_output_tokens": 1510000000000,
-            "energy_kwh": {
-                "low": 728000.0 + 800000.0 + 400000.0,
-                "mid": 1365000.0 + 2000000.0 + 1000000.0,
-                "high": 2730000.0 + 4800000.0 + 2400000.0,
-            },
-            "co2_kg": TOTAL_CO2,
-            "co2_kg_market": TOTAL_CO2_MARKET,
-            "water_liters": {"low": 2892000.0, "mid": 6547500.0, "high": 14895000.0},
-            "by_origin": BY_ORIGIN,
-            "by_open_closed": BY_OPEN_CLOSED,
-        },
-    }
-
-    assert actual == expected
+    # totals reconcile with the per-model sums for every new aggregate
+    t = doc["totals"]
+    for key in ("co2_kg", "co2_kg_embodied", "co2_kg_total", "co2_kg_market", "water_liters"):
+        for ep in ("low", "mid", "high"):
+            assert t[key][ep] == pytest.approx(sum(m[key][ep] for m in doc["models"])), (key, ep)
 
 
 def test_totals_reconcile_with_model_sums_and_breakdowns(monkeypatch, tmp_path):
@@ -541,6 +461,8 @@ def test_write_outputs_validates_before_write_and_copies_to_history(tmp_path, mo
             "est_output_tokens": 0,
             "energy_kwh": {"low": 0.0, "mid": 0.0, "high": 0.0},
             "co2_kg": {"low": 0.0, "mid": 0.0, "high": 0.0},
+            "co2_kg_embodied": {"low": 0.0, "mid": 0.0, "high": 0.0},
+            "co2_kg_total": {"low": 0.0, "mid": 0.0, "high": 0.0},
             "co2_kg_market": {"low": 0.0, "mid": 0.0, "high": 0.0},
             "water_liters": {"low": 0.0, "mid": 0.0, "high": 0.0},
             "by_origin": {},

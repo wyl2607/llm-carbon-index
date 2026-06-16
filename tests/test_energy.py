@@ -16,6 +16,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
+
 # Make local pipeline package importable when running pytest from repo root
 # (matches pattern used by Phase 0 tests/test_prove_math.py).
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -114,3 +116,24 @@ def test_kwh_and_range_invariants():
     # zero tokens
     z = energy_kwh(Range(0.1, 0.2, 0.3), 0)
     assert z.low == 0 and z.mid == 0 and z.high == 0
+
+
+def test_prefill_input_term_adds_decode_plus_prefill():
+    # v0.2 (E-PREFILL): energy = decode(out) + alpha*wh*in, both /1000.
+    wh = Range(1.0, 2.0, 4.0)  # Wh per output token
+    alpha = Range(0.1, 0.2, 0.3)
+    # 1000 output + 4000 input tokens
+    kwh = energy_kwh(wh, 1000, input_tokens=4000, prefill_alpha=alpha)
+    # mid: (2.0*1000 + 2.0*0.2*4000)/1000 = (2000 + 1600)/1000 = 3.6 kWh
+    assert kwh.mid == pytest.approx(3.6)
+    # low:  (1.0*1000 + 1.0*0.1*4000)/1000 = (1000 + 400)/1000 = 1.4
+    assert kwh.low == pytest.approx(1.4)
+    # high: (4.0*1000 + 4.0*0.3*4000)/1000 = (4000 + 4800)/1000 = 8.8
+    assert kwh.high == pytest.approx(8.8)
+    assert kwh.low <= kwh.mid <= kwh.high
+
+
+def test_prefill_absent_reduces_to_output_only():
+    # Backward compatible: no input/alpha -> legacy decode-only result.
+    wh = Range(1.0, 2.0, 4.0)
+    assert energy_kwh(wh, 1000).to_dict() == energy_kwh(wh, 1000, 0, None).to_dict()

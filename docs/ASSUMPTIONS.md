@@ -19,9 +19,19 @@ Start with OpenRouter top-list **open** models that have AI Energy Score data, p
 ### A3 — Data-center region per model
 One assumed region per provider (`closed_models.yaml`), used to fetch grid intensity. *Source:* public provider/cloud disclosures + reasonable inference. *Uncertainty:* high for closed providers (location undisclosed). Flag rows with `CLOSED_MODEL_ASSUMED`.
 
-### A4 — Power Usage Effectiveness (PUE)
-Default **1.2** (hyperscaler-class) unless a better per-provider figure exists.
-- *Source:* Google data-center PUE reporting; Uptime Institute global survey. *Uncertainty:* real fleet PUE ranges ~1.1–1.6; widen the band for non-hyperscaler hosts.
+### A4 — Power Usage Effectiveness (PUE)  *(revised v0.2: now a band, not a point)*
+PUE is applied as a **Range `{low 1.1, mid 1.25, high 1.56}`**, not a flat scalar, because OpenRouter routes to a *mix* of hyperscaler and non-hyperscaler backends and a single facility PUE is unknowable per request.
+- *Values:* low **1.1** (Google/hyperscaler fleet reporting); mid **1.25** (typical modern facility); high **1.56** (Uptime Institute Global Data Center Survey 2024 industry average, flat for 5 consecutive years).
+- *Source:* Uptime Institute Global Data Center Survey 2024; Google environmental/PUE reporting. *Uncertainty:* real fleet PUE 1.1–1.6+. A known provider PUE (from `closed_models.yaml`) centres the band's mid; low/high keep the global bounds. *Where used:* `methodology_factors.yaml` `pue`; `estimate.py`; `carbon.co2_kg` (accepts a Range). *Last reviewed:* 2026-06-16.
+
+### E-PREFILL — Input (prefill) token energy  *(new v0.2)*
+Inference energy depends on **both** input and output tokens. The prefill phase
+(processing the prompt) is **compute-bound and parallel** (high hardware
+utilisation), so per token it is *cheaper* than the memory-bandwidth-bound decode
+phase — but **not zero**. v0.1 modelled only output tokens, discarding ~80% of
+tokens as energy-free; v0.2 adds a prefill term.
+- *Value:* `wh_per_input_token = alpha × wh_per_output_token`, with **alpha = {low 0.1, mid 0.2, high 0.3}**. `input_tokens = total − est_output_tokens`.
+- *Source:* prefill/decode energy decomposition in LLM-inference energy studies — arXiv:2507.11417 (Quantifying Energy & Carbon of LLM Inference via Simulations); TokenPowerBench arXiv:2512.03024. *Uncertainty:* very high (no public per-model prefill:decode energy split); treat alpha as a sensitivity axis. *Where used:* `methodology_factors.yaml` `prefill_alpha`; `tokens.input_tokens`; `energy.energy_kwh`. *Last reviewed:* 2026-06-16.
 
 ---
 
@@ -71,6 +81,23 @@ These feed `data/energy/intensity.yaml`. Each model/class entry must cite how it
 - **C-GRID-EU-27-242** (Phase 2 seed) — 242 gCO₂eq/kWh for "eu-27". *Source:* Ember 2023 EU-27 annual. *Uncertainty:* annual aggregate; actual serving zone (DE/FR/NL) can be much lower. *Where used:* annual_factors.yaml as possible fallback. *Last reviewed:* 2026-06-15.
 - **C-GRID-DEFAULT-400** (Phase 2 seed) — 400 gCO₂eq/kWh conservative composite. *Source:* round order-of-magnitude composite informed by Ember global 2023 mix of the seeded US/EU/CN factors (not a single official stat). *Uncertainty:* very high; only used if region key absent from annual_factors table. *Where used:* annual_factors.yaml "default" entry; grid.py last-resort path. *Last reviewed:* 2026-06-15.
 - **C-GRID-\*** — Additional regions (e.g., Ember / IEA for EU/Asia) added as `annual_factors.yaml` grows. Prefer Electricity Maps live; these are the documented fallback.
+
+### C-EMBODIED — Embodied (manufacturing) carbon  *(new v0.2)*
+v0.1 reported **operational** carbon only. v0.2 adds an **amortised embodied** term
+(hardware manufacturing, the LCA component that EcoLogits — already cited — includes).
+- *Value:* `co2_embodied = co2_operational × embodied_ratio`, with **embodied_ratio = {low 0.28, mid 0.39, high 0.54}**. Derived from literature putting embodied at **~22–35 % of *total* LLM carbon**, converted to a fraction of operational via `share/(1−share)` (22 %→0.28, 28 %→0.39, 35 %→0.54). `co2_total = operational + embodied`.
+- *Source:* BLOOM LCA (~22 % embodied, Luccioni et al.); CarbonScaling arXiv:2508.06524; aging-aware embodied-amortisation arXiv:2501.15829. *Uncertainty:* high; embodied scaling with operational energy is a documented proxy for hardware-hours, not a measured per-model value. *Where used:* `methodology_factors.yaml` `embodied_ratio`; `carbon.embodied_co2_kg` / `carbon.total_lca_co2_kg`; emitted as `co2_kg_embodied` + `co2_kg_total`. *Last reviewed:* 2026-06-16.
+
+---
+
+## W — Water footprint  *(new v0.2)*
+
+### W-WATER — On-site + off-site water split
+v0.1 used a flat **1.5 L/kWh** WUE that conflated and undercounted off-site water.
+v0.2 splits the footprint, both scaling with **facility** energy (IT × PUE):
+`water_L = facility_energy_kWh × (onsite_WUE + offsite_EWIF)`.
+- *Values:* **on-site WUE {0.3, 0.9, 1.8} L/kWh** (data-centre cooling evaporation) + **off-site EWIF {2.0, 3.14, 4.35} L/kWh** (water evaporated generating the electricity; US mean 3.14).
+- *Source:* Li et al., *"Making AI Less Thirsty"* (arXiv:2304.03271 / CACM 2025); EWIF US power-generation water factors therein. *Uncertainty:* high; WUE varies spatially/temporally and by cooling tech. *Where used:* `methodology_factors.yaml` `water`; `water.water_liters`; emitted as `water_liters` (+ representative `wue`). *Last reviewed:* 2026-06-16.
 
 ---
 
