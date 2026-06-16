@@ -24,7 +24,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from pipeline.provenance import load_sources, resolve
 from pipeline.validate_literature import (
     LITERATURE_ANCHORS_PATH,
-    VALIDATION_PATH,
     validate_literature,
 )
 
@@ -89,10 +88,10 @@ def test_literature_anchors_source_ids_only_in_lit_namespace():
         assert sid.startswith("LIT-"), f"anchor {a.get('id')} uses non-LIT source_id {sid}"
 
 
-def test_verified_anchors_run_band_assertions_and_collect_status():
+def test_verified_anchors_run_band_assertions_and_collect_status(tmp_path: Path):
     """Verified anchors must produce a band record; status is pass or flag (finding)."""
     doc = _load_latest_doc()
-    res = validate_literature(doc)
+    res = validate_literature(doc, out_path=tmp_path / "validation.json")
     recs = res.get("literature_anchors") or []
     verified_recs = [r for r in recs if r.get("verified")]
     assert len(verified_recs) >= 2, "expected at least BLOOM and JEGHAM (or GEMINI) verified records"
@@ -104,10 +103,10 @@ def test_verified_anchors_run_band_assertions_and_collect_status():
         assert r.get("source_id", "").startswith("LIT-")
 
 
-def test_lit_openai_is_report_only_and_excluded_from_hard_asserts():
+def test_lit_openai_is_report_only_and_excluded_from_hard_asserts(tmp_path: Path):
     """LIT-OPENAI must never participate in hard band assertions."""
     doc = _load_latest_doc()
-    res = validate_literature(doc)
+    res = validate_literature(doc, out_path=tmp_path / "validation.json")
     recs = res.get("literature_anchors") or []
     openai_recs = [r for r in recs if r.get("id") == "LIT-OPENAI"]
     assert len(openai_recs) == 1
@@ -119,9 +118,9 @@ def test_lit_openai_is_report_only_and_excluded_from_hard_asserts():
     assert r.get("source_id") == "LIT-OPENAI"
 
 
-def test_validate_literature_returns_one_record_per_input_anchor():
+def test_validate_literature_returns_one_record_per_input_anchor(tmp_path: Path):
     doc = _load_latest_doc()
-    res = validate_literature(doc)
+    res = validate_literature(doc, out_path=tmp_path / "validation.json")
     recs = res.get("literature_anchors") or []
     anchors = _load_anchors()
     # at least as many as input anchors (some may have been skipped on I/O error, but normally equal)
@@ -132,12 +131,13 @@ def test_validate_literature_returns_one_record_per_input_anchor():
             assert k in r, f"record missing key {k}: {r}"
 
 
-def test_validation_json_is_produced_with_one_record_per_anchor():
-    """After a validate run the committed-style output file exists and is well-formed."""
+def test_validation_json_is_produced_with_one_record_per_anchor(tmp_path: Path):
+    """After a validate run the output file exists and is well-formed (written to tmp_path)."""
     doc = _load_latest_doc()
-    validate_literature(doc)  # side-effect write
-    assert VALIDATION_PATH.exists(), "validation.json must be emitted alongside other outputs"
-    v = json.loads(VALIDATION_PATH.read_text(encoding="utf-8"))
+    out = tmp_path / "validation.json"
+    validate_literature(doc, out_path=out)  # side-effect write
+    assert out.exists(), "validation.json must be emitted alongside other outputs"
+    v = json.loads(out.read_text(encoding="utf-8"))
     assert "literature_anchors" in v
     recs = v["literature_anchors"]
     assert isinstance(recs, list) and len(recs) >= 3
@@ -146,12 +146,12 @@ def test_validation_json_is_produced_with_one_record_per_anchor():
         assert "id" in r and "status" in r and "band" in r
 
 
-def test_file_read_failure_for_one_anchor_does_not_abort():
+def test_file_read_failure_for_one_anchor_does_not_abort(tmp_path: Path):
     """If crosswalk or intensity read would fail we still produce records for other anchors (simulated by empty loads inside)."""
     # The implementation already guards every per-anchor block; we simply exercise the public API
     # with a minimal doc. The test is that no exception propagates.
     bad_doc = {"models": [], "data_date": "1970-01-01"}
-    res = validate_literature(bad_doc)
+    res = validate_literature(bad_doc, out_path=tmp_path / "validation.json")
     # either some records (from class fallback) or empty list; never raises
     assert "literature_anchors" in res
     assert isinstance(res["literature_anchors"], list)

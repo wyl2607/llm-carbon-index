@@ -196,11 +196,14 @@ def _derive_co2_g_per_query_band(
     return co2_g
 
 
-def validate_literature(doc: dict | None = None) -> dict:
-    """Core entrypoint. Returns validation report dict; writes validation.json as side effect.
+def validate_literature(doc: dict | None = None, *, out_path: Path = VALIDATION_PATH) -> dict:
+    """Core entrypoint. Returns validation report dict; writes out_path as side effect.
 
     If reading anchors/crosswalk/doc/intensity fails for a given anchor, that anchor
     is skipped (status omitted for it) and processing continues.
+
+    out_path defaults to the committed data/output/validation.json; tests inject a
+    tmp_path so they never overwrite the committed artifact.
     """
     doc = _load_doc_robust(doc)
     models: list[dict] = doc.get("models", []) if isinstance(doc.get("models"), list) else []
@@ -311,8 +314,8 @@ def validate_literature(doc: dict | None = None) -> dict:
 
     # Emit alongside other outputs (robust write; failure does not raise to caller)
     try:
-        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        with open(VALIDATION_PATH, "w", encoding="utf-8") as f:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(out_path, "w", encoding="utf-8") as f:
             json.dump(out, f, indent=2, ensure_ascii=False)
     except Exception:  # noqa: S110 - robust write: emit failure must not raise to caller
         pass
