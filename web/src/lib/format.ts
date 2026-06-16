@@ -8,10 +8,20 @@ import type { Range } from '../types';
  * - Surface modeled_traffic_fraction.
  */
 
+// Single display locale for ALL numbers on the site. Pinned (not browser-derived)
+// so KPIs, ranges, the table, and equivalents never mix thousands/decimal styles.
+// de-DE chosen for the primary German/EU ESG audience (1.234,5).
+export const DISPLAY_LOCALE = 'de-DE';
+
+/** Format a number in the pinned display locale. */
+export function nf(value: number, opts?: Intl.NumberFormatOptions): string {
+  return value.toLocaleString(DISPLAY_LOCALE, opts);
+}
+
 export function formatTokens(n: number): string {
-  if (n >= 1e12) return (n / 1e12).toFixed(1) + ' T';
-  if (n >= 1e9) return (n / 1e9).toFixed(1) + ' B';
-  return n.toLocaleString();
+  if (n >= 1e12) return nf(n / 1e12, { maximumFractionDigits: 1 }) + ' T';
+  if (n >= 1e9) return nf(n / 1e9, { maximumFractionDigits: 1 }) + ' B';
+  return nf(n);
 }
 
 export function formatCO2Range(r: Range): string {
@@ -20,10 +30,7 @@ export function formatCO2Range(r: Range): string {
   const scale = useTonnes ? 1000 : 1;
   const unit = useTonnes ? 't' : 'kg';
   const fmt = (v: number) =>
-    (v / scale).toLocaleString(undefined, {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    });
+    nf(v / scale, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
   return `${fmt(r.mid)} ${unit} (${fmt(r.low)}–${fmt(r.high)} ${unit})`;
 }
 
@@ -34,10 +41,7 @@ export function formatWaterRange(r: Range | undefined): string {
   const scale = useKL ? 1000 : 1;
   const unit = useKL ? 'kL' : 'L';
   const fmt = (v: number) =>
-    (v / scale).toLocaleString(undefined, {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    });
+    nf(v / scale, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
   return `${fmt(r.mid)} ${unit} (${fmt(r.low)}–${fmt(r.high)} ${unit})`;
 }
 
@@ -53,14 +57,14 @@ export function co2Per1kOutputTokens(model: { co2_kg: Range; est_output_tokens: 
 
 export function formatCO2Per1kG(g: number): string {
   // Show 2 decimals for g/1k ; very small values possible.
-  return g.toFixed(2) + ' g CO₂ / 1k output tokens';
+  return nf(g, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' g CO₂ / 1k output tokens';
 }
 
 export function formatModeledFraction(f: number, unmappedFraction: number = 0): string {
-  const pct = (f * 100).toFixed(1);
+  const pct = nf(f * 100, { maximumFractionDigits: 1 });
   let s = `We model ${pct}% of the day's tokens (modeled_traffic_fraction).`;
   if (unmappedFraction > 0) {
-    const upct = (unmappedFraction * 100).toFixed(1);
+    const upct = nf(unmappedFraction * 100, { maximumFractionDigits: 1 });
     s += ` ${upct}% of tracked traffic runs on models without crosswalk entries (unmapped_traffic_fraction) — shown as estimates only.`;
   }
   return s;
