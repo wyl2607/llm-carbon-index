@@ -3,6 +3,25 @@
 > Synced into `files (1).zip` after each phase, per standing instruction.
 > Repo: `~/projects/llm-carbon-index` (phases committed straight to `main`).
 
+## Phase 6I — fairness & boundary (commit `ef3a4ae`, 2026-06-16)
+
+- **6I code was split across two WIP branches** (`6i-docs` = gemini lane for BOUNDARY.md/FAIRNESS.md;
+  `6i-core` = grok lane for pipeline/fairness.py + schema + tests). The branches were staged but
+  not committed to main, so INDEX.md still showed ⬜ despite passing pytest. The merge/completion
+  step (UI component, methodology.md links, golden re-generation) was the missing piece.
+- **Golden must be regenerated when methodology_version bumps.** Adding `totals.fairness` bumped
+  the version 0.4.0 → 0.5.0; `make verify` caught the mismatch. Fixed by calling `reproduce(date)`
+  from the existing snapshot (offline, no API key) and overwriting the history golden + latest.json.
+  `make verify 2026-06-14` → PASS after the regeneration.
+- **Three-column honesty banner.** The existing 2-column grid (scope + precision) expanded to 3
+  (scope + precision + fairness) in App.tsx. FairnessNote is always-visible and non-dismissable.
+
+### Carry-forward for later phases
+- 6J (sourced energy) will change intensity data → **must regenerate golden and snapshot together**
+  in one commit (confirmed pattern from 6H DISCOVERIES), or `make verify` will fail.
+- `totals.co2_kg` (and peers) are `{min,max}` ranges, not scalars — tests/tamper logic must
+  target a scalar field (e.g. `totals.total_tokens`).
+
 ## Phase 6H — reproducibility harness (commit `b03fa2c`, 2026-06-16)
 
 - **Published inputs were never committed.** `data/raw/` is fully gitignored and the
