@@ -1,0 +1,149 @@
+[English](methodology.md) | [中文](methodology_zh.md) | [Deutsch](methodology_de.md)
+
+# 方法学与不确定性
+
+> 本文档同时作为项目论文的方法学部分。文中引用的每一个数字均可追溯至 [`ASSUMPTIONS.md`](ASSUMPTIONS.md) 中的条目；每一个形状均可追溯至 [`DATA_SCHEMAS.md`](DATA_SCHEMAS.md)。
+
+## 1. 范围（不可妥协）
+
+本项目估算的是 **OpenRouter 可见的 LLM 推理** 的 CO₂ 足迹 —— 这是全球 AI 使用量中一个*具有代表性但部分*的切片。消费者应用（ChatGPT、Gemini、Claude 应用）**不**包含在内。它**不是**对全球数据中心总排放量的测量。**所有数字均为包含显式不确定性范围的估算值，而非实测数据**，尤其是对于闭源模型而言，其参数、硬件和数据中心位置均未公开披露。已发布的 `totals.modeled_traffic_fraction` 精确说明了我们实际建模的每日 OpenRouter 流量的比例。
+
+确切的**系统边界**——哪些计入、哪些排除以及原因——记录在 [`BOUNDARY.md`](BOUNDARY.md) 中。用于公平跨模型比较的原则（开源 vs 闭源不对称、分词器不可比性、来源中立性、备选假设下的排名稳定性）见 [`FAIRNESS.md`](FAIRNESS.md)。
+
+## 2. 估算链
+
+```
+total_tokens (OpenRouter rankings-daily)
+   └─ × 0.20  ──────────────▶ est_output_tokens          [A2, 80:20 input:output]
+        └─ × wh_per_output_token (Range) ─▶ energy_Wh     [E-series; AI Energy Score / EcoLogits]
+             └─ / 1000 ─────────────────▶ energy_kWh      [Wh→kWh guard]
+                  └─ × PUE ──────────────▶ facility_kWh   [A4, default 1.2]
+                       └─ × grid_gCO2/kWh ▶ gCO2           [C-GRID-* / Electricity Maps live]
+                            └─ / 1000 ────▶ co2_kg         [g→kg guard]
+```
+
+正式地，按模型按天（**v0.2**）：
+
+```
+energy_kwh   = (wh_per_output_token × est_output_tokens
+              + α × wh_per_output_token × est_input_tokens) / 1000   [E-PREFILL]
+co2_kg       = energy_kwh × PUE × carbon_intensity_gco2_kwh / 1000   [PUE is a band, A4]
+co2_embodied = co2_kg × embodied_ratio                                [C-EMBODIED]
+co2_total    = co2_kg + co2_embodied
+water_L      = energy_kwh × PUE × (onsite_WUE + offsite_EWIF)         [W-WATER]
+```
+
+输出（解码）token 在每 token 能耗中占主导，但 v0.2 不再将约 80 % 的输入 token 视为免费：预填充阶段是计算密集型的，每 token 成本为解码速率的 α = 0.1–0.2–0.3 倍（E-PREFILL），但并非零。80:20 分割（A2）和 α 是文档化的敏感性轴，而非实测比率。
+
+**v0.2 相对于 v0.1 的变化：** (1) 计入了输入/预填充能耗；(2) PUE 是一个区间 `{1.1, 1.25, 1.56}` 而非固定的 1.2（A4）；(3) 增加了与运行（operational）并列的摊销**隐含**（制造）碳项（C-EMBODIED）；(4) 水资源被拆分为现场冷却 + 场外发电（W-WATER）。标题 `co2_kg` 仍为**运行的、基于位置的**；`co2_kg_total` 是全生命周期数字。这些变化提高了中心估算值并*扩大*了区间——多个独立不确定性按端点相乘后复合成一个刻意保守的包络（见 §4）。
+
+## 3. 假设（完整登记表见 `ASSUMPTIONS.md`）
+
+| ID | What | Value | Source |
+|---|---|---|---|
+| A1 | Model subset (MVP) | OpenRouter top open models w/ AI Energy Score data + 1–2 closed via EcoLogits | `model_crosswalk.yaml` |
+| A2 | Input:output token ratio | 80:20 → `est_output_tokens = total × 0.20`; input = total − output | OpenRouter usage study (refine) |
+| A3 | DC region per model | one assumed region/provider; closed = `CLOSED_MODEL_ASSUMED` | DC-series |
+| A4 | PUE | **band 1.1 / 1.25 / 1.56** (was flat 1.2) | Uptime Institute 2024 / Google |
+| E-PREFILL | Input-token energy | `α·wh_out`, α = 0.1 / 0.2 / 0.3 | arXiv:2507.11417, 2512.03024 |
+| C-EMBODIED | Embodied carbon | `op × {0.28,0.39,0.54}` (≈22–35 % of total) | BLOOM LCA; arXiv:2508.06524, 2501.15829 |
+| W-WATER | Water (L/kWh) | on-site 0.3/0.9/1.8 + off-site EWIF 2.0/3.14/4.35 | Li et al. arXiv:2304.03271 |
+| E-CLASS-* | Param-class fallback Wh/token | small 0.0005–0.0012–0.0025; large 0.002–0.005–0.012 | AI Energy Score v2 + EcoLogits |
+| E-{model} | Per-model Wh/token | e.g. closed Claude-class 0.0025–0.006–0.015 (widest) | per-model entries |
+| C-GRID-* | Annual grid factors (gCO₂/kWh) | us-east 380 (EPA eGRID2022), europe-west 230 (Ember 2024), cn-north 537 (Ember 2023), eu-27 242, default 400 | EPA / Ember |
+
+每查询能耗文献范围在 **~0.3 Wh（Google）至 ~1.8–7 Wh（EcoLogits）** 之间，取决于假设（E-METHOD）；我们的区间刻意宽泛，以覆盖这些分歧。
+
+## 4. 不确定性处理（在信任任何数字前请阅读）
+
+每一个能耗/CO₂ 量都是一个 **Range** `{low, mid, high}` 且 `low ≤ mid ≤ high`，端到端传递（`pipeline/ranges.py`）。传播有意保持简单：Range × 正标量会缩放每个端点；Range × Range 会按端点相乘。
+
+**这个 `{low, mid, high}` 区间是一个保守的端点区间，而非统计置信区间。** 它表达的是可辩护假设的 spread，而非概率分布。我们不声称 95% CI 或任何概率覆盖——那样做会暗示我们并不拥有的数据（尤其是闭源模型）。JSON 或 UI 中任何裸露的点数字都是 bug。
+
+### 4a. 估算层级精度（`totals.precision`，methodology v0.3.0）
+
+除不确定性*区间*外，我们还发布每个数字所依据的**输入层级**。每一行已携带 `energy_source`（`ai_energy_score` / `ecologits` → 真实测量；`parameter_class_fallback` → 参数类猜测）和 `grid_source`（`electricity_maps_live` → 实时电网强度；`annual_factor` → 年度平均）。`totals.precision` 将这些标志聚合为四个分数：
+
+- **`energy_measured_fraction`** — 建模流量中能耗基于测量（AI Energy Score 或 EcoLogits）的份额，以及其补集 **`energy_class_fallback_fraction`**（参数类回退）。两者之和为 1.0。
+- **`grid_live_fraction`** — 电网强度来自实时 Electricity Maps 的份额，以及其补集 **`grid_annual_fallback_fraction`**（年度表）。两者之和为 1.0。
+
+这些分数按 `total_tokens` **进行 token 加权**，而非按计数加权，且仅在建模行上计算（排除 `other`/未覆盖聚合）。Token 加权是刻意的：它回答“已发布足迹中有多少 rests on 测量的输入？”，这是读者应该信任的——单个高流量回退模型远比几个微小的已测量模型更重要。还发布了可读 UI 文案的计数伴随项（`models_measured` / `models_total`，`grid_live_models`）。此区块**未引入新的来源数字**；它仅报告每行标志已经蕴含的内容。
+
+### 4b. 来源与可验证性（`sources.yaml` + gate，methodology v0.4.0）
+
+CLAUDE.md 的“无魔法数字”规则现已**机器强制执行**。`data/provenance/sources.yaml` 是一个结构化登记表——每个来源一个条目（`id`、`title`、`publisher`、`url`、`version`、`accessed`、`locator`、`license`、`claim`）——且 `data/**/*.yaml` 中的**每一个**数字记录都携带 `source_id`（或 `source_ids`），必须解析到登记表的 `id`。构建门禁 `pipeline/provenance.py`（`python -m pipeline.provenance`，同时也是 pytest 测试和 CI 步骤）**会在任何未来源数字上失败**，因此后续阶段无法悄无声息地引入数字。这是项目*可被验证 / 溯源*（verifiable / traceable）目标的支柱。
+
+已发布的 `latest.json` 是自描述的：它携带顶层 `sources[]` 数组——当天实际引用的登记表的紧凑子集——且每个模型行携带 `energy_source_id` 和 `grid_source_id`，因此每个数字都可追溯到其来源。为尊重来源版权，每个登记表 `claim` 都是**简短的释义加定位器**，从不复制来源原文（门禁限制 claim 长度）。
+
+## 5. 范围与局限
+
+- **覆盖是部分的。** 仅 OpenRouter 可见的 API 流量；`modeled_traffic_fraction` 量化每天被建模的份额（`other` 聚合行是未建模的分母，绝不丢弃或合并）。
+- **分词器不可比性（L-TOKENIZER）。** Token 计数来自各提供商自己的分词器，**跨行不可直接比较**；任何跨模型 token 求和或每 token 效率都带有此免责。
+- **闭源模型不透明。** 参数、硬件和 DC 位置未披露；闭源行使用 EcoLogits 类假设、最宽的区间，以及 `CLOSED_MODEL_ASSUMED` 标志。
+- **电网时序。** 年度因子是平均值；实时强度随小时/燃料结构大幅波动。优先使用实时 Electricity Maps；年度表是带标签的回退（`grid_source`）。
+
+## 6. 敏感性分析（PUE 与负载）
+
+鉴于硬件部署的不确定性，需要进行敏感性分析：
+- **PUE（Power Usage Effectiveness）**：最佳数据中心（如 Google）可能运行在 PUE ~1.1，而较旧或优化较差的设施接近 1.5。这在总 CO₂ 估算中造成约 36% 的方差。
+- **利用率/负载**：高利用率运行的服务器每 token 更节能。我们的基础区间纳入了 50% 至 100% 负载的变化。
+
+## 7. 欧盟语境与 ESG 报告相关性（CSRD / EU Taxonomy）
+
+本项目与新兴的欧洲可持续性框架保持一致：
+- **CSRD / ESRS (E1 Climate Change)**：此处的估算支持根据《企业可持续发展报告指令》计算范围 3 排放（购买的服务/云计算）的要求。
+- **EU Taxonomy (DNSH)**：评估 AI 工作负载是否对环境目标“无重大损害”（Do No Significant Harm），需要工作负载级别的能耗强度颗粒度透明度。
+- **Energiewende 与区域电网**：通过使用 *Electricity Maps*，该指数捕捉了电网区域之间的鲜明对比。例如，推理路由到法国（核能为主，~50gCO₂/kWh）与德国（煤/可再生混合，~300gCO₂/kWh）对完全相同的 LLM 查询会产生截然不同的足迹。
+
+## 8. 基于市场 vs 基于位置（GHG Protocol Scope 2）
+
+- **基于位置** 使用服务区域的物理电网强度（本 MVP 报告的内容）。
+- **基于市场** 反映提供商购买的合同工具（PPA/REC），这可以将报告强度推向零——这是一种*会计*结果，而非消耗电子的物理变化。
+
+两者可能相差一个数量级。报告两者以及替代情景是 **Phase 6** 的工作；本 MVP 仅报告基于位置的，并标记该区别，以免被误读为物理现实。
+
+## 9. Electricity Maps 许可决策（L-EM-FREE）
+
+Electricity Maps 免费层级是**非商业的**。本项目的决策：在**非商业学术 / 投资组合模式**下运行，并在实时数据不可用或区域不受支持时，优雅降级到已提交的年度因子表（`data/grid/annual_factors.yaml`），同时每行记录 `grid_source`。如果项目将来用于商业用途，则需要付费的 Electricity Maps 计划（或仅年度因子模式）。该决策在 `README.md` 中重述。
+
+## 10. 必需的归属
+
+- `Source: OpenRouter (openrouter.ai/rankings), as of {data_date}` — 存储在 `source_citation` 并在 UI 中显示（L-OR-CITATION）。
+- 电网强度：Electricity Maps（实时）+ Ember / EPA eGRID（年度回退），通过 `grid_source` 每行记录。
+- 能耗：Hugging Face **AI Energy Score** + **EcoLogits**（E-METHOD）。
+
+## 11. 复现与验证
+
+针对数据日期 `D` 的已发布运行，附带其原始输入的冻结快照，位于 `data/raw/snapshots/{D}/` 下（确切的 OpenRouter 排名响应、每个电网区域响应或所使用的年度因子记录，以及通过构建时 repo git SHA 捕获 `data/**/*.yaml` 版本的 `resolved.json`）。快照中绝不出现密钥和认证头。`make verify {date}` 严格从该快照重新执行流水线（无网络），并断言发出的 `data/output/history/{date}.json` 与已提交的黄金文件字节一致（仅忽略易变的 `generated_at` 时间戳）。`data/output/manifest.json` 记录每日期的 `sha256:` 校验和，覆盖每个快照输入文件加上最终输出、代码 git SHA、方法学版本和工具版本；因此第三方可以独立确认完整性。所有依赖通过 `uv.lock` 锁定。
+
+```bash
+git clone https://github.com/wyl2607/llm-carbon-index.git
+cd llm-carbon-index
+uv sync
+make verify 2026-06-14  # expect PASS
+```
+
+## 12. 相关工作与文献定位
+
+Strubell et al. (2019) 首次系统量化了 NLP 训练的能耗与碳足迹，并确立了学术界应报告模型能耗的规范 [1]。本项目将这一“报告能耗”规范从训练阶段扩展至通过 OpenRouter 驱动的公开仪表盘对实时的、按模型拆分的*推理*流量进行观测。
+
+Luccioni et al. (2023) 在 BLOOM 全生命周期评估中，首次对一个 176 B 公开模型的动态、空闲与隐含排放进行了详细的实证拆分，发现隐含碳约占总量的 ~22 % [2]。本项目 v0.2 中引入的隐含项（C-EMBODIED）刻意与该研究及后续工作报告的 22–35 % 范围保持一致。
+
+Faiz et al. (2023) 提出了 LLMCarbon，这是一个面向稠密与 MoE 架构的端到端运行+隐含投影模型，在针对实测工作负载的验证中达到 ~8 % 误差，隐含份额为 24–35 % [3]。本项目范围更窄——聚焦于推理流与实时公开排名——因此是互补的；两个框架之间的混合交叉验证被确定为未来的机会。
+
+Hugging Face 的 AI Energy Score 提供了一个标准化的、由 CodeCarbon 支持的推理能耗基准 [4]；本项目直接将这些数字作为其 E-series 假设的主要测量锚点消费。EcoLogits 提供了一个独立的 GenAI API 推理估算器，用作 E-METHOD 基线并用于闭源模型覆盖 [5]。CodeCarbon 是支撑上述若干基准的共同本地测量基底 [6]。
+
+Jegham et al. (2025) 在真实基础设施条件下对三十多个模型的能耗、水和碳进行了基准测试，并记录长提示工作负载可超过每查询 30+ Wh [7]。他们的发现直接推动了本估算流水线全流程采用的刻意宽泛不确定性区间。
+
+上述工作为这里使用的方程、区间和来源规则提供了经验基础与建模范例。文献中若干重要空白仍未完全弥合：动态批处理与瞬时利用率机制、MoE 路由开销，以及用于隐含碳因子的标准化、可审计的提供商来源方法。这些局限被诚实地确认为未来的明确工作方向。本仪表盘产出的是带有不确定性范围的估算值；它不声称直接测量精度。
+
+## 13. 参考文献
+
+[1] Strubell, Ganesh, McCallum (2019). Energy and Policy Considerations for Deep Learning in NLP. https://arxiv.org/abs/1906.02243
+[2] Luccioni, Viguier, Ligozat (2023). Estimating the Carbon Footprint of BLOOM. https://arxiv.org/abs/2211.02001
+[3] Faiz et al. (2023). LLMCarbon: Modeling the End-to-End Carbon Footprint of LLMs. https://arxiv.org/abs/2309.14393 (code: https://github.com/SotaroKaneda/MLCarbon)
+[4] Hugging Face AI Energy Score. https://huggingface.co/spaces/AIEnergyScore/Leaderboard
+[5] EcoLogits. https://ecologits.ai/
+[6] CodeCarbon. https://github.com/mlco2/codecarbon
+[7] Jegham et al. (2025). How Hungry is AI? Benchmarking Energy, Water, and Carbon Footprint of LLM Inference. https://arxiv.org/abs/2505.09598
+[8] Li et al. (2023). Making AI Less "Thirsty": Water Footprint of LLMs. https://arxiv.org/abs/2304.03271

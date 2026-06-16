@@ -199,3 +199,28 @@ cd llm-carbon-index
 uv sync
 make verify 2026-06-14  # expect PASS
 ```
+
+## 12. Related work & literature positioning
+
+Strubell et al. (2019) delivered the first systematic quantification of NLP training energy and carbon footprints and established the scholarly expectation that energy consumption must be reported [1]. This project extends that "report your energy" norm from the training regime to live, disaggregated *inference* traffic via an OpenRouter-driven public dashboard.
+
+Luccioni et al. (2023), in the BLOOM full-lifecycle assessment, produced the first detailed empirical split of dynamic, idle and embodied emissions for a 176 B public model, finding embodied carbon at ~22 % of the total [2]. The embodied term introduced in this project's v0.2 (C-EMBODIED) is deliberately consistent with the 22–35 % range reported across that study and follow-on work.
+
+Faiz et al. (2023) presented LLMCarbon, an end-to-end operational-plus-embodied projection model for dense and MoE architectures that achieved ~8 % validation error against measured workloads, with embodied shares of 24–35 % [3]. The present effort is narrower—focused on inference flow and real-time public rankings—and is therefore complementary; a hybrid cross-validation between the two frameworks is identified as a future opportunity.
+
+Hugging Face's AI Energy Score offers a standardized, CodeCarbon-backed inference energy benchmark [4]; the project consumes these figures directly as the primary measured anchor for its E-series assumptions. EcoLogits supplies an independent GenAI API inference estimator used as the E-METHOD baseline and for closed-model coverage [5]. CodeCarbon is the common local measurement substrate underlying several of the cited benchmarks [6].
+
+Jegham et al. (2025) benchmarked energy, water and carbon across more than thirty models under realistic infrastructure conditions and documented that long-prompt workloads can exceed 30+ Wh per query [7]. Their findings directly motivate the deliberately wide uncertainty ranges adopted throughout this estimation pipeline.
+
+The works above supply the empirical grounding and modeling precedent for the equations, ranges and provenance rules used here. Important gaps remain unclosed: dynamic batching and instantaneous utilization regimes, MoE routing overhead, and a standardized, provider-auditable methodology for embodied-carbon factors. These limitations are acknowledged as explicit future-work items. The dashboard produces estimates with uncertainty ranges; it makes no claim to direct measurement precision.
+
+## 13. References
+
+[1] Strubell, Ganesh, McCallum (2019). Energy and Policy Considerations for Deep Learning in NLP. https://arxiv.org/abs/1906.02243
+[2] Luccioni, Viguier, Ligozat (2023). Estimating the Carbon Footprint of BLOOM. https://arxiv.org/abs/2211.02001
+[3] Faiz et al. (2023). LLMCarbon: Modeling the End-to-End Carbon Footprint of LLMs. https://arxiv.org/abs/2309.14393 (code: https://github.com/SotaroKaneda/MLCarbon)
+[4] Hugging Face AI Energy Score. https://huggingface.co/spaces/AIEnergyScore/Leaderboard
+[5] EcoLogits. https://ecologits.ai/
+[6] CodeCarbon. https://github.com/mlco2/codecarbon
+[7] Jegham et al. (2025). How Hungry is AI? Benchmarking Energy, Water, and Carbon Footprint of LLM Inference. https://arxiv.org/abs/2505.09598
+[8] Li et al. (2023). Making AI Less "Thirsty": Water Footprint of LLMs. https://arxiv.org/abs/2304.03271
