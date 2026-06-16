@@ -52,6 +52,7 @@ GitHub Actions cron (Phase 5).
 | 3 | Carbon + grid + green substitution (`estimate_carbon.py`) | ✅ done |
 | 4 | Output assembly + frontend (`build_outputs.py`, `web/`) | ✅ done |
 | 5 | Methodology doc + CI + deploy | ✅ done |
+| 6 | Advanced features (6A–6E: green scenarios, coverage; 6G–6K: provenance, reproducibility, fairness, sensitivity) | ✅ 6A–6I done, ✅ 6A–6L done |
 
 ## File manifest — what a complete project here needs
 
@@ -75,31 +76,37 @@ llm-carbon-index/
 │   ├── provider_region_map.yaml    🟡 provider → likely region (seeded, cited)
 │   ├── model_crosswalk.yaml        🟡 schema stub (seeded in Phase 2)
 │   └── closed_model_assumptions.yaml 🟡 schema stub (seeded in Phase 2)
-├── pipeline/                       Python pipeline (Phases 1–4)
+├── pipeline/                       Python pipeline (Phases 1–4, 6)
 │   ├── README.md                   ✅ module map
-│   ├── fetch_openrouter.py         ⬜ Phase 1
-│   ├── electricity.py              ⬜ Phase 3
-│   ├── estimate_energy.py          ⬜ Phase 2
-│   ├── estimate_carbon.py          ⬜ Phase 3
-│   └── build_outputs.py            ⬜ Phase 4
+│   ├── fetch_openrouter.py         ✅ Phase 1
+│   ├── electricity.py              ✅ Phase 3
+│   ├── estimate_energy.py          ✅ Phase 2
+│   ├── estimate_carbon.py          ✅ Phase 3
+│   ├── build_outputs.py            ✅ Phase 4
+│   └── sensitivity.py              ✅ Phase 6K
 ├── scratch/
 │   └── prove_math.py               ✅ Phase 0 throwaway prover
 ├── tests/
 │   ├── test_prove_math.py          ✅ conversion guards + sanity + ranges
-│   ├── test_energy.py              ⬜ Phase 2
-│   ├── test_carbon.py              ⬜ Phase 3
+│   ├── test_energy.py              ✅ Phase 2
+│   ├── test_carbon.py              ✅ Phase 3
 │   └── fixtures/                   ✅ (.gitkeep)
 ├── output/                         generated JSON (committed by CI, Phase 4+)
 │   └── .gitkeep                    ✅
-├── web/                            Vite + React static frontend (Phase 4)
+├── web/                            Vite + React static frontend (Phase 4, 6)
 │   └── README.md                   ✅ planned views + absorbed UI design
 ├── docs/
 │   ├── methodology.md              ✅ thesis methodology (scope/formulas/sources)
-│   └── absorbed-from-gemini.md     ✅ merge provenance + constraint reconciliation
+│   ├── absorbed-from-gemini.md     ✅ merge provenance + constraint reconciliation
+│   ├── DATA_SCHEMAS.md             ✅ Phase 6 docs
+│   ├── ASSUMPTIONS.md              ✅ Phase 6 docs
+│   ├── PROJECT_STATUS.md           ✅ Phase 6 docs
+│   ├── BOUNDARY.md                 ✅ Phase 6I
+│   └── FAIRNESS.md                 ✅ Phase 6I
 └── .github/
     ├── workflows/
     │   ├── ci.yml                  ✅ run tests + ruff on push/PR
-    │   └── update-data.yml         ⬜ Phase 5 daily cron → commit JSON
+    │   └── update-data.yml         ✅ Phase 5 daily cron → commit JSON
     ├── ISSUE_TEMPLATE/             ✅ bug + data-correction templates
     └── PULL_REQUEST_TEMPLATE.md    ✅ constraint checklist
 ```
