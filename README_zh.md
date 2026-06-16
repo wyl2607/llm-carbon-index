@@ -48,6 +48,61 @@ v1 版本不设实时后端。前端直接读取已提交的 JSON 数据；数�
 | 6 | 高级特性（溯源、复现性、公允性、敏感度、UI 主题等）| ✅ 完成 |
 | 7 | 多语言 i18n 与 UI 可读性增强 | ✅ 完成 |
 
+## 文件清单 —— 完整项目所需内容
+
+图例：✅ 存在 · 🟡 存根/种子 · ⬜ 计划中（在其阶段创建）。
+
+```
+llm-carbon-index/
+├── README.md                       ✅ this file (scope + reproduce + manifest)
+├── CLAUDE.md                       ✅ agent guardrails
+├── PLAN.md                         ✅ phased plan (canonical source of truth)
+├── LICENSE                         ✅ MIT + data-is-estimates notice
+├── CONTRIBUTING.md                 ✅ phase workflow + hard constraints
+├── SECURITY.md                     ✅ secrets policy + how to report
+├── CHANGELOG.md                    ✅ Keep-a-Changelog
+├── .gitignore                      ✅ incl. .env, node_modules, data/raw
+├── .editorconfig                   ✅ formatting baseline
+├── .env.example                    ✅ documents env var NAMES only
+├── pyproject.toml                  ✅ deps + pytest + ruff config
+├── data/                           model data ONLY here (Hard Constraint #6)
+│   ├── grid_fallback_factors.yaml  🟡 annual grid factors (seeded, cited)
+│   ├── provider_region_map.yaml    🟡 provider → likely region (seeded, cited)
+│   ├── model_crosswalk.yaml        🟡 schema stub (seeded in Phase 2)
+│   └── closed_model_assumptions.yaml 🟡 schema stub (seeded in Phase 2)
+├── pipeline/                       Python pipeline (Phases 1–4, 6)
+│   ├── README.md                   ✅ module map
+│   ├── fetch_openrouter.py         ✅ Phase 1
+│   ├── electricity.py              ✅ Phase 3
+│   ├── estimate_energy.py          ✅ Phase 2
+│   ├── estimate_carbon.py          ✅ Phase 3
+│   ├── build_outputs.py            ✅ Phase 4
+│   └── sensitivity.py              ✅ Phase 6K
+├── tests/
+│   ├── test_prove_math.py          ✅ conversion guards + sanity + ranges
+│   ├── test_energy.py              ✅ Phase 2
+│   ├── test_carbon.py              ✅ Phase 3
+│   └── fixtures/                   ✅ (.gitkeep)
+├── output/                         generated JSON (committed by CI, Phase 4+)
+│   └── .gitkeep                    ✅
+├── web/                            Vite + React static frontend (Phase 4, 6)
+│   └── README.md                   ✅ planned views + absorbed UI design
+├── docs/
+│   ├── methodology.md              ✅ thesis methodology (scope/formulas/sources)
+│   ├── absorbed-from-gemini.md     ✅ merge provenance + constraint reconciliation
+│   ├── DATA_SCHEMAS.md             ✅ Phase 6 docs
+│   ├── ASSUMPTIONS.md              ✅ Phase 6 docs
+│   ├── PROJECT_STATUS.md           ✅ Phase 6 docs
+│   ├── BOUNDARY.md                 ✅ Phase 6I
+│   └── FAIRNESS.md                 ✅ Phase 6I
+└── .github/
+    ├── workflows/
+    │   ├── ci.yml                  ✅ run tests + ruff on push/PR
+    │   └── update-data.yml         ✅ Phase 5 daily cron → commit JSON
+    ├── ISSUE_TEMPLATE/             ✅ bug + data-correction templates
+    └── PULL_REQUEST_TEMPLATE.md    ✅ constraint checklist
+```
+
 ## 复现与验证
 
 要利用确切的冻结输入数据（Phase 6H）复现某一日期的发布运行结果：
