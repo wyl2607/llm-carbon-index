@@ -117,6 +117,7 @@
         "total_tokens",
         "uncovered_tokens",
         "modeled_traffic_fraction",
+        "precision",
         "mapped_traffic_fraction",
         "unmapped_tokens",
         "unmapped_traffic_fraction",
@@ -135,6 +136,28 @@
         "total_tokens": { "type": "integer" },
         "uncovered_tokens": { "type": "integer" },
         "modeled_traffic_fraction": { "type": "number" },
+        "precision": {
+          "type": "object",
+          "required": [
+            "energy_measured_fraction",
+            "energy_class_fallback_fraction",
+            "grid_live_fraction",
+            "grid_annual_fallback_fraction",
+            "models_measured",
+            "models_total",
+            "grid_live_models"
+          ],
+          "properties": {
+            "energy_measured_fraction": { "type": "number", "minimum": 0, "maximum": 1 },
+            "energy_class_fallback_fraction": { "type": "number", "minimum": 0, "maximum": 1 },
+            "grid_live_fraction": { "type": "number", "minimum": 0, "maximum": 1 },
+            "grid_annual_fallback_fraction": { "type": "number", "minimum": 0, "maximum": 1 },
+            "models_measured": { "type": "integer", "minimum": 0 },
+            "models_total": { "type": "integer", "minimum": 0 },
+            "grid_live_models": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
         "mapped_traffic_fraction": { "type": "number" },
         "unmapped_tokens": { "type": "integer" },
         "unmapped_traffic_fraction": { "type": "number" },

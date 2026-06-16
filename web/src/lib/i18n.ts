@@ -39,6 +39,15 @@ export const translations = {
     // Phase 6E: unmapped traffic honesty (non-alarming factual note, matching modeled % messaging)
     unmappedCoverageNote: (pct: string, n: number) => `${pct}% of tracked traffic runs on ${n} models not yet in our crosswalk — shown as estimates, flagged for maintenance.`,
     unmappedTopModels: 'Top unmapped models (by token volume):',
+    // Phase 6F: estimation-tier honesty (always-visible, non-dismissable precision badge)
+    precisionTitle: 'Estimation precision',
+    precisionHeadline: (energyPct: string, gridPct: string) => `Current data: ${energyPct}% measured energy · ${gridPct}% live grid.`,
+    precisionDetail: (measuredEnergy: number, total: number, liveGrid: number) => `Energy is measured for ${measuredEnergy} of ${total} models; ${liveGrid} use live grid intensity. The rest are parameter-class energy + annual-average grid estimates. Fractions are token-weighted.`,
+    precisionAllFallback: 'All published figures are parameter-class energy + annual-average grid estimates — no measured energy, no live grid yet.',
+    tierMeasured: 'measured',
+    tierClassFallback: 'class est.',
+    tierGridLive: 'live grid',
+    tierGridAnnual: 'annual grid',
 
     // Scenario Lab
     scenarioTitle: 'Grid Carbon Intensity Scenario Analysis',
@@ -190,6 +199,15 @@ export const translations = {
     // Phase 6E: unmapped traffic honesty (non-alarming factual note, matching modeled % messaging)
     unmappedCoverageNote: (pct: string, n: number) => `追踪流量中约 ${pct}% 来自尚未纳入 crosswalk 的 ${n} 个模型 —— 以估算值呈现，并标记待维护。`,
     unmappedTopModels: '按 token 量排序的未映射模型（前几位）：',
+    // Phase 6F: 估算精度诚实披露（常驻、不可关闭的精度标识）
+    precisionTitle: '估算精度',
+    precisionHeadline: (energyPct: string, gridPct: string) => `当前数据：${energyPct}% 实测能耗 · ${gridPct}% 实时电网。`,
+    precisionDetail: (measuredEnergy: number, total: number, liveGrid: number) => `${total} 个模型中有 ${measuredEnergy} 个采用实测能耗，${liveGrid} 个采用实时电网强度；其余均为参数级能耗 + 年均电网估算。各比例按 token 加权。`,
+    precisionAllFallback: '当前所有公布数值均为参数级能耗 + 年均电网估算 —— 尚无实测能耗、尚无实时电网。',
+    tierMeasured: '实测',
+    tierClassFallback: '参数级估算',
+    tierGridLive: '实时电网',
+    tierGridAnnual: '年均电网',
 
     scenarioTitle: '电网替代情景模拟器',
     scenarioSubtitle: '如果将推理工作负载迁移至最清洁电网（约 50 gCO₂/kWh），排放会减少多少？探索空间脱碳潜力。',

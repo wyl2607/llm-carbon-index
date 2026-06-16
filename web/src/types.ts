@@ -38,10 +38,21 @@ export interface Model {
   flags: string[];
 }
 
+export interface Precision {
+  energy_measured_fraction: number;
+  energy_class_fallback_fraction: number;
+  grid_live_fraction: number;
+  grid_annual_fallback_fraction: number;
+  models_measured: number;
+  models_total: number;
+  grid_live_models: number;
+}
+
 export interface Totals {
   total_tokens: number;
   uncovered_tokens: number;
   modeled_traffic_fraction: number;
+  precision?: Precision;
   mapped_traffic_fraction: number;
   unmapped_tokens: number;
   unmapped_traffic_fraction: number;

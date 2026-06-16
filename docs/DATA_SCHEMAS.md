@@ -55,6 +55,13 @@ The single source of truth for every artifact shape. If a phase needs to change 
     "total_tokens": 0,
     "uncovered_tokens": 0,                       // OpenRouter "other" aggregate not individually modeled
     "modeled_traffic_fraction": 0.0,             // (total_tokens - uncovered) / total_tokens; quantifies scope honesty
+    "precision": {                               // Phase 6F: estimation-tier honesty (reports existing energy_source/grid_source flags; no new sourced numbers)
+      "energy_measured_fraction": 0.0,           // token-weighted; measured (ai_energy_score/ecologits) ÷ modeled tokens
+      "energy_class_fallback_fraction": 1.0,     // sums to 1.0 with energy_measured_fraction
+      "grid_live_fraction": 0.0,                 // token-weighted; electricity_maps_live ÷ modeled tokens
+      "grid_annual_fallback_fraction": 1.0,      // sums to 1.0 with grid_live_fraction
+      "models_measured": 0, "models_total": 50, "grid_live_models": 0  // count companion for UI copy
+    },
     "mapped_traffic_fraction": 0.0,              // Phase 6E: (total - uncovered - unmapped) / total; honest fraction matched to a crosswalk entry
     "unmapped_tokens": 0,                        // Phase 6E: tokens on top-list slugs absent from model_crosswalk.yaml (flagged UNMAPPED_SLUG, never silently bucketed)
     "unmapped_traffic_fraction": 0.0,            // Phase 6E: unmapped_tokens / total_tokens

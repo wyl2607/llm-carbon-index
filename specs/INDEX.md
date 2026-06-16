@@ -25,8 +25,8 @@ Always-loaded context lives in `/CLAUDE.md` (hard rules) and these three governa
 | 6C | `phase-6plus-roadmap.md` | historical trends + Jevons view | ✅ done |
 | 6D | `phase-6plus-roadmap.md` | water footprint (WUE) | ✅ done |
 | 6E | `phase-6plus-roadmap.md` | coverage automation (scope honesty) | ✅ done |
-| **6F** | `phase-6f-estimation-tier-honesty.md` | `totals.precision` (measured% / live-grid%) + UI honesty banner | ⬜ **next** |
-| 6G | `phase-6g-provenance-ledger.md` | source registry + per-figure `source_id` + "no unsourced number" CI gate | ⬜ pending |
+| 6F | `phase-6f-estimation-tier-honesty.md` | `totals.precision` (measured% / live-grid%) + UI honesty banner | ✅ done |
+| **6G** | `phase-6g-provenance-ledger.md` | source registry + per-figure `source_id` + "no unsourced number" CI gate | ⬜ **next** |
 | 6H | `phase-6h-reproducibility-harness.md` | input snapshots, deterministic re-run, `make verify`, checksum manifest | ⬜ pending |
 | 6I | `phase-6i-fairness-and-boundary.md` | `BOUNDARY.md` + `FAIRNESS.md` + `totals.fairness` (rank stability, unweighted) | ⬜ pending |
 | 6J | `phase-6j-sourced-energy-upgrade.md` | measured energy for top-traffic models; `energy_measured_fraction` rises | ⬜ pending |

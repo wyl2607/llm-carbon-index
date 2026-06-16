@@ -14,6 +14,7 @@ import jsonschema
 
 import pipeline.config as config
 from pipeline import METHODOLOGY_VERSION
+from pipeline.precision import energy_tier, grid_tier, precision_fractions
 from pipeline.types import ModelEstimate, NormalizedRecord
 
 log = logging.getLogger(__name__)
@@ -163,10 +164,22 @@ def build_output(
         for oc in oc_groups
     }
 
+    # Phase 6F estimation-tier honesty: token-weighted measured-vs-fallback fractions
+    # over the modeled records (estimates already exclude the is_other aggregate),
+    # plus a count companion for legible UI copy. Reports existing flags only — no
+    # new sourced numbers (CLAUDE.md scope statement reinforced, not weakened).
+    precision = dict(precision_fractions(estimates))
+    precision["models_total"] = len(estimates)
+    precision["models_measured"] = sum(
+        1 for m in estimates if energy_tier(m) == "measured"
+    )
+    precision["grid_live_models"] = sum(1 for m in estimates if grid_tier(m) == "live")
+
     totals = {
         "total_tokens": total_tokens,
         "uncovered_tokens": uncovered_tokens,
         "modeled_traffic_fraction": modeled_traffic_fraction,
+        "precision": precision,
         "mapped_traffic_fraction": mapped_traffic_fraction,
         "unmapped_tokens": unmapped_tokens,
         "unmapped_traffic_fraction": unmapped_traffic_fraction,

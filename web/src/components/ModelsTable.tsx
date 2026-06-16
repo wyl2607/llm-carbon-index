@@ -103,6 +103,20 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
     </span>
   );
 
+  // Phase 6F: per-row precision tier, same badge mechanism as flags.
+  // Emerald = measured/live (trustworthy), amber = fallback estimate.
+  const tierBadge = (label: string, measured: boolean) => (
+    <span
+      className={`inline-block px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wide border ${
+        measured
+          ? 'bg-emerald-900/40 text-emerald-300 border-emerald-800/50'
+          : 'bg-amber-900/40 text-amber-200 border-amber-800/50'
+      }`}
+    >
+      {label}
+    </span>
+  );
+
   const downloadCSV = () => {
     const headers = [
       'Model', 'CO2_kg_low', 'CO2_kg_mid', 'CO2_kg_high', 
@@ -246,8 +260,11 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
           <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
             {sorted.map((m, i) => {
               const effG = co2Per1kOutputTokens(m);
-              const isHighEmission = effG > 5.0; 
+              const isHighEmission = effG > 5.0;
               const isLowEmission = effG < 0.5;
+              const isEnergyMeasured =
+                m.energy_source === 'ai_energy_score' || m.energy_source === 'ecologits';
+              const isGridLive = m.grid_source === 'electricity_maps_live';
               const originClass = m.origin === 'CN' ? 'badge-cn' : m.origin === 'US' ? 'badge-us' : m.origin === 'EU' ? 'badge-eu' : 'badge';
               
               return (
@@ -276,8 +293,21 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                       {m.open_or_closed}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-xs text-[#717771] truncate max-w-[138px]" title={m.energy_source}>{m.energy_source}</td>
-                  <td className="px-4 py-2 text-xs text-[#717771] truncate max-w-[138px]" title={m.grid_source}>{m.grid_source}</td>
+                  <td className="px-4 py-2 text-xs text-[#717771] max-w-[150px]" title={m.energy_source}>
+                    <div className="flex flex-col gap-1">
+                      {tierBadge(
+                        isEnergyMeasured ? tt.tierMeasured : tt.tierClassFallback,
+                        isEnergyMeasured,
+                      )}
+                      <span className="truncate text-[10px] opacity-70">{m.energy_source}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-2 text-xs text-[#717771] max-w-[150px]" title={m.grid_source}>
+                    <div className="flex flex-col gap-1">
+                      {tierBadge(isGridLive ? tt.tierGridLive : tt.tierGridAnnual, isGridLive)}
+                      <span className="truncate text-[10px] opacity-70">{m.grid_source}</span>
+                    </div>
+                  </td>
                   <td className="px-4 py-2 max-w-[170px] text-[11px]">{m.flags.length ? m.flags.map(flagBadge) : <span className="text-[#3f443f]">—</span>}</td>
                   <td className="px-1 py-2">
                     {onInspect && (

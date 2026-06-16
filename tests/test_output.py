@@ -241,6 +241,15 @@ def test_validate_accepts_valid_doc_and_rejects_broken_records(monkeypatch, tmp_
             "total_tokens": 1000000000,
             "uncovered_tokens": 0,
             "modeled_traffic_fraction": 1.0,
+            "precision": {
+                "energy_measured_fraction": 1.0,
+                "energy_class_fallback_fraction": 0.0,
+                "grid_live_fraction": 0.0,
+                "grid_annual_fallback_fraction": 1.0,
+                "models_measured": 1,
+                "models_total": 1,
+                "grid_live_models": 0,
+            },
             "mapped_traffic_fraction": 1.0,
             "unmapped_tokens": 0,
             "unmapped_traffic_fraction": 0.0,
@@ -287,6 +296,21 @@ def test_validate_accepts_valid_doc_and_rejects_broken_records(monkeypatch, tmp_
         validate(bad_enum)
 
 
+def test_schema_requires_precision_block(monkeypatch, tmp_path):
+    """Phase 6F: a valid doc carries totals.precision; dropping it fails the schema."""
+    _patch_estimate_paths(monkeypatch, tmp_path)
+    estimates = estimate(GOLDEN_RECORDS)
+    doc = build_output(estimates, GOLDEN_RECORDS, GOLDEN_DATE, generated_at="2026-06-15T00:00:00Z")
+
+    validate(doc)  # present -> passes
+    assert "precision" in doc["totals"]
+
+    bad = json.loads(json.dumps(doc))
+    del bad["totals"]["precision"]
+    with pytest.raises(jsonschema.ValidationError):
+        validate(bad)
+
+
 def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path):
     """Fixed normalized day + patched data -> stable latest shape (excl. generated_at)."""
     _patch_estimate_paths(monkeypatch, tmp_path)
@@ -298,7 +322,7 @@ def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path)
     )
 
     # Basic presence and values
-    assert doc["methodology_version"] == "0.2.0"
+    assert doc["methodology_version"] == "0.3.0"
     assert doc["generated_at"] == "2026-06-15T00:00:00Z"
     assert doc["data_date"] == GOLDEN_DATE
     assert doc["source_citation"] == (
@@ -454,6 +478,15 @@ def test_write_outputs_validates_before_write_and_copies_to_history(tmp_path, mo
             "total_tokens": 0,
             "uncovered_tokens": 0,
             "modeled_traffic_fraction": 0.0,
+            "precision": {
+                "energy_measured_fraction": 0.0,
+                "energy_class_fallback_fraction": 1.0,
+                "grid_live_fraction": 0.0,
+                "grid_annual_fallback_fraction": 1.0,
+                "models_measured": 0,
+                "models_total": 0,
+                "grid_live_models": 0,
+            },
             "mapped_traffic_fraction": 0.0,
             "unmapped_tokens": 0,
             "unmapped_traffic_fraction": 0.0,

@@ -84,6 +84,31 @@ assumptions, not a probability distribution. We do not claim a 95% CI or any
 probabilistic coverage — to do so would imply data we do not have (especially
 for closed models). A bare point number anywhere in the JSON or UI is a bug.
 
+### 4a. Estimation-tier precision (`totals.precision`, methodology v0.3.0)
+
+Beyond the uncertainty *band*, we also publish what **tier of input** each number
+rests on. Every row already carries an `energy_source`
+(`ai_energy_score` / `ecologits` → a real measurement; `parameter_class_fallback`
+→ a parameter-class guess) and a `grid_source`
+(`electricity_maps_live` → live grid intensity; `annual_factor` → an annual
+average). `totals.precision` aggregates these flags into four fractions:
+
+- **`energy_measured_fraction`** — share of modeled traffic whose energy rests on
+  a measurement (AI Energy Score or EcoLogits), and its complement
+  **`energy_class_fallback_fraction`** (parameter-class fallback). The two sum to 1.0.
+- **`grid_live_fraction`** — share whose grid intensity came from live Electricity
+  Maps, and its complement **`grid_annual_fallback_fraction`** (annual table). The
+  two sum to 1.0.
+
+These fractions are **token-weighted by `total_tokens`**, not count-weighted, and
+computed over the modeled rows only (the `other`/uncovered aggregate is excluded).
+Token-weighting is deliberate: it answers *"how much of the published footprint
+rests on measured inputs?"*, which is what a reader should trust — a single
+high-traffic fallback model matters far more than several tiny measured ones. A
+count companion (`models_measured` / `models_total`, `grid_live_models`) is also
+published for legible UI copy. This block introduces **no new sourced numbers**;
+it only reports what the per-row flags already imply.
+
 ## 5. Scope & limitations
 
 - **Coverage is partial.** Only OpenRouter-visible API traffic;
