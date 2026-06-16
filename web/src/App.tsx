@@ -140,10 +140,15 @@ function App() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="inline-flex rounded-lg overflow-hidden border border-[#242924] text-xs">
-              <button onClick={() => setLang('en')} className={`px-3 py-1 font-medium transition ${lang === 'en' ? 'bg-emerald-600 text-black' : 'hover:bg-[#161916]'}`}>{tt.langEn}</button>
-              <button onClick={() => setLang('zh')} className={`px-3 py-1 font-medium transition ${lang === 'zh' ? 'bg-emerald-600 text-black' : 'hover:bg-[#161916]'}`}>{tt.langZh}</button>
-            </div>
+            <select 
+              value={lang} 
+              onChange={(e) => setLang(e.target.value as Lang)}
+              className="text-xs py-1 px-2 bg-[#0a0c0a] border border-[#242924] rounded-lg text-[#e4e7e4] hover:bg-[#151915] cursor-pointer"
+            >
+              <option value="de">{tt.langDe}</option>
+              <option value="zh">{tt.langZh}</option>
+              <option value="en">{tt.langEn}</option>
+            </select>
 
             <AccountingToggle method={accountingMethod} onChange={setAccountingMethod} />
 
