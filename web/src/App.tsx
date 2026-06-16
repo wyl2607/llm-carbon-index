@@ -23,6 +23,8 @@ const isSampleData = (models: Model[]) =>
 
 function App() {
   const [data, setData] = useState<LatestData | null>(null);
+  const [history, setHistory] = useState<TimeseriesDay[]>([]);
+  const [sensData, setSensData] = useState<SensitivityData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -42,11 +44,9 @@ function App() {
   const [groupBy, setGroupBy] = useState<GroupBy>('open_or_closed');
   const [showAllModels, setShowAllModels] = useState(false);
 
-  // Table filters are managed inside ModelsTable for simplicity. Global simulator remains full dataset.
-
   const [inspectModel, setInspectModel] = useState<Model | null>(null);
 
-  // Persist key state to URL (debounced-ish via effect)
+  // Persist key state to URL
   useEffect(() => {
     const p = new URLSearchParams();
     if (greenShiftPercent > 0) p.set('shift', String(greenShiftPercent));
@@ -57,30 +57,33 @@ function App() {
     window.history.replaceState(null, '', url);
   }, [greenShiftPercent, accountingMethod, lang]);
 
-  // Data load (static)
+  // Data load
   useEffect(() => {
     let cancelled = false;
-    fetch(`${import.meta.env.BASE_URL}data/latest.json`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`Failed to load data: ${r.status}`);
-        return r.json();
-      })
-      .then((json: LatestData) => {
-        if (!cancelled) {
-          setData(json);
-          setError(null);
-        }
-      })
-      .catch((e: unknown) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
-      })
-      .finally(() => { if (!cancelled) setLoading(false); });
+    Promise.all([
+      fetch(`${import.meta.env.BASE_URL}data/latest.json`).then(res => res.json()),
+      fetch(`${import.meta.env.BASE_URL}data/timeseries.json`).then(res => res.json()),
+      fetch(`${import.meta.env.BASE_URL}data/sensitivity.json`).then(res => res.ok ? res.json() : null)
+    ]).then(([latestJson, historyJson, sensJson]) => {
+      if (!cancelled) {
+        setData(latestJson);
+        setHistory(historyJson);
+        setSensData(sensJson);
+        setError(null);
+        setLoading(false);
+      }
+    }).catch(err => {
+      if (!cancelled) {
+        setError(err.message);
+        setLoading(false);
+      }
+    });
     return () => { cancelled = true; };
   }, []);
 
   const tt = useI18n(lang);
 
-  // Compute simulated (scenario) data - drives KPIs + main charts
+  // Compute simulated (scenario) data
   const simulatedData = useMemo(() => {
     if (!data) return null;
     const useMarket = accountingMethod === 'market';
@@ -118,7 +121,6 @@ function App() {
   const isScenario = greenShiftPercent > 0;
   const sample = isSampleData(models);
 
-  // Loading skeleton
   const renderSkeleton = () => (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-10 space-y-8">
       <div className="h-9 w-72 skeleton" />
@@ -132,17 +134,14 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#0a0c0a] text-[#e4e7e4] selection:bg-emerald-800/40">
-      {/* Sticky premium header */}
       <header className="sticky top-0 z-50 border-b border-[#242924] bg-[#0a0c0a]/95 backdrop-blur">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3 text-sm">
           <div className="flex items-center gap-3">
             <div className="font-black tracking-[-0.5px] text-lg">LLM Carbon Index</div>
-            <div className="text-[10px] px-2 py-px rounded bg-emerald-950 text-emerald-400 border border-emerald-900 font-bold tracking-widest">VERSION 1.0</div>
-            {data && <div className="hidden sm:block text-[#717771] text-xs font-mono pl-1">v{data.methodology_version} • {data.data_date}</div>}
+            {data && <div className="text-[10px] px-2 py-px rounded bg-emerald-950 text-emerald-400 border border-emerald-900 font-bold tracking-widest">v{data.methodology_version}</div>}
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Lang switch - bilingual professional */}
             <div className="inline-flex rounded-lg overflow-hidden border border-[#242924] text-xs">
               <button onClick={() => setLang('en')} className={`px-3 py-1 font-medium transition ${lang === 'en' ? 'bg-emerald-600 text-black' : 'hover:bg-[#161916]'}`}>{tt.langEn}</button>
               <button onClick={() => setLang('zh')} className={`px-3 py-1 font-medium transition ${lang === 'zh' ? 'bg-emerald-600 text-black' : 'hover:bg-[#161916]'}`}>{tt.langZh}</button>

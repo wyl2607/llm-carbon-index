@@ -44,3 +44,12 @@ if (fs.existsSync(REAL_TS)) {
   fs.writeFileSync(DEST_TS, JSON.stringify([]));
   console.log(`[copy-data] Generated empty timeseries.json -> public/data/timeseries.json`);
 }
+const REAL_SENS = path.resolve(ROOT, '../data/output/sensitivity.json');
+const DEST_SENS = path.join(PUBLIC_DATA, 'sensitivity.json');
+if (fs.existsSync(REAL_SENS)) {
+  fs.copyFileSync(REAL_SENS, DEST_SENS);
+  console.log(`[copy-data] Copied real sensitivity.json -> public/data/sensitivity.json`);
+} else {
+  fs.writeFileSync(DEST_SENS, JSON.stringify({}));
+  console.log(`[copy-data] Generated empty sensitivity.json -> public/data/sensitivity.json`);
+}

@@ -117,3 +117,16 @@ export interface TimeseriesDay {
   data_date: string;
   totals: Totals;
 }
+
+export interface SensitivityDriver {
+  assumption: string;
+  band: string[];
+  total_co2_swing_pct: { low: number; high: number };
+  rank: number;
+}
+
+export interface SensitivityData {
+  data_date: string;
+  drivers: SensitivityDriver[];
+  dominant: string;
+}
