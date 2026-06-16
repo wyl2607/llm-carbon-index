@@ -14,7 +14,7 @@ companions of those registry entries — keep the two in step when adding a cons
 ## A — Modeling assumptions
 
 ### A1 — Model subset (MVP)
-Start with OpenRouter top-list **open** models that have AI Energy Score data, plus 1–2 **closed** models via EcoLogits. Listed in `model_crosswalk.yaml`. Expanded in later phases. *Uncertainty:* coverage is partial; `totals.modeled_traffic_fraction` reports how much of the day's traffic is actually modeled.
+Start with OpenRouter top-list **open** models that have AI Energy Score data, plus 1–2 **closed** models via EcoLogits. Listed in `model_crosswalk.yaml`. Expanded in later phases. Phase 6j: top-traffic open models (minimax-m3, deepseek v4 flash/pro by 2026-06-14 total_tokens) now carry explicit measured entries in intensity.yaml (ai_energy_score) where class data is defensible; energy_source flips and energy_measured_fraction reflects their token share. Models without defensible measured data remain on parameter_class_fallback. *Uncertainty:* coverage is partial; `totals.modeled_traffic_fraction` reports how much of the day's traffic is actually modeled.
 
 ### A2 — Input:output token ratio
 `rankings-daily` returns **combined** prompt+completion tokens; inference energy scales mainly with **output** tokens. Default split **80:20 (input:output)** → `est_output_tokens = total_tokens × 0.20`.
@@ -44,9 +44,10 @@ tokens as energy-free; v0.2 adds a prefill term.
 
 These feed `data/energy/intensity.yaml`. Each model/class entry must cite how its Wh/output-token range was derived.
 
-- **E-METHOD** — Two primary sources: (1) **AI Energy Score** (Hugging Face/Salesforce/CMU) — measured Wh per 1000 standardized queries; back out per-output-token by dividing by the assumed mean output tokens per benchmark query (record the assumed value). (2) **EcoLogits** — per-request impacts modeled from provider + model + output-token count + latency (LCA-based, ISO 14044). For closed models, parameter counts are estimates → carry a wide range. *Uncertainty:* note that a single chat-style query has been estimated anywhere from ~0.3 Wh (Google) to ~1.8–7 Wh (EcoLogits) depending on assumptions — your ranges should reflect that spread.
+- **E-METHOD** — Two primary sources: (1) **AI Energy Score** (Hugging Face/Salesforce/CMU) — measured Wh per 1000 standardized queries; back out per-output-token by dividing by the assumed mean output tokens per benchmark query (record the assumed value). (2) **EcoLogits** — per-request impacts modeled from provider + model + output-token count + latency (LCA-based, ISO 14044). For closed models, parameter counts are estimates → carry a wide range. *Divisor (Phase 6j):* 150 output tokens per standardized query (mid of observed ~80-220 range in task samples; recorded here as the E-METHOD assumption for all ai_energy_score back-outs). *Uncertainty:* note that a single chat-style query has been estimated anywhere from ~0.3 Wh (Google) to ~1.8–7 Wh (EcoLogits) depending on assumptions — your ranges should reflect that spread. *Where used:* derivation notes for all E-*-measured intensity entries; test assertions.
 - **E-CLASS-\*** — Parameter-class fallback coefficients for unknown/uncovered models, keyed by active-parameter band. Source + derivation recorded per band. *Uncertainty:* very high; these exist so the pipeline degrades gracefully, not to be precise.
 - **E-{MODEL}** — One entry per modeled model as it's added.
+- **E-IDLE** — Optional always-on/idle server energy term (kWh per day per attributable slice). Added only where a defensible per-model or strong class analogue exists (never for pure fallback). See rationale in BLOOM arXiv:2211.02001 gap (~3.96 Wh/query all-in vs ~1.25 token-only; residual after E-PREFILL + C-EMBODIED accounts for idle + overhead). Value is model-specific in intensity.yaml (with idle_source_id = E-IDLE); multiplied by share_of_day in energy_kwh. *Uncertainty:* very high (allocation of shared always-on capacity to a specific model's visible traffic slice). Default None/0 in energy_kwh for models without entry. *Where used:* selective intensity models + energy.energy_kwh optional path. *Last reviewed:* 2026-06-16.
 
 ### E-CLASS-SMALL (Phase 2 seed)
 - **E-CLASS-SMALL** — 0.0005–0.0012–0.0025 Wh per output token for models with active params ≲15B. *Source:* informed by AI Energy Score v2 small-model measurements + EcoLogits ranges for 7-13B class; widened ±~2x for benchmark-to-prod variance, tokenizer diffs, and measurement uncertainty. *Uncertainty:* high (class band, not per-model). *Where used:* intensity.yaml parameter_class_fallback first band; fallback path for unknown models or explicit "parameter_class_fallback" in crosswalk. *Last reviewed:* 2026-06-15.
@@ -71,6 +72,18 @@ These feed `data/energy/intensity.yaml`. Each model/class entry must cite how it
 
 ### E-CLAUDE-35-SONNET (Phase 2 A1 seed, closed)
 - **E-CLAUDE-35-SONNET** — 0.0025–0.0060–0.0150 Wh per output token. *Source:* EcoLogits LCA-based estimate for frontier closed model (Claude 3.5 Sonnet); range >2× wider than open 70B to reflect undisclosed parameter count, hardware, and datacenter efficiency. *Uncertainty:* very high. *Where used:* intensity.yaml (ecologits tag); us-east grid + CLOSED_MODEL_ASSUMED. *Last reviewed:* 2026-06-15.
+
+### E-MINIMAX-M3 (Phase 6j)
+- **E-MINIMAX-M3** — 0.0008–0.0015–0.003 Wh per output token (same band as E-MINIMAX-M2.5). *Source:* AI Energy Score v2 MoE ~10B active class; applied to current top-traffic MiniMax M3 via family continuity (no evidence of regression in public cards). *Uncertainty:* medium (class match). *Where used:* intensity.yaml for minimax/minimax-m3 (norm); top token share contributor on 2026-06-14. *Last reviewed:* 2026-06-16.
+
+### E-DEEPSEEK-V4-FLASH (Phase 6j)
+- **E-DEEPSEEK-V4-FLASH** — 0.0015–0.0035–0.0080 Wh per output token (same band as E-DEEPSEEK-67B). *Source:* AI Energy Score v2 60-70B dense/MoE class; applied to DeepSeek V4 Flash (high-traffic open) by family. *Uncertainty:* high (flash variant may be more efficient; conservative use of full class band). *Where used:* intensity.yaml; second-highest open token volume on 2026-06-14. *Last reviewed:* 2026-06-16.
+
+### E-DEEPSEEK-V4-PRO (Phase 6j)
+- **E-DEEPSEEK-V4-PRO** — 0.0015–0.0035–0.0080 Wh per output token (same band as E-DEEPSEEK-67B). *Source:* AI Energy Score v2 60-70B dense/MoE class; applied to DeepSeek V4 Pro by family. *Uncertainty:* medium. *Where used:* intensity.yaml; significant open token share. *Last reviewed:* 2026-06-16.
+
+### E-IDLE (Phase 6j; see also E-METHOD)
+- **E-IDLE** — idle_kwh_per_day band {3000, 8500, 18000} kWh/day for a comparable-large model deployment slice (used with share_of_day). *Source:* BLOOM all-in vs token-only gap (Luccioni et al. arXiv:2211.02001: 914 kWh / 230,768 queries yields ~3.96 Wh/query total; ~1.25 attributed to per-token only leaves residual for idle + system factors after E-PREFILL/C-EMBODIED). Converted to daily kWh for representative query volume + attribution share. *Uncertainty:* very high (slice allocation approximate; only attached to models with strong class analogue). *Where used:* intensity.yaml (deepseek/deepseek-chat + idle_source_id); energy_kwh optional additive path; idle regression test in test_energy.py (combined band contains ~3.96 Wh/query only with idle). *Last reviewed:* 2026-06-16.
 
 ---
 
