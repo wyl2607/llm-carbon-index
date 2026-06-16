@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import type { LatestData, Model } from './types';
+import type { LatestData, Model, SensitivityData } from './types';
 import type { Lang } from './lib/i18n';
 import { useI18n } from './lib/i18n';
 import { ScopeDisclaimerBanner } from './components/ScopeDisclaimerBanner';
@@ -23,8 +23,7 @@ const isSampleData = (models: Model[]) =>
 
 function App() {
   const [data, setData] = useState<LatestData | null>(null);
-  const [history, setHistory] = useState<TimeseriesDay[]>([]);
-  const [sensData, setSensData] = useState<SensitivityData | null>(null);
+    const [sensData, setSensData] = useState<SensitivityData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -64,11 +63,10 @@ function App() {
       fetch(`${import.meta.env.BASE_URL}data/latest.json`).then(res => res.json()),
       fetch(`${import.meta.env.BASE_URL}data/timeseries.json`).then(res => res.json()),
       fetch(`${import.meta.env.BASE_URL}data/sensitivity.json`).then(res => res.ok ? res.json() : null)
-    ]).then(([latestJson, historyJson, sensJson]) => {
+    ]).then(([latestJson, _historyJson, sensJson]) => {
       if (!cancelled) {
         setData(latestJson);
-        setHistory(historyJson);
-        setSensData(sensJson);
+                setSensData(sensJson);
         setError(null);
         setLoading(false);
       }
@@ -377,6 +375,11 @@ function App() {
                 <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] transition-colors">CHANGELOG</a>
                 <a href={`${import.meta.env.BASE_URL}data/latest.json`} className="hover:text-[#e4e7e4] underline-offset-2 hover:underline" target="_blank" rel="noreferrer">{tt.rawJson}</a>
                 <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/docs/methodology.md" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] underline-offset-2 hover:underline">{tt.methodologyFull}</a>
+                {sensData && sensData.drivers && (
+                  <span className="text-emerald-500/80">
+                    Sensitivity: {sensData.dominant} (±{Math.round(Math.max(...sensData.drivers.map(d => d.total_co2_swing_pct.high)))}%)
+                  </span>
+                )}
               </div>
             </footer>
           </main>
