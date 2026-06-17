@@ -120,8 +120,8 @@ export const KpiCards: React.FC<Props> = ({ totals, shift = 0, lang, modeledFrac
       />
 
       <KPICard
-        title="Substitution Potential"
-        sub="Maximum daily emissions movable to low-carbon regions."
+        title={tt.kpiPotential}
+        sub={tt.kpiPotentialSub}
         midValue={animatedPotential}
         unit="%"
         icon={TrendingDown}

@@ -4,7 +4,6 @@ import { useI18n } from '../lib/i18n';
 import { formatTokens } from '../lib/format';
 
 interface Props {
-  scopeNote: string;
   sourceCitation: string;
   unmappedTrafficFraction?: number;
   unmappedSlugs?: { slug: string; total_tokens: number }[];
@@ -17,7 +16,7 @@ interface Props {
  * Per phase-4 spec: must be prominent and permanent.
  * Extended for 6E: appends coverage/unmapped note (when >0) using emerald styling for factual non-alarming presentation.
  */
-export const ScopeDisclaimerBanner: React.FC<Props> = ({ scopeNote, sourceCitation, unmappedTrafficFraction, unmappedSlugs, lang = 'en' }) => {
+export const ScopeDisclaimerBanner: React.FC<Props> = ({ sourceCitation, unmappedTrafficFraction, unmappedSlugs, lang = 'en' }) => {
   const tt = useI18n(lang);
   const showUnmapped = typeof unmappedTrafficFraction === 'number' && unmappedTrafficFraction > 0;
 
@@ -30,11 +29,8 @@ export const ScopeDisclaimerBanner: React.FC<Props> = ({ scopeNote, sourceCitati
       <div className="uppercase tracking-[1px] text-[var(--warning)] text-xs font-bold flex items-center gap-2 mb-1.5 label-sm">
         <span>⚠</span> {tt.scopeWarnLabel}
       </div>
-      <p className="text-[var(--text-secondary)] leading-snug">{scopeNote}</p>
-      <p className="text-[11px] text-[var(--text-muted)] mt-1">{sourceCitation}</p>
-      <div className="mt-2 text-[12px] text-[var(--accent)]/90 border-l-2 border-[var(--accent-border)] pl-2.5">
-        {tt.scopeWarnBody}
-      </div>
+      <p className="text-[var(--text-secondary)] leading-snug">{tt.scopeWarnBody}</p>
+      <p className="text-[11px] text-[var(--text-muted)] mt-1.5">{sourceCitation}</p>
       {showUnmapped && (
         <div className="mt-3 text-[12px] text-[var(--accent)]/90 border-l-2 border-[var(--accent-border)] pl-2.5">
           {tt.unmappedCoverageNote(
