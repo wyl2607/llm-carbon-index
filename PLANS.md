@@ -94,6 +94,14 @@ All S-items DONE 2026-06-17 (grok Lane A, commit `51e7c36`; all `.github/**` YAM
 > already blocks bad data); 6L polish (residual chart-color literals → tokens, specs/INDEX +
 > OG image) for a design-review pass. The project is publishable in substance and now
 > self-maintaining for the 1-year horizon.
+>
+> **Post-merge fixes (PR #5, same day):** (1) the morning cron (`2d3771a`, old pre-B1
+> workflow) shipped an **orphan 2026-06-16 golden** with no snapshot → `make verify` FAIL;
+> dropped it (`a00df33`), latest.json back to verifiable 2026-06-14. (2) Found+fixed an
+> **L1 alerting bug**: `gh issue create --label "pipeline,automation"` would fail (labels
+> don't exist) and silently create no issue; dropped `--label` (`facb272`).
+> **⏳ TIME-SENSITIVE: merge PR #5 before the next 06:30 UTC cron** or the pre-B1 workflow on
+> `main` reproduces the orphan-golden bug again.
 
 ---
 
