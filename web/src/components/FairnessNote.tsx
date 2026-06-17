@@ -16,9 +16,10 @@ interface Props {
  * tokenizer non-comparability caveat (L-TOKENIZER).
  */
 export const FairnessNote: React.FC<Props> = ({ fairness, lang = 'en' }) => {
+  // Hooks must run unconditionally before any early return (react-hooks/rules-of-hooks).
+  const tt = useI18n(lang);
   if (!fairness) return null;
 
-  const tt = useI18n(lang);
   const { rank_stability } = fairness;
   const co2Changed = rank_stability.by_co2.ranks_changed;
   const effChanged = rank_stability.by_efficiency.ranks_changed;
