@@ -32,14 +32,31 @@ jobs:
           ELECTRICITYMAPS_API_KEY: ${{ secrets.ELECTRICITYMAPS_API_KEY }}
         run: uv run python -m pipeline.run --date latest
 
-      - name: Commit refreshed output (only if changed)
+      # B2: gate the auto-refresh before it can reach the public site. Any failure
+      # here fails the job (no commit, no push) instead of publishing bad data.
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Tests
+        run: uv run pytest -q
+
+      - name: Provenance gate (every gated number must resolve to a source)
+        run: uv run python -m pipeline.provenance
+
+      - name: Reproducibility gate (replay every golden from its frozen snapshot)
+        run: uv run python -m pipeline.verify
+
+      - name: Commit refreshed output + snapshot (only if changed)
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if [ -n "$(git status --porcelain data/output)" ]; then
-            git add data/output
-            git commit -m "chore(data): refresh output $(date -u +%Y-%m-%d)"
+          # B1: commit the frozen input snapshot in the SAME commit as the output it
+          # produced. Otherwise every auto-refreshed golden is an unverifiable orphan
+          # (no snapshot → `make verify` can never replay it).
+          if [ -n "$(git status --porcelain data/output data/raw/snapshots)" ]; then
+            git add data/output data/raw/snapshots
+            git commit -m "chore(data): refresh output + snapshot $(date -u +%Y-%m-%d)"
             git push
           else
-            echo "No output changes; nothing to commit."
+            echo "No data changes; nothing to commit."
           fi

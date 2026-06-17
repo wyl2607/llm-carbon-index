@@ -9,20 +9,19 @@
 > auto-update path**, and gaps in the 1-year (long-termism) story: automated data
 > refresh, data tracking/reproducibility, and security. Ordered by severity.
 
-### P0 — Design logic errors (they silently break the project's core promise)
+### P0 — Design logic errors — RESOLVED 2026-06-17
 
-- [ ] **B1 — Daily cron does NOT commit its own input snapshot → unverifiable orphan goldens.**
-  `pipeline/run.py` self-snapshots to `data/raw/snapshots/<date>/`, but
-  `.github/workflows/pipeline.yml` only `git add data/output`. Every auto-refreshed day
-  ships a golden whose 6H snapshot is never committed — re-creating exactly the "lost
-  input" failure DISCOVERIES.md documented and the 2026-06-15 orphan-golden we already
-  had to drop by hand. **Fix:** the refresh job must `git add data/output data/raw/snapshots`
-  (and the manifest) in one commit, atomically.
-- [ ] **B2 — Cron auto-pushes to `main` with no gate.** `pipeline.yml` runs the pipeline and
-  `git push` straight to `main` with *no* `pytest`, *no* `make verify`, *no* provenance
-  gate. A bad upstream day, a new unsourced model, or a non-reproducible golden lands on
-  the public site unreviewed. **Fix:** run `ruff` + `pytest` + `python -m pipeline.provenance`
-  + `make verify <date>` before commit; on failure, open a PR / issue instead of pushing.
+- [x] **B1 — Daily cron now commits its input snapshot atomically with the output.** ✅
+  `pipeline/run.py` self-snapshots to `data/raw/snapshots/<date>/`; the refresh job in
+  `.github/workflows/pipeline.yml` now stages **`data/output data/raw/snapshots`** in one
+  commit (manifest is under `data/output/`). No more orphan goldens — every published day
+  carries the frozen 6H inputs `make verify` needs to replay it.
+- [x] **B2 — Cron is now gated before it can reach the public site.** ✅
+  `pipeline.yml` runs `ruff check` + `pytest` + `python -m pipeline.provenance` +
+  `python -m pipeline.verify` (all-dates replay) **after** the pipeline and **before** the
+  commit/push. Any gate failure fails the job → no commit, no push, the run goes red. A bad
+  upstream day, an unsourced model, or a non-reproducible golden can no longer land
+  unreviewed. (Branch+PR flow instead of direct push to `main` remains as **S5**.)
 
 ### P1 — Spec phase not built + paper/data drift
 
@@ -38,10 +37,9 @@
   PUE=rank 2), and cites "**7.7k tCO₂e / 16×**" (current `co2_kg_total` mid ≈ **6.4k**, band
   1.67k–25.7k ≈ 15×). Re-derive §4 illustrative numbers + §6 limitations (i–iv already
   resolved) from `data/output/latest.json` before submission.
-- [ ] **E1 — `.env.example` variable name mismatch.** It documents
-  `ELECTRICITY_MAPS_API_TOKEN`; code + CI read `ELECTRICITYMAPS_API_KEY`
-  (`pipeline/config.py:72`). A dev following the example sets the wrong name → live grid
-  silently off. **Fix:** rename in `.env.example` (and any docs) to the canonical name.
+- [x] **E1 — `.env.example` variable name fixed.** ✅ Renamed
+  `ELECTRICITY_MAPS_API_TOKEN` → `ELECTRICITYMAPS_API_KEY` (the canonical name read by
+  `pipeline/config.py:72` and CI). `.env.example` was the only non-doc occurrence.
 
 ### P2 — Long-termism: automated data refresh & data tracking (1-year horizon)
 
@@ -77,9 +75,10 @@
   bot commit can reach the published artifact.
 
 > **Continue developing?** Yes — the core (phases 1–6K) and every paper method are done and
-> exceed the draft, so the project is publishable in substance. But it is **not** "complete":
-> P0 must be fixed before trusting the daily auto-update, and 6L + the security/long-term
-> items (P1–P3) are the real remaining work for a credible, self-maintaining 1-year artifact.
+> exceed the draft, so the project is publishable in substance. **P0 (B1/B2) is now fixed
+> (2026-06-17)**, so the daily auto-update is gated and self-verifying. Remaining work for a
+> credible, self-maintaining 1-year artifact: **D1** (stale arXiv numbers), **6L** (retro
+> frontend), and the long-term/security items (P2–P3).
 
 ---
 
