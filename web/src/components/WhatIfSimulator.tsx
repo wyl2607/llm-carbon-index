@@ -71,7 +71,7 @@ export const WhatIfSimulator: React.FC<Props> = ({
   const animatedReduction = useAnimatedNumber(reductionMid, 700);
 
   return (
-    <div className="my-8 card p-7 sm:p-9 text-[var(--text)] relative overflow-hidden border-[var(--accent-border)]" style={{background: 'linear-gradient(145deg, #0c0a07, #0a0805)'}}>
+    <div className="my-8 card p-7 sm:p-9 text-[var(--text)] relative overflow-hidden border-[var(--accent-border)]" style={{background: 'linear-gradient(145deg, var(--bg-card), var(--bg))'}}>
       <div className="absolute top-5 right-5 px-3 py-1 rounded-full text-[10px] font-bold tracking-[1.5px] uppercase bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)] backdrop-blur z-20">
         {accountingMethod.toUpperCase()}-BASED
       </div>

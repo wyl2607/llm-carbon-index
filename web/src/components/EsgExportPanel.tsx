@@ -77,7 +77,7 @@ export const EsgExportPanel: React.FC<Props> = ({ data, lang = 'en' }) => {
         </button>
       </div>
 
-      <div className="mt-2 text-[10px] text-[#6f756f]">
+      <div className="mt-2 text-[10px] text-[var(--text-muted)]">
         {tt.esgFooter}
       </div>
     </div>

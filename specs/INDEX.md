@@ -31,7 +31,7 @@ Always-loaded context lives in `/CLAUDE.md` (hard rules) and these three governa
 | 6I | `phase-6i-fairness-and-boundary.md` | `BOUNDARY.md` + `FAIRNESS.md` + `totals.fairness` (rank stability, unweighted) | ✅ done |
 | **6J** | `phase-6j-sourced-energy-upgrade.md` | measured energy for top-traffic models; `energy_measured_fraction` rises | ✅ done (c5a70b2; measured_fraction 0.0→0.29, 3/50 models, + E-IDLE term) |
 | 6K | `phase-6k-uncertainty-and-sensitivity.md` | `sensitivity.json` + dominant driver; thesis-grade methodology | ⬜ pending |
-| 6L | `phase-6l-retro-tech-frontend.md` | retrofuturist re-skin, honesty surfaces preserved | ⬜ pending |
+| 6L | `phase-6l-retro-tech-frontend.md` | retrofuturist re-skin, honesty surfaces preserved | ✅ done (`b88274c` + token polish) |
 | **6M** | (vNext P2; spec inline in roadmap) | ranking → **tiering** honesty: `totals.tiers` groups overlapping `{low,high}` CO₂ bands; tiers headline, ranks secondary | ✅ done (dbb2424) |
 | **6N** | (vNext P4; spec inline in roadmap) | physical LLMCarbon-style embodied estimator (`pipeline/embodied.py`, CPA×area×amortization) alongside ratio-proxy + method spread | ✅ done (b4e17ea) |
 | **6P** | (vNext P3; spec inline in roadmap) | literature cross-validation harness (`validate_literature.py` + `literature_anchors.yaml` → `validation.json`): BLOOM/Gemini pass, OpenAI report-only, Jegham long-prompt flagged | ✅ done (2fccf29) |
