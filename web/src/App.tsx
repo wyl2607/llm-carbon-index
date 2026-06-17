@@ -138,13 +138,13 @@ function App() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] selection:bg-[var(--accent-bg)]">
       <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/95 backdrop-blur">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3 text-sm">
-          <div className="flex items-center gap-3">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 min-h-14 py-2.5 sm:py-0 sm:h-14 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-sm">
+          <div className="flex items-center gap-3 shrink-0">
             <div className="font-black tracking-[-0.5px] text-lg">LLM Carbon Index</div>
             {data && <div className="text-[10px] px-2 py-px rounded bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)] font-bold tracking-widest">v{data.methodology_version}</div>}
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
             <select 
               value={lang} 
               onChange={(e) => setLang(e.target.value as Lang)}
