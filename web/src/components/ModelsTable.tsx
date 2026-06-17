@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import type { Model } from '../types';
-import { co2Per1kOutputTokens, formatCO2Per1kG, formatCO2Range, formatWaterRange } from '../lib/format';
+import { co2Per1kOutputTokens, formatCO2Parts, formatWaterParts, formatCO2Per1kGShort } from '../lib/format';
 import { Search, Download, Eye } from 'lucide-react';
 import type { Lang } from '../lib/i18n';
 import { useI18n } from '../lib/i18n';
@@ -116,15 +116,15 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
     }
   };
 
-  const header = (label: string, key?: SortKey) => {
+  const header = (label: string, key?: SortKey, align: 'left' | 'right' = 'left') => {
     const active = key && sortKey === key;
     return (
       <th
         onClick={key ? () => toggleSort(key) : undefined}
-        className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] border-b border-[var(--border)] ${key ? 'cursor-pointer hover:bg-[var(--bg-elev)] transition-colors' : ''} whitespace-nowrap`}
+        className={`px-4 py-3 ${align === 'right' ? 'text-right' : 'text-left'} text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] border-b border-[var(--border)] ${key ? 'cursor-pointer hover:bg-[var(--bg-elev)] transition-colors' : ''} whitespace-nowrap`}
         aria-sort={active ? (sortDir === 'desc' ? 'descending' : 'ascending') : undefined}
       >
-        <div className="flex items-center gap-1.5">
+        <div className={`flex items-center gap-1.5 ${align === 'right' ? 'justify-end' : ''}`}>
           {label}
           {active && (
             <svg className={`w-3.5 h-3.5 transition-transform ${sortDir === 'desc' ? '' : 'rotate-180'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
@@ -284,13 +284,12 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
           <thead>
             <tr>
               {header(tt.colModel)}
-              {header(tt.colCo2, 'co2')}
-              {hasWater && header(tt.colWater, 'water')}
-              {header(tt.colEff, 'efficiency')}
+              {header(tt.colCo2, 'co2', 'right')}
+              {hasWater && header(tt.colWater, 'water', 'right')}
+              {header(tt.colEff, 'efficiency', 'right')}
               {header(tt.colOrigin)}
               {header(tt.colOpenClosed)}
-              {header(tt.colEnergySrc)}
-              {header(tt.colGridSrc)}
+              {header(tt.colDataQuality)}
               {header(tt.colFlags)}
               <th className="px-3 py-3 w-8" />
             </tr>
@@ -304,7 +303,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                 if (t !== prevT) {
                   nodes.push(
                     <tr key={`tierband-${t}`} className="bg-[var(--bg-elev)]">
-                      <td colSpan={hasWater ? 10 : 9} className="px-4 py-1 text-[10px] font-bold uppercase tracking-[1px] text-[var(--accent)] border-b border-[var(--border)]">
+                      <td colSpan={hasWater ? 9 : 8} className="px-4 py-1.5 text-[11px] font-bold uppercase tracking-[1px] text-[var(--accent)] border-b border-[var(--border)]">
                         {tt.tierBand(t, totalTierCount)}
                       </td>
                     </tr>
@@ -319,53 +318,57 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                 const isGridLive = m.grid_source === 'electricity_maps_live';
                 const originClass = m.origin === 'CN' ? 'badge-cn' : m.origin === 'US' ? 'badge-us' : m.origin === 'EU' ? 'badge-eu' : 'badge';
                 const displayRank = i + 1;
+                const co2 = formatCO2Parts(m.co2_kg);
+                const water = m.water_liters && m.water_liters.mid > 0 ? formatWaterParts(m.water_liters) : null;
+                const effColor = isHighEmission ? 'text-[var(--warning)]' : isLowEmission ? 'text-[var(--accent)]' : 'text-[var(--text-secondary)]';
                 nodes.push(
-                  <tr key={m.slug} className={`border-b border-[var(--border)] hover:bg-[var(--bg-elev)] transition-colors ${i % 2 === 0 ? '' : 'bg-[var(--row-stripe)]'}`}>
-                    <td className="px-4 py-2 font-semibold text-[var(--text)]">
-                      <span className="inline-block align-middle px-1 py-px mr-1.5 text-[10px] font-bold rounded bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)]">T{t}</span>
-                      {m.display_name}
-                      <span className="ml-1.5 text-[10px] text-[var(--text-muted)] font-mono">#{displayRank}</span>
+                  <tr key={m.slug} className={`border-b border-[var(--border)] hover:bg-[var(--bg-card-hover)] transition-colors ${i % 2 === 0 ? '' : 'bg-[var(--row-stripe)]'}`}>
+                    <td className="px-4 py-3">
+                      <span className="text-[11px] text-[var(--text-muted)] font-mono mr-2">#{displayRank}</span>
+                      <span className="font-semibold text-[var(--text)]">{m.display_name}</span>
                     </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-[var(--text-secondary)]">
-                      <span className="font-mono text-xs bg-[var(--bg)] px-2 py-px rounded border border-[var(--border)]">{formatCO2Range(m.co2_kg)}</span>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <div className="font-mono font-semibold text-[var(--text)]">{co2.mid} <span className="font-normal text-[var(--text-muted)]">{co2.unit}</span></div>
+                      <div className="font-mono text-[11px] text-[var(--text-muted)]">{co2.range}</div>
                     </td>
                     {hasWater && (
-                      <td className="px-4 py-2 whitespace-nowrap text-[var(--text-secondary)]">
-                        <span className="font-mono text-xs bg-[var(--bg-elev)] text-[var(--text)] px-2 py-px rounded border border-[var(--border)]">{formatWaterRange(m.water_liters)}</span>
+                      <td className="px-4 py-3 text-right whitespace-nowrap">
+                        {water ? (
+                          <>
+                            <div className="font-mono font-semibold text-[var(--text)]">{water.mid} <span className="font-normal text-[var(--text-muted)]">{water.unit}</span></div>
+                            <div className="font-mono text-[11px] text-[var(--text-muted)]">{water.range}</div>
+                          </>
+                        ) : (
+                          <span className="text-[var(--text-muted)]">—</span>
+                        )}
                       </td>
                     )}
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      <span className={`font-mono px-2 py-px rounded text-xs font-bold border ${
-                        isHighEmission ? 'bg-[var(--warning-bg)] text-[var(--warning)] border-[var(--warning-border)]' :
-                        isLowEmission ? 'bg-[var(--accent-bg)] text-[var(--accent)] border-[var(--accent-border)]' :
-                        'bg-[var(--bg)] text-[var(--text-secondary)] border-[var(--border)]'
-                      }`}>
-                        {formatCO2Per1kG(effG)}
-                      </span>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <span className={`font-mono font-semibold ${effColor}`}>{formatCO2Per1kGShort(effG)}</span>
                     </td>
-                    <td className="px-4 py-2"><span className={`badge ${originClass}`}>{m.origin}</span></td>
-                    <td className="px-4 py-2">
+                    <td className="px-4 py-3"><span className={`badge ${originClass}`}>{m.origin}</span></td>
+                    <td className="px-4 py-3">
                       <span className={m.open_or_closed === 'open' ? 'badge badge-open' : 'badge badge-closed'}>
                         {m.open_or_closed}
                       </span>
                     </td>
-                    <td className="px-4 py-2 text-xs text-[var(--text-muted)] max-w-[150px]" title={m.energy_source}>
-                      <div className="flex flex-col gap-1">
-                        {tierBadge(
-                          isEnergyMeasured ? tt.tierMeasured : tt.tierClassFallback,
-                          isEnergyMeasured,
-                        )}
-                        <span className="truncate text-[10px] opacity-70">{m.energy_source}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-2 text-xs text-[var(--text-muted)] max-w-[150px]" title={m.grid_source}>
-                      <div className="flex flex-col gap-1">
+                    <td className="px-4 py-3" title={`${m.energy_source} · ${m.grid_source}`}>
+                      <div className="flex flex-col gap-1 items-start">
+                        {tierBadge(isEnergyMeasured ? tt.tierMeasured : tt.tierClassFallback, isEnergyMeasured)}
                         {tierBadge(isGridLive ? tt.tierGridLive : tt.tierGridAnnual, isGridLive)}
-                        <span className="truncate text-[10px] opacity-70">{m.grid_source}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-2 max-w-[170px] text-[11px]">{m.flags.length ? m.flags.map(flagBadge) : <span className="text-[var(--text-muted)]">—</span>}</td>
-                    <td className="px-1 py-2">
+                    <td className="px-4 py-3 max-w-[160px]">
+                      {m.flags.length ? (
+                        <div className="flex flex-wrap gap-1">
+                          {m.flags.slice(0, 2).map(flagBadge)}
+                          {m.flags.length > 2 && (
+                            <span className="badge" title={m.flags.slice(2).map(f => f.replace(/_/g, ' ')).join(', ')}>+{m.flags.length - 2}</span>
+                          )}
+                        </div>
+                      ) : <span className="text-[var(--text-muted)]">—</span>}
+                    </td>
+                    <td className="px-1 py-3">
                       {onInspect && (
                         <button onClick={() => onInspect(m)} className="text-[var(--text-muted)] hover:text-[var(--accent)] p-1" aria-label={tt.details} title={tt.details}>
                           <Eye size={15} />
@@ -376,11 +379,20 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                 );
               });
               if (sorted.length === 0) {
+                const hasFilters = searchTerm.trim() !== '' || originFilter !== 'ALL' || typeFilter !== 'ALL';
                 nodes.push(
                   <tr key="no-match">
-                    <td colSpan={hasWater ? 10 : 9} className="px-4 py-12 text-center text-[var(--text-muted)] bg-[var(--bg)]">
+                    <td colSpan={hasWater ? 9 : 8} className="px-4 py-12 text-center text-[var(--text-muted)] bg-[var(--bg)]">
                       <Search className="w-8 h-8 mx-auto mb-3 opacity-40" />
                       <p>{tt.tableNoMatch}</p>
+                      {hasFilters && (
+                        <button
+                          onClick={() => { setSearchTerm(''); setOriginFilter('ALL'); setTypeFilter('ALL'); }}
+                          className="btn btn-secondary text-xs mt-4"
+                        >
+                          {tt.clearFilters}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );

@@ -36,25 +36,37 @@ export function formatTokens(n: number): string {
   return nf(n);
 }
 
-export function formatCO2Range(r: Range): string {
-  // Use tonnes when mid >= 1000 kg, else kg. Always show low–high range.
+/** Structured CO₂ range parts (single source of the kg↔t unit threshold). */
+export function formatCO2Parts(r: Range): { mid: string; range: string; unit: string } {
+  // Use tonnes when mid >= 1000 kg, else kg. mid and range always share one unit.
   const useTonnes = r.mid >= 1000;
   const scale = useTonnes ? 1000 : 1;
   const unit = useTonnes ? 't' : 'kg';
   const fmt = (v: number) =>
     nf(v / scale, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-  return `${fmt(r.mid)} ${unit} (${fmt(r.low)}–${fmt(r.high)} ${unit})`;
+  return { mid: fmt(r.mid), range: `${fmt(r.low)}–${fmt(r.high)}`, unit };
 }
 
-export function formatWaterRange(r: Range | undefined): string {
-  if (!r) return "N/A";
-  // Use kL when mid >= 1000 L, else L.
+/** Structured water range parts (single source of the L↔kL unit threshold). */
+export function formatWaterParts(r: Range): { mid: string; range: string; unit: string } {
+  // Use kL when mid >= 1000 L, else L. mid and range always share one unit.
   const useKL = r.mid >= 1000;
   const scale = useKL ? 1000 : 1;
   const unit = useKL ? 'kL' : 'L';
   const fmt = (v: number) =>
     nf(v / scale, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-  return `${fmt(r.mid)} ${unit} (${fmt(r.low)}–${fmt(r.high)} ${unit})`;
+  return { mid: fmt(r.mid), range: `${fmt(r.low)}–${fmt(r.high)}`, unit };
+}
+
+export function formatCO2Range(r: Range): string {
+  const { mid, range, unit } = formatCO2Parts(r);
+  return `${mid} ${unit} (${range} ${unit})`;
+}
+
+export function formatWaterRange(r: Range | undefined): string {
+  if (!r) return "N/A";
+  const { mid, range, unit } = formatWaterParts(r);
+  return `${mid} ${unit} (${range} ${unit})`;
 }
 
 /**
@@ -70,6 +82,11 @@ export function co2Per1kOutputTokens(model: { co2_kg: Range; est_output_tokens: 
 export function formatCO2Per1kG(g: number): string {
   // Show 2 decimals for g/1k ; very small values possible.
   return nf(g, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' g CO₂ / 1k output tokens';
+}
+
+/** Short form for table cells (unit context comes from the column header). */
+export function formatCO2Per1kGShort(g: number): string {
+  return nf(g, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' g';
 }
 
 export function formatModeledFraction(f: number, unmappedFraction: number = 0): string {
