@@ -137,6 +137,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] selection:bg-[var(--accent-bg)]">
+      <a href="#main-content" className="skip-link">{tt.skipToContent ?? 'Skip to content'}</a>
       <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/95 backdrop-blur">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 min-h-14 py-2.5 sm:py-0 sm:h-14 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-sm">
           <div className="flex items-center gap-3 shrink-0">
@@ -163,7 +164,7 @@ function App() {
         </div>
       </header>
 
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-16">
+      <div id="main-content" className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-16">
         {/* Hero Area: Large Title + KPI Cards (Immediate Context) */}
         <div className="pt-10 pb-8 sm:pt-16 sm:pb-12">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
@@ -191,7 +192,7 @@ function App() {
                   );
                 })()}
               </div>
-              <h1 className="text-6xl sm:text-8xl font-black tracking-[-3px] text-[var(--text)] mb-6 leading-[0.9]">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] text-[var(--text)] mb-6 leading-[0.95]">
                 {tt.heroTitle}
               </h1>
               <div className="space-y-4">
@@ -241,29 +242,29 @@ function App() {
 
           {/* v0.2 lifecycle + water strip — operational vs embodied vs total + water */}
           {totals?.co2_kg_total && totals?.co2_kg_embodied && (
-            <div className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5">
-              <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--accent)]/80 mb-3">{tt.lcaTitle}</div>
+            <div className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--bg-elev)] p-5">
+              <div className="text-xs font-bold uppercase tracking-widest text-[var(--accent)] mb-3">{tt.lcaTitle}</div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <div className="text-[11px] text-[var(--text-muted)] mb-0.5">{tt.lcaOperational}</div>
+                  <div className="text-xs text-[var(--text-muted)] mb-0.5">{tt.lcaOperational}</div>
                   <div className="font-mono text-[var(--text)]">{formatCO2Range(totals.co2_kg)}</div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-[var(--text-muted)] mb-0.5">{tt.lcaEmbodied}</div>
+                  <div className="text-xs text-[var(--text-muted)] mb-0.5">{tt.lcaEmbodied}</div>
                   <div className="font-mono text-[var(--text-secondary)]">{formatCO2Range(totals.co2_kg_embodied)}</div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-[var(--accent)]/80 mb-0.5">{tt.lcaTotal}</div>
+                  <div className="text-xs text-[var(--accent)] mb-0.5">{tt.lcaTotal}</div>
                   <div className="font-mono text-[var(--accent)] font-semibold">{formatCO2Range(totals.co2_kg_total)}</div>
                 </div>
                 {totals.water_liters && (
                   <div>
-                    <div className="text-[11px] text-[var(--accent)]/70 mb-0.5">{tt.lcaWater}</div>
-                    <div className="font-mono text-[var(--accent-light)]">{formatWaterRange(totals.water_liters)}</div>
+                    <div className="text-xs text-[var(--text-muted)] mb-0.5">{tt.lcaWater}</div>
+                    <div className="font-mono text-[var(--accent)]">{formatWaterRange(totals.water_liters)}</div>
                   </div>
                 )}
               </div>
-              <p className="mt-3 text-[11px] text-[var(--text-muted)] leading-relaxed max-w-3xl">{tt.lcaNote}</p>
+              <p className="mt-3 text-xs text-[var(--text-muted)] leading-relaxed max-w-3xl">{tt.lcaNote}</p>
             </div>
           )}
         </div>
@@ -291,7 +292,7 @@ function App() {
         {loading && renderSkeleton()}
 
         {error && (
-          <div className="my-6 p-4 border border-red-900/50 bg-red-950/20 text-red-300 rounded-xl text-sm">
+          <div className="my-6 p-4 border border-red-200 bg-red-50 text-red-700 rounded-xl text-sm">
             {tt.errLoad} {error}. {tt.errEnsure}
           </div>
         )}
@@ -342,7 +343,7 @@ function App() {
                   <h2 className="font-bold">{tt.tableTitle}</h2>
                   <p className="text-xs text-[var(--text-muted)]">{tt.tableSubtitle}</p>
                 </div>
-                <div className="text-[11px] text-[var(--accent)]/80 font-medium">{isScenario ? tt.scenarioActive : tt.baselineActive}</div>
+                <div className="text-xs text-[var(--accent)] font-semibold">{isScenario ? tt.scenarioActive : tt.baselineActive}</div>
               </div>
 
               <ModelsTable 
@@ -358,7 +359,7 @@ function App() {
 
             {/* For researchers & ESG reporting — slim thesis / CSRD block */}
             {data && (
-              <section className="card p-6 sm:p-7 bg-gradient-to-br from-[var(--accent-bg)] to-transparent border-[var(--accent-border)]">
+              <section className="card p-6 sm:p-7 bg-[var(--bg-elev)] border-[var(--accent-border)]">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
                   <div className="max-w-2xl">
                     <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[var(--accent-bg)] text-[var(--accent)] text-[11px] font-bold uppercase tracking-wider mb-3 border border-[var(--accent-border)]">
@@ -379,7 +380,7 @@ function App() {
                     </a>
                   </div>
                 </div>
-                <div className="mt-5 pt-4 border-t border-white/5 text-xs text-[var(--text-secondary)] leading-relaxed space-y-2">
+                <div className="mt-5 pt-4 border-t border-[var(--border)] text-xs text-[var(--text-secondary)] leading-relaxed space-y-2">
                   <p><strong className="text-[var(--accent)]">{tt.csrdPrefix}</strong>{tt.csrdExample}</p>
                   <p className="text-[var(--text-muted)] italic">{tt.thesisScopeNote}</p>
                 </div>

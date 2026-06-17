@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { Model } from '../types';
 import { useI18n, type Lang } from '../lib/i18n';
 import { formatCO2Range, formatWaterRange, co2Per1kOutputTokens, formatCO2Per1kG } from '../lib/format';
@@ -11,12 +11,21 @@ interface Props {
 
 export const ModelDetailModal: React.FC<Props & {lang?: Lang}> = ({ model, onClose, lang = 'en' }) => {
   const tt = useI18n(lang);
+
+  // Close on Escape while the modal is open.
+  useEffect(() => {
+    if (!model) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [model, onClose]);
+
   if (!model) return null;
 
   const eff = co2Per1kOutputTokens(model);
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4" onClick={onClose} role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgb(15,23,42)]/45 backdrop-blur-sm p-4" onClick={onClose} role="dialog" aria-modal="true">
       <div 
         className="card w-full max-w-lg p-6 text-left" 
         onClick={e => e.stopPropagation()}

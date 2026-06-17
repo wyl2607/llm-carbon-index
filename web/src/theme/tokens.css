@@ -1,11 +1,10 @@
 /**
- * Retro-futurist design tokens (CSS custom properties).
- * Amber-phosphor on near-black. Imported by index.css.
- * Components reference via var(--*) or pre-defined .retro-* classes.
- * NO hardcoded colors allowed in component source.
+ * Light, professional data-dashboard design tokens (CSS custom properties).
+ * Clean white surfaces, neutral grays, a single readable emerald accent.
+ * Imported by index.css. Components reference via var(--*) — NO hardcoded colors in component source.
  *
- * Motion: CRT/scanline/flicker ONLY when (prefers-reduced-motion: no-preference).
- * WCAG AA verified for --accent on --bg (amber #ffbf00 / #241f17 ratio > 8:1 for UI text; 4.5:1 maintained for secondary).
+ * Accent: emerald #047857 is dark enough to carry white text on a fill AND read as
+ * text on white (~5.5:1 both directions), so the same token works for buttons and labels.
  *
  * Staleness threshold: 7 days (see DataStaleness logic + code comment).
  */
@@ -13,48 +12,48 @@
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-  /* Surfaces — warm dark charcoal (lifted well off pure black for comfortable reading) */
-  --bg: #241f17;
-  --bg-elev: #2e2820;
-  --bg-card: #2a241b;
-  --bg-card-hover: #352d22;
-  --row-stripe: #28221a;          /* subtle zebra stripe, between --bg and --bg-elev */
-  --border: #47402f;
-  --border-strong: #5e5341;
+  /* Surfaces */
+  --bg: #ffffff;
+  --bg-elev: #f6f7f9;             /* subtle gray for sections / inputs / inset panels */
+  --bg-card: #ffffff;
+  --bg-card-hover: #f3f5f7;
+  --row-stripe: #f8f9fb;          /* zebra stripe, clearly visible on white */
+  --border: #e4e7ec;              /* hairline */
+  --border-strong: #cdd2da;
 
   /* Text */
-  --text: #e8dfc9;
-  --text-secondary: #b0a38a;
-  --text-muted: #827a68;
+  --text: #15181d;                /* near-black headings/body */
+  --text-secondary: #4a5160;      /* AA on white */
+  --text-muted: #6b7280;          /* gray-500, ~4.6:1 on white */
 
-  /* Phosphor amber accent */
-  --accent: #ffbf00;
-  --accent-dark: #c48f00;
-  --accent-light: #ffcf40;
-  --accent-bg: rgba(255, 191, 0, 0.12);
-  --accent-border: rgba(255, 191, 0, 0.35);
+  /* Emerald accent (works as fill with white text AND as text on white) */
+  --accent: #047857;              /* emerald-700 */
+  --accent-dark: #065f46;         /* hover / pressed for fills */
+  --accent-light: #059669;        /* emerald-600, lighter highlight */
+  --accent-bg: rgba(4, 120, 87, 0.08);
+  --accent-border: rgba(4, 120, 87, 0.30);
 
-  /* Warning */
-  --warning: #e67e22;
-  --warning-bg: rgba(230, 126, 34, 0.12);
-  --warning-border: rgba(230, 126, 34, 0.35);
+  /* Warning / caution (for staleness, fallbacks) */
+  --warning: #b45309;             /* amber-700, readable on white */
+  --warning-bg: rgba(180, 83, 9, 0.09);
+  --warning-border: rgba(180, 83, 9, 0.30);
 
-  /* Group accents (used via style or CSS where Recharts needs hex; source from tokens.ts) */
-  --group-open: #c9b36b;
-  --group-closed: #c46b6b;
-  --group-cn: #e89f4a;
-  --group-us: #5c9ab5;
-  --group-eu: #8f7ab5;
-  --group-other: #6b6760;
+  /* Group / origin distinctions — clean categorical palette, distinct on white */
+  --group-open: #059669;          /* emerald */
+  --group-closed: #64748b;        /* slate */
+  --group-cn: #e8743b;            /* warm orange */
+  --group-us: #3b82f6;            /* blue */
+  --group-eu: #8b5cf6;            /* violet */
+  --group-other: #94a3b8;         /* slate-gray */
 
-  /* Instrument / panel */
-  --panel-bevel: inset 0 1px 0 rgba(255,255,255,0.03), 0 1px 3px rgba(0,0,0,0.6);
-  --grid-line: #3a3327;          /* lifted with the surfaces so chart/hairline rules stay visible on lighter bg */
+  /* Panel / grid */
+  --panel-bevel: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.04);
+  --grid-line: #eef1f4;
 
-  color-scheme: dark;
+  color-scheme: light;
 }
 
-/* Base retro body + typography */
+/* Base body + typography */
 body {
   margin: 0;
   background: var(--bg);
@@ -70,6 +69,7 @@ h1, h2, h3, h4 {
   font-family: var(--font-sans);
   letter-spacing: -0.015em;
   font-feature-settings: "tnum";
+  color: var(--text);
 }
 h1 { font-size: 2.65rem; font-weight: 800; line-height: 1.05; }
 h2 { font-size: 1.45rem; font-weight: 700; line-height: 1.15; }
@@ -88,7 +88,7 @@ code, .counter, .number, .kpi-value, table td, .mono {
   font-variant-numeric: tabular-nums;
 }
 
-/* Label style (small ALL-CAPS technical labels) */
+/* Small ALL-CAPS technical labels */
 .label, .label-sm {
   font-size: 0.6875rem;
   font-weight: 700;
@@ -96,24 +96,25 @@ code, .counter, .number, .kpi-value, table td, .mono {
   text-transform: uppercase;
 }
 
-/* Instrument-panel / card system (retrofuturist) */
+/* Card system — clean white cards, hairline border, soft shadow */
 .card, .panel {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 6px; /* tighter, more "bezel" than soft modern */
+  border-radius: 12px;
   box-shadow: var(--panel-bevel);
   transition: transform var(--motion-base), box-shadow var(--motion-base), border-color var(--motion-base);
 }
 .card:hover {
   border-color: var(--border-strong);
-  box-shadow: 0 8px 14px -4px rgb(0 0 0 / .5), 0 2px 4px -2px rgb(0 0 0 / .4);
+  box-shadow: 0 4px 12px -2px rgb(16 24 40 / .10), 0 2px 6px -2px rgb(16 24 40 / .06);
 }
+.panel { border-radius: 10px; }
 .panel-dark {
-  background: #1f1a13;
+  background: var(--bg-elev);
   border: 1px solid var(--border);
 }
 
-/* Hairline grid rules (subtle, instrument feel) */
+/* Hairline grid rules (subtle) */
 .hairline-grid {
   background-image:
     linear-gradient(var(--grid-line) 1px, transparent 1px),
@@ -122,43 +123,50 @@ code, .counter, .number, .kpi-value, table td, .mono {
   opacity: 0.6;
 }
 
-/* Phosphor accent buttons (minimal, instrument) */
+/* Buttons — consistent lift + color shift across all variants */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
   font-weight: 600; font-size: .875rem; padding: .625rem 1.25rem;
-  border-radius: 4px; border: 1px solid transparent; transition: all var(--motion-fast);
+  border-radius: 8px; border: 1px solid transparent; transition: all var(--motion-fast);
   white-space: nowrap;
 }
 .btn-primary {
   background: var(--accent);
-  color: #0a0805;
+  color: #ffffff;
   border-color: var(--accent);
   font-weight: 700;
+  box-shadow: 0 1px 2px rgba(4, 120, 87, 0.20);
 }
-.btn-primary:hover { background: var(--accent-light); transform: translateY(-1px); }
+.btn-primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); transform: translateY(-1px); }
 .btn-secondary {
   background: var(--bg-card);
   color: var(--text);
-  border-color: var(--border);
+  border-color: var(--border-strong);
 }
-.btn-secondary:hover { background: var(--bg-card-hover); border-color: var(--border-strong); }
+.btn-secondary:hover { background: var(--bg-card-hover); border-color: var(--border-strong); transform: translateY(-1px); }
 .btn-ghost { background: transparent; color: var(--text-secondary); }
-.btn-ghost:hover { background: var(--bg-elev); color: var(--text); }
+.btn-ghost:hover { background: var(--bg-elev); color: var(--text); transform: translateY(-1px); }
 
 /* Controls */
 input[type="text"], select {
-  background: var(--bg-elev); border: 1px solid var(--border); color: var(--text);
-  border-radius: 4px; padding: .5rem .75rem;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  border-radius: 8px;
+  padding: .5rem .75rem;
 }
+input[type="text"]::placeholder { color: var(--text-muted); }
 input[type="text"]:focus, select:focus {
-  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-border);
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-border);
 }
 input[type="range"] { accent-color: var(--accent); }
 
-/* Data table — retro tabular */
+/* Data table */
 table { border-collapse: collapse; }
 thead th {
-  font-weight: 700; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase;
+  font-weight: 700; font-size: .6875rem; letter-spacing: .06em; text-transform: uppercase;
   color: var(--text-muted); background: var(--bg-elev);
   border-bottom: 1px solid var(--border);
 }
@@ -166,41 +174,45 @@ tbody tr { border-bottom: 1px solid var(--border); }
 tbody tr:hover { background: var(--bg-card-hover); }
 tbody td { font-feature-settings: "tnum"; }
 
-/* Badges — phosphor/amber family, linkable flags remain prominent */
+/* Badges — light chips with readable text */
 .badge {
   display: inline-flex; align-items: center; padding: 1px 7px;
   font-size: .625rem; font-weight: 700; letter-spacing: .03em;
-  border-radius: 3px; border: 1px solid;
+  border-radius: 4px; border: 1px solid;
+  background: var(--bg-elev); color: var(--text-secondary); border-color: var(--border);
 }
-.badge-open { background: rgba(201,179,107,.18); color:#d4c58a; border-color:rgba(201,179,107,.4); }
-.badge-closed { background: rgba(196,107,107,.18); color:#d99a9a; border-color:rgba(196,107,107,.4); }
-.badge-cn { background: rgba(232,159,74,.18); color:#f0c28a; border-color:rgba(232,159,74,.4); }
-.badge-us { background: rgba(92,154,181,.18); color:#a8c8d9; border-color:rgba(92,154,181,.4); }
-.badge-eu { background: rgba(143,122,181,.18); color:#c5b8d9; border-color:rgba(143,122,181,.4); }
+.badge-open { background: rgba(5,150,105,.10); color:#047857; border-color:rgba(5,150,105,.30); }
+.badge-closed { background: rgba(100,116,139,.12); color:#475569; border-color:rgba(100,116,139,.30); }
+.badge-cn { background: rgba(232,116,59,.12); color:#c2410c; border-color:rgba(232,116,59,.30); }
+.badge-us { background: rgba(59,130,246,.12); color:#1d4ed8; border-color:rgba(59,130,246,.30); }
+.badge-eu { background: rgba(139,92,246,.12); color:#6d28d9; border-color:rgba(139,92,246,.30); }
 
-/* Tier / flag badges for precision (6F) — always visible */
-.badge-tier-measured { background: rgba(201,179,107,.18); color:#d4c58a; border-color:rgba(201,179,107,.35); }
-.badge-tier-fallback { background: rgba(130,122,104,.22); color:#a89f8b; border-color:rgba(130,122,104,.4); }
+/* Tier / precision badges */
+.badge-tier-measured { background: rgba(5,150,105,.10); color:#047857; border-color:rgba(5,150,105,.30); }
+.badge-tier-fallback { background: rgba(100,116,139,.12); color:#475569; border-color:rgba(100,116,139,.30); }
 
 /* Impact / range sliders */
-input[type="range"].impact-slider { height: 6px; background: #1f1a13; border-radius: 999px; }
+input[type="range"].impact-slider { height: 6px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 999px; }
 input[type="range"].impact-slider::-webkit-slider-thumb {
   appearance: none; width: 16px; height: 16px; background: var(--accent);
-  border-radius: 999px; border: 3px solid #0a0805; box-shadow: 0 1px 6px rgba(255,191,0,.45); cursor: pointer;
+  border-radius: 999px; border: 3px solid #ffffff; box-shadow: 0 1px 4px rgba(16,24,40,.25); cursor: pointer;
 }
 input[type="range"].impact-slider::-moz-range-thumb {
   width: 16px; height: 16px; background: var(--accent); border-radius: 999px;
-  border: 3px solid #0a0805; box-shadow: 0 1px 6px rgba(255,191,0,.45); cursor: pointer;
+  border: 3px solid #ffffff; box-shadow: 0 1px 4px rgba(16,24,40,.25); cursor: pointer;
 }
 
-/* Skeletons */
+/* Skeletons (light shimmer), staggered via :nth-child */
 .skeleton {
-  background: linear-gradient(90deg, #2a241b 25%, #383023 50%, #2a241b 75%);
-  background-size: 200% 100%; animation: shimmer 1.35s infinite linear; border-radius: 4px;
+  background: linear-gradient(90deg, #eef0f3 25%, #f6f7f9 50%, #eef0f3 75%);
+  background-size: 200% 100%; animation: shimmer 1.35s infinite linear; border-radius: 8px;
 }
+.skeleton:nth-child(2) { animation-delay: .1s; }
+.skeleton:nth-child(3) { animation-delay: .2s; }
+.skeleton:nth-child(4) { animation-delay: .3s; }
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-/* Misc retro */
+/* Misc */
 .info-tip { cursor: help; border-bottom: 1px dotted var(--text-muted); }
 
 /* Focus — always visible */
@@ -209,42 +221,34 @@ input[type="range"].impact-slider::-moz-range-thumb {
   outline-offset: 2px;
 }
 
-/* Reduced motion: disable any CRT/scanline/flicker */
+/* Skip-to-content link (a11y) — visible only on focus */
+.skip-link {
+  position: absolute; left: 1rem; top: -3rem; z-index: 100;
+  background: var(--accent); color: #fff; padding: .5rem 1rem; border-radius: 8px;
+  font-size: .875rem; font-weight: 600; transition: top var(--motion-fast);
+}
+.skip-link:focus { top: 1rem; }
+
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .scanline, .crt, .flicker { animation: none !important; }
   .card, .btn { transition: none; }
+  .skeleton { animation: none; }
 }
 
-/* Optional very-low scanline texture (only when motion allowed) */
-@media (prefers-reduced-motion: no-preference) {
-  .instrument::after {
-    content: '';
-    position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
-    background: repeating-linear-gradient(
-      transparent,
-      transparent 3px,
-      rgba(255,191,0,0.035) 3px,
-      rgba(255,191,0,0.035) 4px
-    );
-    mix-blend-mode: screen;
-    opacity: 0.6;
-  }
-}
-
-/* Responsive instrument reflow */
+/* Responsive reflow */
 @media (max-width: 768px) {
-  .card { border-radius: 5px; }
+  .card { border-radius: 10px; }
   .btn { padding: .65rem .9rem; font-size: .8125rem; }
   .kpi-grid { grid-template-columns: 1fr 1fr; }
 }
 
-/* Staleness indicator (L1, prominent) */
+/* Staleness indicator */
 .staleness {
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.5px;
   padding: 1px 8px;
-  border-radius: 3px;
+  border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--bg-elev);
   color: var(--text-muted);
