@@ -16,7 +16,7 @@ import { HistoryViewer } from './components/HistoryViewer';
 import { OriginDonut } from './components/OriginDonut';
 import { ModelDetailModal } from './components/ModelDetailModal';
 import { shiftedCo2Kg } from './lib/scenario';
-import { formatCO2Range, formatWaterRange } from './lib/format';
+import { formatCO2Range, formatWaterRange, setDisplayLocale } from './lib/format';
 import { Zap } from 'lucide-react';
 
 const isSampleData = (models: Model[]) =>
@@ -83,6 +83,8 @@ function App() {
   }, []);
 
   const tt = useI18n(lang);
+  // Numbers follow the selected language's locale; set before children render.
+  setDisplayLocale(lang);
 
   // Compute simulated (scenario) data
   const simulatedData = useMemo(() => {
@@ -136,13 +138,13 @@ function App() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] selection:bg-[var(--accent-bg)]">
       <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/95 backdrop-blur">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3 text-sm">
-          <div className="flex items-center gap-3">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 min-h-14 py-2.5 sm:py-0 sm:h-14 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-sm">
+          <div className="flex items-center gap-3 shrink-0">
             <div className="font-black tracking-[-0.5px] text-lg">LLM Carbon Index</div>
             {data && <div className="text-[10px] px-2 py-px rounded bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)] font-bold tracking-widest">v{data.methodology_version}</div>}
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
             <select 
               value={lang} 
               onChange={(e) => setLang(e.target.value as Lang)}
@@ -239,7 +241,7 @@ function App() {
 
           {/* v0.2 lifecycle + water strip — operational vs embodied vs total + water */}
           {totals?.co2_kg_total && totals?.co2_kg_embodied && (
-            <div className="mt-5 rounded-2xl border border-[var(--border)] bg-black/30 p-5">
+            <div className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5">
               <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--accent)]/80 mb-3">{tt.lcaTitle}</div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div>
@@ -270,7 +272,6 @@ function App() {
         {simulatedData && (
           <div className="mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
             <ScopeDisclaimerBanner
-              scopeNote={simulatedData.scope_note}
               sourceCitation={simulatedData.source_citation}
               unmappedTrafficFraction={data?.totals?.unmapped_traffic_fraction}
               unmappedSlugs={data?.totals?.unmapped_slugs}
@@ -357,7 +358,7 @@ function App() {
 
             {/* For researchers & ESG reporting — slim thesis / CSRD block */}
             {data && (
-              <section className="card p-6 sm:p-7 bg-gradient-to-br from-[#0c0a07] to-[#080704] border-[var(--accent-border)]">
+              <section className="card p-6 sm:p-7 bg-gradient-to-br from-[var(--accent-bg)] to-transparent border-[var(--accent-border)]">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
                   <div className="max-w-2xl">
                     <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[var(--accent-bg)] text-[var(--accent)] text-[11px] font-bold uppercase tracking-wider mb-3 border border-[var(--accent-border)]">

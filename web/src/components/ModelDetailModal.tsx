@@ -80,7 +80,7 @@ export const ModelDetailModal: React.FC<Props & {lang?: Lang}> = ({ model, onClo
                 <span key={f} className="badge">{f}</span>
               ))}
             </div>
-            <p className="text-[11px] text-[var(--text-muted)] mt-2">FALLBACK flags indicate conservative parameter-class or annual grid assumptions. See methodology for full sensitivity.</p>
+            <p className="text-[11px] text-[var(--text-muted)] mt-2">{tt.modalFallbackNote}</p>
           </div>
         )}
 

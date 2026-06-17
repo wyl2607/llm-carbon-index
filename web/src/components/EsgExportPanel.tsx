@@ -7,7 +7,6 @@ import {
   buildEsgExport,
   downloadEsgJson,
   downloadEsgCsv,
-  SCOPE_CAVEAT,
 } from '../lib/esgExport';
 
 interface Props {
@@ -52,7 +51,7 @@ export const EsgExportPanel: React.FC<Props> = ({ data, lang = 'en' }) => {
       </div>
 
       <p className="text-[var(--text-secondary)] leading-snug mb-2">
-        {SCOPE_CAVEAT}
+        {tt.scopeMain}
       </p>
       <p className="text-[11px] text-[var(--text-muted)] mb-3">
         {tt.esgCaveatNote}

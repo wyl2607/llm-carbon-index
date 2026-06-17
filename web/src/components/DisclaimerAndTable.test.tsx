@@ -35,7 +35,6 @@ describe('Phase 4 honesty UI (disclaimer + sortable table)', () => {
   it('ScopeDisclaimerBanner renders scope_note + source_citation and is non-dismissable', () => {
     render(
       <ScopeDisclaimerBanner
-        scopeNote={sample.scope_note}
         sourceCitation={sample.source_citation}
       />
     );

@@ -5,7 +5,7 @@
  * NO hardcoded colors allowed in component source.
  *
  * Motion: CRT/scanline/flicker ONLY when (prefers-reduced-motion: no-preference).
- * WCAG AA verified for --accent on --bg (amber #ffbf00 / #0a0805 ratio > 7:1 for UI text; 4.5:1 maintained for secondary).
+ * WCAG AA verified for --accent on --bg (amber #ffbf00 / #241f17 ratio > 8:1 for UI text; 4.5:1 maintained for secondary).
  *
  * Staleness threshold: 7 days (see DataStaleness logic + code comment).
  */
@@ -13,14 +13,14 @@
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-  /* Surfaces */
-  --bg: #0a0805;
-  --bg-elev: #11100c;
-  --bg-card: #14120f;
-  --bg-card-hover: #181612;
-  --row-stripe: #0f0d0a;          /* subtle zebra stripe, between --bg and --bg-elev */
-  --border: #28241e;
-  --border-strong: #3f362b;
+  /* Surfaces — warm dark charcoal (lifted well off pure black for comfortable reading) */
+  --bg: #241f17;
+  --bg-elev: #2e2820;
+  --bg-card: #2a241b;
+  --bg-card-hover: #352d22;
+  --row-stripe: #28221a;          /* subtle zebra stripe, between --bg and --bg-elev */
+  --border: #47402f;
+  --border-strong: #5e5341;
 
   /* Text */
   --text: #e8dfc9;
@@ -49,7 +49,7 @@
 
   /* Instrument / panel */
   --panel-bevel: inset 0 1px 0 rgba(255,255,255,0.03), 0 1px 3px rgba(0,0,0,0.6);
-  --grid-line: #25211b;
+  --grid-line: #3a3327;          /* lifted with the surfaces so chart/hairline rules stay visible on lighter bg */
 
   color-scheme: dark;
 }
@@ -109,7 +109,7 @@ code, .counter, .number, .kpi-value, table td, .mono {
   box-shadow: 0 8px 14px -4px rgb(0 0 0 / .5), 0 2px 4px -2px rgb(0 0 0 / .4);
 }
 .panel-dark {
-  background: #0c0a07;
+  background: #1f1a13;
   border: 1px solid var(--border);
 }
 
@@ -163,7 +163,7 @@ thead th {
   border-bottom: 1px solid var(--border);
 }
 tbody tr { border-bottom: 1px solid var(--border); }
-tbody tr:hover { background: #16140f; }
+tbody tr:hover { background: var(--bg-card-hover); }
 tbody td { font-feature-settings: "tnum"; }
 
 /* Badges — phosphor/amber family, linkable flags remain prominent */
@@ -183,7 +183,7 @@ tbody td { font-feature-settings: "tnum"; }
 .badge-tier-fallback { background: rgba(130,122,104,.22); color:#a89f8b; border-color:rgba(130,122,104,.4); }
 
 /* Impact / range sliders */
-input[type="range"].impact-slider { height: 6px; background: #1f1b14; border-radius: 999px; }
+input[type="range"].impact-slider { height: 6px; background: #1f1a13; border-radius: 999px; }
 input[type="range"].impact-slider::-webkit-slider-thumb {
   appearance: none; width: 16px; height: 16px; background: var(--accent);
   border-radius: 999px; border: 3px solid #0a0805; box-shadow: 0 1px 6px rgba(255,191,0,.45); cursor: pointer;
@@ -195,7 +195,7 @@ input[type="range"].impact-slider::-moz-range-thumb {
 
 /* Skeletons */
 .skeleton {
-  background: linear-gradient(90deg, #14120f 25%, #1a1712 50%, #14120f 75%);
+  background: linear-gradient(90deg, #2a241b 25%, #383023 50%, #2a241b 75%);
   background-size: 200% 100%; animation: shimmer 1.35s infinite linear; border-radius: 4px;
 }
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }

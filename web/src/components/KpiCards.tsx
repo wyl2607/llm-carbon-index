@@ -29,12 +29,12 @@ interface KPICardProps {
 // Module-scope component (not defined during render) so React can keep its identity stable.
 const KPICard: React.FC<KPICardProps> = ({ title, sub, midValue, low, high, unit, icon: Icon, highlight = false, rangeLabel }) => (
   <div className={`relative overflow-hidden rounded-2xl border ${highlight ? 'border-[var(--accent-border)]' : 'border-[var(--border)]'} bg-[var(--bg-elev)]/60 p-6 backdrop-blur-md shadow-2xl transition-all hover:border-[var(--accent-border)] group`}>
-    <div className={`flex items-center justify-between text-xs font-bold uppercase tracking-widest ${highlight ? 'text-[var(--accent)]' : 'text-[var(--text-muted)]'}`}>
-      <div className="flex items-center gap-2">
-        <Icon className={`w-4 h-4 ${highlight ? 'text-[var(--accent)]' : 'text-[var(--accent)]/60 group-hover:text-[var(--accent)]'} transition-colors`} />
-        {title}
+    <div className={`flex items-start justify-between gap-2 text-xs font-bold uppercase tracking-widest ${highlight ? 'text-[var(--accent)]' : 'text-[var(--text-muted)]'}`}>
+      <div className="flex items-center gap-2 min-w-0">
+        <Icon className={`w-4 h-4 shrink-0 ${highlight ? 'text-[var(--accent)]' : 'text-[var(--accent)]/60 group-hover:text-[var(--accent)]'} transition-colors`} />
+        <span className="min-w-0 break-words">{title}</span>
       </div>
-      {highlight && <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)] font-black">SCENARIO</span>}
+      {highlight && <span className="shrink-0 whitespace-nowrap text-[10px] px-2 py-0.5 rounded-full bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)] font-black">SCENARIO</span>}
     </div>
     <div className="mt-4 flex items-baseline gap-2">
       <span className={`text-4xl sm:text-5xl font-black tracking-tight tabular-nums ${highlight ? 'text-[var(--accent)]' : 'text-[var(--text)]'}`}>
@@ -120,8 +120,8 @@ export const KpiCards: React.FC<Props> = ({ totals, shift = 0, lang, modeledFrac
       />
 
       <KPICard
-        title="Substitution Potential"
-        sub="Maximum daily emissions movable to low-carbon regions."
+        title={tt.kpiPotential}
+        sub={tt.kpiPotentialSub}
         midValue={animatedPotential}
         unit="%"
         icon={TrendingDown}

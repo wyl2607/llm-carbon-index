@@ -295,7 +295,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
               <th className="px-3 py-3 w-8" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+          <tbody className="divide-y divide-[var(--border)]">
             {(() => {
               const nodes: React.ReactNode[] = [];
               let prevT: number | null = null;

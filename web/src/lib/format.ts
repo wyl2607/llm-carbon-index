@@ -8,14 +8,26 @@ import type { Range } from '../types';
  * - Surface modeled_traffic_fraction.
  */
 
-// Single display locale for ALL numbers on the site. Pinned (not browser-derived)
-// so KPIs, ranges, the table, and equivalents never mix thousands/decimal styles.
-// de-DE chosen for the primary German/EU ESG audience (1.234,5).
-export const DISPLAY_LOCALE = 'de-DE';
+// Display locale follows the selected UI language so separators read naturally for
+// each audience (en/zh: 1,234.5 ; de: 1.234,5 for the German/EU ESG audience).
+// Pinned per-language (not browser-derived) so every number on the page — KPIs,
+// ranges, the table, equivalents — uses one consistent thousands/decimal style.
+const LOCALE_BY_LANG: Record<string, string> = {
+  en: 'en-US',
+  zh: 'zh-CN',
+  de: 'de-DE',
+};
 
-/** Format a number in the pinned display locale. */
+let displayLocale = LOCALE_BY_LANG.en;
+
+/** Set the active display locale from the UI language. App calls this once per render. */
+export function setDisplayLocale(lang: string): void {
+  displayLocale = LOCALE_BY_LANG[lang] ?? LOCALE_BY_LANG.en;
+}
+
+/** Format a number in the active display locale. */
 export function nf(value: number, opts?: Intl.NumberFormatOptions): string {
-  return value.toLocaleString(DISPLAY_LOCALE, opts);
+  return value.toLocaleString(displayLocale, opts);
 }
 
 export function formatTokens(n: number): string {
