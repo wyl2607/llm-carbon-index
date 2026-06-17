@@ -45,6 +45,8 @@ function App() {
   const [showAllModels, setShowAllModels] = useState(false);
 
   const [inspectModel, setInspectModel] = useState<Model | null>(null);
+  // Page-load timestamp for the staleness indicator — captured once so render stays pure.
+  const [nowMs] = useState(() => Date.now());
 
   // Persist key state to URL
   useEffect(() => {
@@ -64,7 +66,7 @@ function App() {
       fetch(`${import.meta.env.BASE_URL}data/latest.json`).then(res => res.json()),
       fetch(`${import.meta.env.BASE_URL}data/timeseries.json`).then(res => res.json()),
       fetch(`${import.meta.env.BASE_URL}data/sensitivity.json`).then(res => res.ok ? res.json() : null)
-    ]).then(([latestJson, _historyJson, sensJson]) => {
+    ]).then(([latestJson, , sensJson]) => {
       if (!cancelled) {
         setData(latestJson);
         setSensData(sensJson);
@@ -173,7 +175,7 @@ function App() {
                     Prominent, never buried. Localized keys have parity. */}
                 {data?.data_date && (() => {
                   const d = new Date(data.data_date + 'T00:00:00Z');
-                  const ageDays = isNaN(d.getTime()) ? 0 : Math.floor((Date.now() - d.getTime()) / 86400000);
+                  const ageDays = isNaN(d.getTime()) ? 0 : Math.floor((nowMs - d.getTime()) / 86400000);
                   const isStale = ageDays > 7; // N=7 threshold per spec requirement
                   const label = tt.stalenessNote ? tt.stalenessNote(data.data_date) : `data as of ${data.data_date}`;
                   return (
