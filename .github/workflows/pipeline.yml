@@ -88,7 +88,10 @@ jobs:
           if [ -n "$EXISTING" ]; then
             gh issue comment "$EXISTING" --body "$BODY" || true
           else
-            gh issue create --title "$TITLE" --body "$BODY" --label "pipeline,automation" || true
+            # No --label: custom labels may not exist in the repo, and `gh issue create`
+            # fails outright on an unknown label, which (with `|| true`) would silently
+            # create NO issue and defeat L1. Title-based dedup above is sufficient.
+            gh issue create --title "$TITLE" --body "$BODY" || true
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
