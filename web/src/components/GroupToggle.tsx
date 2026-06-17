@@ -21,10 +21,10 @@ export const GroupToggle: React.FC<Props> = ({ groupBy, onChange, lang }) => {
       type="button"
       onClick={() => onChange(val)}
       aria-pressed={groupBy === val}
-      className={`px-3 py-1 text-xs font-semibold transition border-r border-[#242924] last:border-r-0 ${
+      className={`px-3 py-1 text-xs font-semibold transition border-r border-[var(--border)] last:border-r-0 ${
         groupBy === val
-          ? 'bg-emerald-600 text-black'
-          : 'bg-[#0a0c0a] hover:bg-[#1a1e1a] text-[#a1a6a1]'
+          ? 'bg-[var(--accent)] text-[var(--bg)]'
+          : 'bg-[var(--bg)] hover:bg-[var(--bg-card)] text-[var(--text-secondary)]'
       }`}
     >
       {label}
@@ -33,8 +33,8 @@ export const GroupToggle: React.FC<Props> = ({ groupBy, onChange, lang }) => {
 
   return (
     <div className="flex items-center gap-2 text-xs">
-      <span className="font-medium text-[#9ba19b] pr-1">{/* Colour by */}{tt.groupLabel}</span>
-      <div className="inline-flex rounded-md overflow-hidden border border-[#242924]">
+      <span className="font-medium text-[var(--text-muted)] pr-1">{/* Colour by */}{tt.groupLabel}</span>
+      <div className="inline-flex rounded-md overflow-hidden border border-[var(--border)]">
         {btn('open_or_closed', tt.groupOpenClosed)}
         {btn('origin', tt.groupOrigin)}
       </div>

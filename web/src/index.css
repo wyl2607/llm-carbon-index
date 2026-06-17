@@ -1,140 +1,42 @@
+/* Import retro-futurist phosphor tokens (amber on near-black) — phase 6L (must precede other statements) */
+@import './theme/tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Legacy var aliases (map old names for any stray usage during transition; prefer --accent etc) */
 :root {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-
-  /* Dark premium ESG base */
-  --bg: #0a0c0a;
-  --bg-elev: #111411;
-  --bg-card: #121512;
-  --bg-card-hover: #161916;
-  --border: #242924;
-  --border-strong: #2f352f;
-  --text: #e4e7e4;
-  --text-secondary: #a1a6a1;
-  --text-muted: #969c96;
-  --accent: #10b981;
-  --accent-600: #059669;
-  --accent-light: #34d399;
-  --accent-bg: rgba(16, 185, 129, 0.12);
-  --accent-border: rgba(16, 185, 129, 0.35);
-  --warning: #f59e0b;
-  --warning-bg: rgba(245, 158, 11, 0.1);
-  --warning-border: rgba(245, 158, 11, 0.35);
-
-  color-scheme: dark;
+  --accent-600: var(--accent-dark);
+  --accent-light: var(--accent-light);
 }
 
-/* Premium dark ESG dashboard styles */
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: 15px;
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+/* Base body + retro typography already provided by tokens.css (imported above).
+   Keep only overrides / additions here for minimal diff. */
 
-h1, h2, h3, h4 {
-  font-family: var(--font-sans);
-  letter-spacing: -0.015em;
-  font-feature-settings: "tnum";
-}
-h1 { font-size: 2.65rem; font-weight: 800; line-height: 1.05; }
-h2 { font-size: 1.45rem; font-weight: 700; line-height: 1.15; }
-h3 { font-size: 1.05rem; font-weight: 600; }
-@media (max-width: 768px) {
-  h1 { font-size: 1.95rem; }
-  h2 { font-size: 1.2rem; }
-}
+/* Retro instrument-panel tweaks + semantic helpers (no color hardcodes) */
+.card { border-radius: 6px; }
+.panel { border-radius: 4px; }
 
-p { margin: 0; }
+/* Table hover uses token */
+tbody tr:hover { background: #16140f; }
 
-code, .counter, .number, .kpi-value, table td {
-  font-family: var(--font-mono);
-  font-feature-settings: "tnum";
-  font-variant-numeric: tabular-nums;
-}
-
-/* Card / Panel system for premium dashboard */
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  transition: transform .18s cubic-bezier(.2,0,0,1), box-shadow .18s cubic-bezier(.2,0,0,1), border-color .18s;
-}
-.card:hover { 
-  border-color: var(--border-strong);
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / .35), 0 4px 6px -4px rgb(0 0 0 / .3);
-}
-.panel-dark {
-  background: #0c0f0c;
-  border: 1px solid var(--border);
-}
-
-/* Professional buttons */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-  font-weight: 600; font-size: .875rem; padding: .625rem 1.25rem;
-  border-radius: 12px; border: 1px solid transparent; transition: all .15s cubic-bezier(.2,0,0,1);
-  white-space: nowrap;
-}
-.btn-primary { background: var(--accent); color: #0a0c0a; border-color: var(--accent); }
-.btn-primary:hover { background: var(--accent-light); transform: translateY(-1px); }
-.btn-secondary { background: var(--bg-card); color: var(--text); border-color: var(--border); }
-.btn-secondary:hover { background: var(--bg-card-hover); border-color: var(--border-strong); }
-.btn-ghost { background: transparent; color: var(--text-secondary); }
-.btn-ghost:hover { background: var(--bg-elev); color: var(--text); }
-
-/* Controls */
-input[type="text"], select {
-  background: var(--bg-elev); border: 1px solid var(--border); color: var(--text);
-  border-radius: 10px; padding: .5rem .75rem;
-}
-input[type="text"]:focus, select:focus { 
-  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(16,185,129,.15); 
-}
+/* Ensure range uses token accent (tokens.css provides base) */
 input[type="range"] { accent-color: var(--accent); }
 
-/* Data table */
-thead th {
-  font-weight: 700; font-size: .6875rem; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--text-muted); background: var(--bg-elev);
-}
-tbody tr:hover { background: #151815; }
-
-/* Badges */
-.badge { display: inline-flex; align-items: center; padding: 1px 8px; font-size: .6875rem; font-weight: 700; letter-spacing: .025em; border-radius: 5px; border: 1px solid; }
-.badge-open { background: rgba(16,185,129,.12); color:#4ade80; border-color:rgba(16,185,129,.3); }
-.badge-closed { background: rgba(244,63,94,.12); color:#fb7185; border-color:rgba(244,63,94,.3); }
-.badge-cn { background: rgba(249,115,22,.12); color:#fb923c; border-color:rgba(249,115,22,.3); }
-.badge-us { background: rgba(59,130,246,.12); color:#60a5fa; border-color:rgba(59,130,246,.3); }
-.badge-eu { background: rgba(139,92,246,.12); color:#a78bfa; border-color:rgba(139,92,246,.3); }
-
-/* Custom impact slider */
-input[type="range"].impact-slider { height: 7px; background: #1f2420; border-radius: 999px; }
-input[type="range"].impact-slider::-webkit-slider-thumb {
-  appearance: none; width: 18px; height: 18px; background: var(--accent); border-radius: 999px;
-  border: 3px solid #0a0c0a; box-shadow: 0 2px 8px rgb(16 185 129 / .4); cursor: pointer;
-}
-
-/* Loading skeletons */
+/* Loading skeleton tuned to new palette */
 .skeleton {
-  background: linear-gradient(90deg, #121512 25%, #1a1d18 50%, #121512 75%);
-  background-size: 200% 100%; animation: shimmer 1.4s infinite linear; border-radius: 8px;
+  background: linear-gradient(90deg, #14120f 25%, #1a1712 50%, #14120f 75%);
+  background-size: 200% 100%; animation: shimmer 1.35s infinite linear; border-radius: 4px;
 }
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
 /* Misc */
 .info-tip { cursor: help; border-bottom: 1px dotted var(--text-muted); }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-@media (max-width: 768px) {
-  .card { border-radius: 14px; }
-  .btn { padding: .7rem 1rem; font-size: .8125rem; }
+/* App root selection + safe defaults (no hard emerald) */
+.selection-bg {
+  background: var(--accent-bg);
 }
+
+/* Mobile reflow for instrument panels already in tokens.css */

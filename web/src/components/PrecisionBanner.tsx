@@ -27,15 +27,15 @@ export const PrecisionBanner: React.FC<Props> = ({ precision, lang = 'en' }) => 
     <div
       role="note"
       aria-label="Estimation precision note"
-      className="card p-4 text-sm border-sky-900/40 bg-[#0b1014]"
+      className="card p-4 text-sm border-[var(--border)] bg-[var(--bg-elev)]"
     >
-      <div className="uppercase tracking-[1px] text-sky-400 text-xs font-bold flex items-center gap-2 mb-1.5">
+      <div className="uppercase tracking-[1px] text-[var(--text-secondary)] text-xs font-bold flex items-center gap-2 mb-1.5 label-sm">
         <span>◷</span> {tt.precisionTitle}
       </div>
-      <p className="text-[#c7c9c3] leading-snug font-medium">
+      <p className="text-[var(--text-secondary)] leading-snug font-medium">
         {tt.precisionHeadline(energyPct, gridPct)}
       </p>
-      <p className="text-[12px] text-sky-300/80 mt-1.5 border-l-2 border-sky-800/60 pl-2.5">
+      <p className="text-[12px] text-[var(--text-muted)] mt-1.5 border-l-2 border-[var(--border-strong)] pl-2.5">
         {allFallback
           ? tt.precisionAllFallback
           : tt.precisionDetail(

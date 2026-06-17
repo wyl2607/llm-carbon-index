@@ -14,6 +14,7 @@ import type { Model } from '../types';
 import type { GroupBy } from './GroupToggle';
 import type { Lang } from '../lib/i18n';
 import { useI18n } from '../lib/i18n';
+import { tokens } from '../theme/tokens';
 
 interface Props {
   models: Model[];
@@ -27,16 +28,16 @@ const CustomTooltip = ({ active, payload, co2Label }: { active?: boolean; payloa
   if (!active || !payload || !payload.length) return null;
   const p = payload[0].payload;
   return (
-    <div className="bg-[#121512] border border-[#242924] p-3 rounded-lg shadow-lg text-sm text-[#e4e7e4]">
-      <div className="font-semibold text-white mb-1">{p.full}</div>
+    <div className="bg-[var(--bg-card)] border border-[var(--border)] p-3 rounded-lg shadow-lg text-sm text-[var(--text)]">
+      <div className="font-semibold text-[var(--text)] mb-1">{p.full}</div>
       <div className="mb-1">
         <span className="font-medium">{co2Label}</span> {p.co2.toLocaleString()} kg
       </div>
-      <div className="text-xs text-[#a1a6a1] mt-2">
-        <span className="inline-block px-1.5 py-0.5 bg-[#1a1f1a] rounded mr-1 border border-[#242924]">
+      <div className="text-xs text-[var(--text-secondary)] mt-2">
+        <span className="inline-block px-1.5 py-0.5 bg-[var(--bg-elev)] rounded mr-1 border border-[var(--border)]">
           {p.open_or_closed}
         </span>
-        <span className="inline-block px-1.5 py-0.5 bg-[#1a1f1a] rounded border border-[#242924]">
+        <span className="inline-block px-1.5 py-0.5 bg-[var(--bg-elev)] rounded border border-[var(--border)]">
           {p.origin}
         </span>
       </div>
@@ -89,19 +90,20 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false,
   }
 
   const getColor = (d: (typeof chartData)[number]) => {
+    // Colors sourced from theme/tokens.ts (amber-phosphor retro palette). No hardcodes in component.
     if (groupBy === 'open_or_closed') {
-      return d.open_or_closed === 'open' ? '#10b981' : '#f43f5e'; // tailwind emerald-500, rose-500
+      return d.open_or_closed === 'open' ? tokens.colors.open : tokens.colors.closed;
     }
     // origin
     switch (d.origin) {
       case 'CN':
-        return '#f97316'; // orange-500
+        return tokens.colors.cn;
       case 'US':
-        return '#3b82f6'; // blue-500
+        return tokens.colors.us;
       case 'EU':
-        return '#8b5cf6'; // violet-500
+        return tokens.colors.eu;
       default:
-        return '#64748b'; // slate-500
+        return tokens.colors.other;
     }
   };
 
@@ -113,7 +115,7 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false,
         {onToggleShowAll && (
           <button
             onClick={onToggleShowAll}
-            className="text-xs px-3 py-1 rounded-lg border border-[#242924] hover:bg-[#1a1e1a] text-[#a1a6a1]"
+            className="text-xs px-3 py-1 rounded-lg border border-[var(--border)] hover:bg-[var(--bg-elev)] text-[var(--text-secondary)]"
           >
             {showAll ? tt.showTop15 : tt.showAll(models.length)}
           </button>
@@ -122,31 +124,32 @@ export const Co2BarChart: React.FC<Props> = ({ models, groupBy, showAll = false,
 
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} margin={{ top: 8, right: 12, bottom: 48, left: 4 }}>
-          <CartesianGrid strokeDasharray="2 2" stroke="#242924" vertical={false} />
+          <CartesianGrid strokeDasharray="2 2" stroke="var(--grid-line)" vertical={false} />
           <XAxis
             dataKey="name"
             angle={-28}
             textAnchor="end"
             height={52}
             interval={0}
-            tick={{ fontSize: 10, fill: '#969c96' }}
-            tickLine={{ stroke: '#242924' }}
-            axisLine={{ stroke: '#242924' }}
+            tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+            tickLine={{ stroke: 'var(--border)' }}
+            axisLine={{ stroke: 'var(--border)' }}
           />
           <YAxis
             tickFormatter={(v) => (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)}
-            tick={{ fontSize: 10, fill: '#969c96' }}
-            tickLine={{ stroke: '#242924' }}
-            axisLine={{ stroke: '#242924' }}
+            tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+            tickLine={{ stroke: 'var(--border)' }}
+            axisLine={{ stroke: 'var(--border)' }}
           />
-          <Tooltip content={<CustomTooltip co2Label={tt.tooltipCo2} />} cursor={{ fill: 'rgba(16,185,129,0.06)' }} />
+          <Tooltip content={<CustomTooltip co2Label={tt.tooltipCo2} />} cursor={{ fill: 'var(--accent-bg)' }} />
           <Bar dataKey="co2" radius={[2,2,0,0]}>
             {chartData.map((entry, index) => <Cell key={`cell-${index}`} fill={getColor(entry)} />)}
-            <ErrorBar dataKey="error" direction="y" strokeWidth={1} stroke="#334155" />
+            {/* Error bars MUST remain per spec (uncertainty ranges never collapsed) */}
+            <ErrorBar dataKey="error" direction="y" strokeWidth={1} stroke={tokens.colors.textMuted} />
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      <div className="text-[10px] text-[#9ba19b] mt-1 text-center">
+      <div className="text-[10px] text-[var(--text-muted)] mt-1 text-center">
         {tt.chartMidWhiskers}{groupPhrase}. {showAll ? tt.chartAllShown : tt.chartTopAggregated}
       </div>
     </div>
