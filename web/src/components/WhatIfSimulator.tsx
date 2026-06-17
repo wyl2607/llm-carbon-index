@@ -71,13 +71,13 @@ export const WhatIfSimulator: React.FC<Props> = ({
   const animatedReduction = useAnimatedNumber(reductionMid, 700);
 
   return (
-    <div className="my-8 card p-7 sm:p-9 text-[#e4e7e4] relative overflow-hidden border-emerald-900/40" style={{background: 'linear-gradient(145deg, #0c0f0c, #0a0d0a)'}}>
-      <div className="absolute top-5 right-5 px-3 py-1 rounded-full text-[10px] font-bold tracking-[1.5px] uppercase bg-emerald-950/60 text-emerald-400 border border-emerald-800/50 backdrop-blur z-20">
+    <div className="my-8 card p-7 sm:p-9 text-[var(--text)] relative overflow-hidden border-[var(--accent-border)]" style={{background: 'linear-gradient(145deg, #0c0a07, #0a0805)'}}>
+      <div className="absolute top-5 right-5 px-3 py-1 rounded-full text-[10px] font-bold tracking-[1.5px] uppercase bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)] backdrop-blur z-20">
         {accountingMethod.toUpperCase()}-BASED
       </div>
 
-      <div className="absolute -top-40 -right-40 w-[520px] h-[520px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute -bottom-40 -left-40 w-[420px] h-[420px] bg-teal-500/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute -top-40 -right-40 w-[520px] h-[520px] bg-[var(--accent-bg)] rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute -bottom-40 -left-40 w-[420px] h-[420px] bg-[var(--accent-bg)] rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative z-10">
         <div className="flex items-start gap-3 mb-3">
@@ -95,11 +95,11 @@ export const WhatIfSimulator: React.FC<Props> = ({
         <div className="mt-7 grid grid-cols-1 lg:grid-cols-5 gap-8">
           <div className="lg:col-span-3">
             <div className="flex justify-between items-baseline mb-2 px-1">
-              <label htmlFor="grid-shift" className="text-xs font-semibold tracking-widest text-emerald-300/80 uppercase">
+              <label htmlFor="grid-shift" className="text-xs font-semibold tracking-widest text-[var(--accent)]/80 uppercase">
                 {tt.shiftLabel}
               </label>
-              <span className="font-mono text-4xl font-black text-emerald-400 tabular-nums tracking-[-1.5px] drop-shadow-[0_0_12px_rgba(16,185,129,0.35)]">
-                {greenShiftPercent}<span className="text-2xl font-semibold text-emerald-400/60">%</span>
+              <span className="font-mono text-4xl font-black text-[var(--accent)] tabular-nums tracking-[-1.5px] drop-shadow-[0_0_12px_rgba(255,191,0,0.25)]">
+                {greenShiftPercent}<span className="text-2xl font-semibold text-[var(--accent)]/60">%</span>
               </span>
             </div>
 
@@ -111,14 +111,14 @@ export const WhatIfSimulator: React.FC<Props> = ({
               step="1"
               value={greenShiftPercent}
               onChange={(e) => setGreenShiftPercent(Number(e.target.value))}
-              className="impact-slider w-full accent-emerald-400 cursor-pointer"
+              className="impact-slider w-full accent-[var(--accent)] cursor-pointer"
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={greenShiftPercent}
               aria-label="Percentage of traffic shifted to clean grid"
             />
 
-            <div className="flex justify-between text-[10px] text-emerald-300/50 font-medium tracking-widest px-0.5 mt-1.5">
+            <div className="flex justify-between text-[10px] text-[var(--accent)]/50 font-medium tracking-widest px-0.5 mt-1.5">
               <div>0% — {tt.presetReality.split(' ')[0]}</div>
               <div>100% — MAX GREEN</div>
             </div>
@@ -130,8 +130,8 @@ export const WhatIfSimulator: React.FC<Props> = ({
                   onClick={() => setGreenShiftPercent(p.val)}
                   className={`btn text-xs py-1.5 px-4 transition-all active:scale-[0.985] ${
                     greenShiftPercent === p.val 
-                      ? 'btn-primary shadow-[0_0_0_1px_#052e16,0_0_18px_-2px_#10b981]' 
-                      : 'btn-secondary border-[#2a2f2a] hover:border-emerald-800/70'
+                      ? 'btn-primary' 
+                      : 'btn-secondary border-[var(--border)] hover:border-[var(--accent-border)]'
                   }`}
                   aria-pressed={greenShiftPercent === p.val}
                 >
@@ -141,21 +141,21 @@ export const WhatIfSimulator: React.FC<Props> = ({
             </div>
 
             {modeledFraction > 0 && (
-              <div className="mt-4 inline-flex items-center gap-2 text-xs bg-[#0f120f] border border-[#252a25] px-3 py-1.5 rounded-xl text-emerald-300/90">
-                <span className="inline-block w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+              <div className="mt-4 inline-flex items-center gap-2 text-xs bg-[var(--bg-elev)] border border-[var(--border)] px-3 py-1.5 rounded-xl text-[var(--accent)]/90">
+                <span className="inline-block w-1.5 h-1.5 bg-[var(--accent)] rounded-full animate-pulse" />
                 {tt.maxPotentialNote(maxPotential)}
               </div>
             )}
 
             {/* P6: regime + prompt-length sliders (dynamic batching / context) — local state, pure math from scenario.ts */}
-            <div className="mt-6 pt-4 border-t border-emerald-900/40">
-              <div className="text-xs font-semibold tracking-widest text-emerald-300/80 uppercase mb-1">{tt.regimeTitle}</div>
-              <div className="text-[11px] text-emerald-200/60 mb-3">{tt.regimeIntro}</div>
+            <div className="mt-6 pt-4 border-t border-[var(--accent-border)]">
+              <div className="text-xs font-semibold tracking-widest text-[var(--accent)]/80 uppercase mb-1">{tt.regimeTitle}</div>
+              <div className="text-[11px] text-[var(--text-secondary)] mb-3">{tt.regimeIntro}</div>
 
               <div className="mb-3">
                 <div className="flex justify-between items-baseline mb-1 px-1">
-                  <label className="text-xs font-semibold tracking-widest text-emerald-300/80 uppercase">{tt.regimePromptLabel}</label>
-                  <span className="font-mono text-sm text-emerald-400/90">{promptCls}</span>
+                  <label className="text-xs font-semibold tracking-widest text-[var(--accent)]/80 uppercase">{tt.regimePromptLabel}</label>
+                  <span className="font-mono text-sm text-[var(--accent)]/90">{promptCls}</span>
                 </div>
                 <input
                   type="range"
@@ -164,16 +164,16 @@ export const WhatIfSimulator: React.FC<Props> = ({
                   step={1}
                   value={promptSlider}
                   onChange={(e) => setPromptSlider(Number(e.target.value))}
-                  className="impact-slider w-full accent-emerald-400 cursor-pointer"
+                  className="impact-slider w-full accent-[var(--accent)] cursor-pointer"
                   aria-label="Prompt length regime slider (P6)"
                 />
-                <div className="flex justify-between text-[10px] text-emerald-300/50 px-0.5">{tt.regimePromptScale}</div>
+                <div className="flex justify-between text-[10px] text-[var(--accent)]/50 px-0.5">{tt.regimePromptScale}</div>
               </div>
 
               <div>
                 <div className="flex justify-between items-baseline mb-1 px-1">
-                  <label className="text-xs font-semibold tracking-widest text-emerald-300/80 uppercase">{tt.regimeBatchLabel}</label>
-                  <span className="font-mono text-sm text-emerald-400/90">{batchCls}</span>
+                  <label className="text-xs font-semibold tracking-widest text-[var(--accent)]/80 uppercase">{tt.regimeBatchLabel}</label>
+                  <span className="font-mono text-sm text-[var(--accent)]/90">{batchCls}</span>
                 </div>
                 <input
                   type="range"
@@ -182,38 +182,38 @@ export const WhatIfSimulator: React.FC<Props> = ({
                   step={1}
                   value={batchSlider}
                   onChange={(e) => setBatchSlider(Number(e.target.value))}
-                  className="impact-slider w-full accent-emerald-400 cursor-pointer"
+                  className="impact-slider w-full accent-[var(--accent)] cursor-pointer"
                   aria-label="Batch utilization regime slider (P6)"
                 />
-                <div className="flex justify-between text-[10px] text-emerald-300/50 px-0.5">{tt.regimeBatchScale}</div>
+                <div className="flex justify-between text-[10px] text-[var(--accent)]/50 px-0.5">{tt.regimeBatchScale}</div>
               </div>
 
-              <div className="mt-3 text-[11px] px-1 font-mono text-emerald-300/90">
-                {tt.regimeMultLabel} <span className="text-emerald-400 font-bold">{regimeMult.mid.toFixed(2)}×</span> (range {regimeMult.low.toFixed(2)}–{regimeMult.high.toFixed(2)})
-                <span className="ml-2 text-emerald-400/60">[{regimeLabel}]</span>
+              <div className="mt-3 text-[11px] px-1 font-mono text-[var(--accent)]/90">
+                {tt.regimeMultLabel} <span className="text-[var(--accent)] font-bold">{regimeMult.mid.toFixed(2)}×</span> (range {regimeMult.low.toFixed(2)}–{regimeMult.high.toFixed(2)})
+                <span className="ml-2 text-[var(--accent)]/60">[{regimeLabel}]</span>
               </div>
             </div>
           </div>
 
           <div className="lg:col-span-2 space-y-4">
-            <div className="rounded-2xl bg-[#0a0c0a] border border-emerald-900/50 p-6 text-center">
-              <div className="uppercase tracking-[2px] text-xs font-bold text-emerald-400/70 mb-2 flex items-center justify-center gap-2">
+            <div className="rounded-2xl bg-[var(--bg)] border border-[var(--accent-border)] p-6 text-center">
+              <div className="uppercase tracking-[2px] text-xs font-bold text-[var(--accent)]/70 mb-2 flex items-center justify-center gap-2">
                 <Leaf className="w-3.5 h-3.5" /> {tt.dailyAvoided}
               </div>
-              <div className="font-mono text-[56px] leading-none font-black text-emerald-400 tracking-[-3.5px] tabular-nums drop-shadow-[0_0_25px_rgba(16,185,129,.25)]">
+              <div className="font-mono text-[56px] leading-none font-black text-[var(--accent)] tracking-[-3.5px] tabular-nums drop-shadow-[0_0_25px_rgba(255,191,0,.2)]">
                 −{nf(animatedReduction)}
               </div>
-              <div className="text-emerald-400/70 text-sm font-medium mt-1">{tt.kgCO2}</div>
+              <div className="text-[var(--accent)]/70 text-sm font-medium mt-1">{tt.kgCO2}</div>
               {/* P6 regime effect note (illustrative; scales base energy hence absolute CO2 for fixed grid) */}
               {regimeEffectiveCo2 && (
-                <div className="mt-2 text-[10px] text-amber-300/80">
+                <div className="mt-2 text-[10px] text-[var(--warning)]/80">
                   {tt.regimeEffectNote(regimeMult.mid.toFixed(2), nf(regimeEffectiveCo2.mid))}
                 </div>
               )}
 
               {greenShiftPercent > 0 && (
                 <div className="mt-3 text-sm">
-                  <span className="px-3 py-px bg-emerald-500/10 text-emerald-300 border border-emerald-800/50 rounded-full text-xs font-bold">
+                  <span className="px-3 py-px bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)] rounded-full text-xs font-bold">
                     −{nf(parseFloat(reductionPercent) || 0, { maximumFractionDigits: 1 })}%
                   </span>
                 </div>
@@ -221,64 +221,64 @@ export const WhatIfSimulator: React.FC<Props> = ({
             </div>
 
             <div>
-              <div className="flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-emerald-300/70 mb-2 px-1">
+              <div className="flex items-center gap-2 text-xs uppercase tracking-widest font-semibold text-[var(--accent)]/70 mb-2 px-1">
                 {tt.equivTitle}
                 <span title={EQUIV_SOURCES} className="info-tip"><Info className="w-3.5 h-3.5" /></span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
-                <div className="rounded-xl border border-[#1f2420] bg-[#0c0f0c] px-3 py-2.5">
-                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{nf(equiv.cars)}</div>
-                  <div className="text-[12px] text-emerald-200/70 leading-tight mt-px">{tt.equivCars}</div>
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-elev)] px-3 py-2.5">
+                  <div className="font-mono text-2xl font-bold text-[var(--text)] tabular-nums">{nf(equiv.cars)}</div>
+                  <div className="text-[12px] text-[var(--text-secondary)] leading-tight mt-px">{tt.equivCars}</div>
                 </div>
-                <div className="rounded-xl border border-[#1f2420] bg-[#0c0f0c] px-3 py-2.5">
-                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{nf(equiv.flights)}</div>
-                  <div className="text-[12px] text-emerald-200/70 leading-tight mt-px">{tt.equivFlights}</div>
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-elev)] px-3 py-2.5">
+                  <div className="font-mono text-2xl font-bold text-[var(--text)] tabular-nums">{nf(equiv.flights)}</div>
+                  <div className="text-[12px] text-[var(--text-secondary)] leading-tight mt-px">{tt.equivFlights}</div>
                 </div>
-                <div className="rounded-xl border border-[#1f2420] bg-[#0c0f0c] px-3 py-2.5">
-                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{nf(equiv.trees)}</div>
-                  <div className="text-[12px] text-emerald-200/70 leading-tight mt-px">{tt.equivTrees}</div>
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-elev)] px-3 py-2.5">
+                  <div className="font-mono text-2xl font-bold text-[var(--text)] tabular-nums">{nf(equiv.trees)}</div>
+                  <div className="text-[12px] text-[var(--text-secondary)] leading-tight mt-px">{tt.equivTrees}</div>
                 </div>
-                <div className="rounded-xl border border-[#1f2420] bg-[#0c0f0c] px-3 py-2.5">
-                  <div className="font-mono text-2xl font-bold text-white tabular-nums">{nf(equiv.homes)}</div>
-                  <div className="text-[12px] text-emerald-200/70 leading-tight mt-px">{tt.equivHomes}</div>
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-elev)] px-3 py-2.5">
+                  <div className="font-mono text-2xl font-bold text-[var(--text)] tabular-nums">{nf(equiv.homes)}</div>
+                  <div className="text-[12px] text-[var(--text-secondary)] leading-tight mt-px">{tt.equivHomes}</div>
                 </div>
-                <div className="rounded-xl border border-amber-900/40 bg-[#0c0f0c] px-3 py-2.5">
-                  <div className="font-mono text-2xl font-bold text-amber-300 tabular-nums">{nf(equiv.homes)}</div>
-                  <div className="text-[11px] text-amber-200/70 leading-tight mt-px">{tt.equivDeHomes}</div>
+                <div className="rounded-xl border border-[var(--warning-border)] bg-[var(--bg-elev)] px-3 py-2.5">
+                  <div className="font-mono text-2xl font-bold text-[var(--warning)] tabular-nums">{nf(equiv.homes)}</div>
+                  <div className="text-[11px] text-[var(--warning)]/70 leading-tight mt-px">{tt.equivDeHomes}</div>
                 </div>
-                <div className="rounded-xl border border-[#1f2420] bg-[#0c0f0c] px-3 py-2.5 col-span-2 sm:col-span-1 text-[11px] text-emerald-200/70">
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-elev)] px-3 py-2.5 col-span-2 sm:col-span-1 text-[11px] text-[var(--text-secondary)]">
                   {tt.equivEnergiewende}
                 </div>
               </div>
-              <p className="text-[10px] text-emerald-300/50 mt-2 px-1 leading-snug">{tt.equivNote}</p>
+              <p className="text-[10px] text-[var(--accent)]/50 mt-2 px-1 leading-snug">{tt.equivNote}</p>
             </div>
 
             <div className="pt-2">
-              <div className="flex justify-between text-xs text-emerald-300/70 mb-1 px-0.5">
+              <div className="flex justify-between text-xs text-[var(--accent)]/70 mb-1 px-0.5">
                 <span>{tt.climateScore}</span>
-                <span className="font-mono text-emerald-400 font-bold">{climateScore}</span>
+                <span className="font-mono text-[var(--accent)] font-bold">{climateScore}</span>
               </div>
-              <div className="h-2.5 w-full bg-[#1a1f1a] rounded-full overflow-hidden border border-[#242924]">
+              <div className="h-2.5 w-full bg-[var(--bg-elev)] rounded-full overflow-hidden border border-[var(--border)]">
                 <div 
-                  className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-[var(--accent-dark)] to-[var(--accent)] transition-all duration-500"
                   style={{ width: `${climateScore}%` }}
                   aria-valuenow={climateScore}
                   aria-valuemin={0}
                   aria-valuemax={100}
                 />
               </div>
-              <div className="text-[10px] text-[#9ba19b] mt-1">{tt.climateScoreNote}</div>
+              <div className="text-[10px] text-[var(--text-muted)] mt-1">{tt.climateScoreNote}</div>
             </div>
 
-            <div className="text-[13px] leading-relaxed text-emerald-100/80 border-l-2 border-emerald-800/60 pl-3">
+            <div className="text-[13px] leading-relaxed text-[var(--text-secondary)] border-l-2 border-[var(--accent-border)] pl-3">
               {greenShiftPercent > 0 ? (
                 accountingMethod === 'location' 
                   ? tt.impactNote(reductionPercent)
                   : tt.impactNoteMarket(reductionPercent)
               ) : (
-                <span className="text-emerald-300/50 italic">{tt.sliderHint}</span>
+                <span className="text-[var(--accent)]/50 italic">{tt.sliderHint}</span>
               )}
-              <div className="mt-2 text-[11px] text-emerald-300/60">{tt.deEuHint}</div>
+              <div className="mt-2 text-[11px] text-[var(--text-secondary)]">{tt.deEuHint}</div>
             </div>
           </div>
         </div>

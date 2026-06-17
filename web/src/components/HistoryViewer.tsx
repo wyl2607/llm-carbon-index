@@ -34,17 +34,17 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
       <div className="card p-6">
         <div className="mb-5">
           <h2 className="font-bold">{tt.historyTitle}</h2>
-          <p className="text-xs text-[#9ba19b] mt-0.5">{tt.historySub}</p>
+          <p className="text-xs text-[var(--text-muted)] mt-0.5">{tt.historySub}</p>
         </div>
-        <div className="rounded-xl border border-dashed border-[#242924] bg-[#0c0f0c] px-6 py-10 text-center">
-          <div className="text-sm font-semibold text-[#a1a6a1]">{tt.historyCollecting}</div>
-          <div className="mt-1.5 text-xs text-[#9ba19b]">
+        <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-elev)] px-6 py-10 text-center">
+          <div className="text-sm font-semibold text-[var(--text-secondary)]">{tt.historyCollecting}</div>
+          <div className="mt-1.5 text-xs text-[var(--text-muted)]">
             {tt.historyCollectingSub.replace('{n}', String(data.length)).replace('{min}', String(MIN_TREND_DAYS))}
           </div>
         </div>
-        <div className="mt-5 p-4 rounded-xl border border-[#242924] bg-[#0c0f0c] text-sm">
-          <div className="font-semibold mb-1 text-emerald-400">{tt.jevonsTitle}</div>
-          <p className="text-[#a1a6a1] leading-snug text-[13px]">{tt.jevonsBody}</p>
+        <div className="mt-5 p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-elev)] text-sm">
+          <div className="font-semibold mb-1 text-[var(--accent)]">{tt.jevonsTitle}</div>
+          <p className="text-[var(--text-secondary)] leading-snug text-[13px]">{tt.jevonsBody}</p>
         </div>
       </div>
     );
@@ -61,55 +61,55 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
     <div className="card p-6">
       <div className="mb-5">
         <h2 className="font-bold">{tt.historyTitle}</h2>
-        <p className="text-xs text-[#9ba19b] mt-0.5">{tt.historySub}</p>
+        <p className="text-xs text-[var(--text-muted)] mt-0.5">{tt.historySub}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
         <div>
-          <div className="text-xs font-semibold text-[#a1a6a1] mb-2">{tt.historyCo2}</div>
+          <div className="text-xs font-semibold text-[var(--text-secondary)] mb-2">{tt.historyCo2}</div>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="cCo2" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.35}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.35}/>
+                    <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="2 2" stroke="#242924" />
-                <XAxis dataKey="date" tick={{fontSize:10, fill:'#969c96'}} tickLine={false} axisLine={{stroke:'#242924'}} />
-                <YAxis tickFormatter={v => nf(Math.round(v))} tick={{fontSize:10, fill:'#969c96'}} tickLine={false} axisLine={{stroke:'#242924'}} />
-                <Tooltip contentStyle={{background:'#121512', border:'1px solid #242924', borderRadius:6, fontSize:12}} />
-                <Area type="monotone" dataKey="co2Kg" stroke="#10b981" strokeWidth={2.5} fill="url(#cCo2)" />
+                <CartesianGrid strokeDasharray="2 2" stroke="var(--grid-line)" />
+                <XAxis dataKey="date" tick={{fontSize:10, fill:'var(--text-muted)'}} tickLine={false} axisLine={{stroke:'var(--border)'}} />
+                <YAxis tickFormatter={v => nf(Math.round(v))} tick={{fontSize:10, fill:'var(--text-muted)'}} tickLine={false} axisLine={{stroke:'var(--border)'}} />
+                <Tooltip contentStyle={{background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:6, fontSize:12, color:'var(--text)'}} />
+                <Area type="monotone" dataKey="co2Kg" stroke="var(--accent)" strokeWidth={2.5} fill="url(#cCo2)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
         <div>
-          <div className="text-xs font-semibold text-[#a1a6a1] mb-2">{tt.historyEff}</div>
+          <div className="text-xs font-semibold text-[var(--text-secondary)] mb-2">{tt.historyEff}</div>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="cEff" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.35}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#5c9ab5" stopOpacity={0.35}/>
+                    <stop offset="95%" stopColor="#5c9ab5" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="2 2" stroke="#242924" />
-                <XAxis dataKey="date" tick={{fontSize:10, fill:'#969c96'}} tickLine={false} axisLine={{stroke:'#242924'}} />
-                <YAxis tickFormatter={v => nf(v, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} tick={{fontSize:10, fill:'#969c96'}} tickLine={false} axisLine={{stroke:'#242924'}} />
-                <Tooltip contentStyle={{background:'#121512', border:'1px solid #242924', borderRadius:6, fontSize:12}} />
-                <Area type="monotone" dataKey="efficiency" stroke="#3b82f6" strokeWidth={2.5} fill="url(#cEff)" />
+                <CartesianGrid strokeDasharray="2 2" stroke="var(--grid-line)" />
+                <XAxis dataKey="date" tick={{fontSize:10, fill:'var(--text-muted)'}} tickLine={false} axisLine={{stroke:'var(--border)'}} />
+                <YAxis tickFormatter={v => nf(v, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} tick={{fontSize:10, fill:'var(--text-muted)'}} tickLine={false} axisLine={{stroke:'var(--border)'}} />
+                <Tooltip contentStyle={{background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:6, fontSize:12, color:'var(--text)'}} />
+                <Area type="monotone" dataKey="efficiency" stroke="#5c9ab5" strokeWidth={2.5} fill="url(#cEff)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      <div className="mt-5 p-4 rounded-xl border border-[#242924] bg-[#0c0f0c] text-sm">
-        <div className="font-semibold mb-1 text-emerald-400">{tt.jevonsTitle}</div>
-        <p className="text-[#a1a6a1] leading-snug text-[13px]">{tt.jevonsBody}</p>
+      <div className="mt-5 p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-elev)] text-sm">
+        <div className="font-semibold mb-1 text-[var(--accent)]">{tt.jevonsTitle}</div>
+        <p className="text-[var(--text-secondary)] leading-snug text-[13px]">{tt.jevonsBody}</p>
       </div>
     </div>
   );

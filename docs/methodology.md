@@ -104,7 +104,7 @@ average). `totals.precision` aggregates these flags into four fractions:
   **`energy_class_fallback_fraction`** (parameter-class fallback). The two sum to 1.0.
 - **`grid_live_fraction`** — share whose grid intensity came from live Electricity
   Maps, and its complement **`grid_annual_fallback_fraction`** (annual table). The
-  two sum to 1.0.
+  two sum to 1.0. (L2 note: currently 0.0 for published series — see §11a.)
 
 These fractions are **token-weighted by `total_tokens`**, not count-weighted, and
 computed over the modeled rows only (the `other`/uncovered aggregate is excluded).
@@ -208,6 +208,24 @@ cd llm-carbon-index
 uv sync
 make verify 2026-06-14  # expect PASS
 ```
+
+## 11a. Pipeline long-termism (L2–L4 audit items)
+
+**L2 — Live grid honesty resolution.**  
+`grid_live_fraction` (and `grid_live_models`) is 0.0 in every committed history golden and in the reproducibility harness. `pipeline/grid.py` *does* implement the live Electricity Maps fetch (guarded by `ELECTRICITYMAPS_API_KEY` + zone mapping from annual_factors.yaml; falls back on any failure including missing key). When live succeeds the row receives `grid_source: "electricity_maps_live"`, `grid_source_id: "GRID-EM-LIVE"`. However, the runs that produce published goldens (and `make verify`) never supply the key and never perform network calls (snapshots replay frozen annual values). Therefore the published metric honestly reports 0 % live today; it is not a silent/wrong claim. Annual fallback is always explicitly recorded per row (`grid_source`, `grid_source_id`, `FALLBACK_GRID_ANNUAL` flag in estimates). Live activation would snapshot a time-varying value at publish instant; that is feasible for ad-hoc runs but outside the current reproducibility contract for the committed series. (See also CLAUDE.md Electricity Maps rule and `pipeline/precision.py` / `grid.py` L2 notes.)
+
+**L3 — History retention / compaction policy.**  
+- Full `history/{YYYY-MM-DD}.json` files (complete with per-model detail) are retained *indefinitely* for all published dates. This is required for `pipeline.verify` (every golden must be replayable) and for audit. No code in `pipeline/` deletes history entries.  
+- For cheap multi-year daily cadence: `write_outputs` maintains a compact sidecar `history/index.json` containing only the lightweight list of `{"data_date", "totals"}` excerpts. `write_timeseries()` prefers the index (fast load, no parsing of large `models[]` arrays) and falls back to glob+extract only when the index is absent.  
+- Retention policy is documented here; the index strategy keeps rebuild cost independent of history depth while preserving 100 % of committed detail. (Implementation in `pipeline/output.py`, `config.py`.)
+
+**L4 — Schema/methodology versioning + migration rule.**  
+`METHODOLOGY_VERSION` is the single source in `pipeline/__init__.py`.  
+Methodology or output-schema affecting changes (Phase 6J-class: new required fields, precision semantics, range propagation rules, source labelling, etc.) **MUST**:
+1. Bump `METHODOLOGY_VERSION` appropriately.
+2. Regenerate the affected `data/output/history/{D}.json` *and* its `data/raw/snapshots/{D}/` in the *same commit*.
+
+`make verify` (and the explicit guard in `pipeline/verify.py:verify_date`) will fail on version mismatch because `_strip_volatile` removes only `generated_at` and the full doc (incl. `methodology_version`) is compared. This rule is the enforcement mechanism — goldens always describe the version that produced them.
 
 ## 12. Related work & literature positioning
 
