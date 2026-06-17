@@ -241,7 +241,7 @@ function App() {
 
           {/* v0.2 lifecycle + water strip — operational vs embodied vs total + water */}
           {totals?.co2_kg_total && totals?.co2_kg_embodied && (
-            <div className="mt-5 rounded-2xl border border-[var(--border)] bg-black/30 p-5">
+            <div className="mt-5 rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5">
               <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--accent)]/80 mb-3">{tt.lcaTitle}</div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div>
@@ -358,7 +358,7 @@ function App() {
 
             {/* For researchers & ESG reporting — slim thesis / CSRD block */}
             {data && (
-              <section className="card p-6 sm:p-7 bg-gradient-to-br from-[#241d11] to-[#1b160f] border-[var(--accent-border)]">
+              <section className="card p-6 sm:p-7 bg-gradient-to-br from-[var(--accent-bg)] to-transparent border-[var(--accent-border)]">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
                   <div className="max-w-2xl">
                     <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[var(--accent-bg)] text-[var(--accent)] text-[11px] font-bold uppercase tracking-wider mb-3 border border-[var(--accent-border)]">
