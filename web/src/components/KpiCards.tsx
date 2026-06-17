@@ -28,7 +28,7 @@ interface KPICardProps {
 
 // Module-scope component (not defined during render) so React can keep its identity stable.
 const KPICard: React.FC<KPICardProps> = ({ title, sub, midValue, low, high, unit, icon: Icon, highlight = false, rangeLabel }) => (
-  <div className={`relative overflow-hidden rounded-2xl border ${highlight ? 'border-[var(--accent-border)]' : 'border-[var(--border)]'} bg-[var(--bg-elev)]/60 p-6 backdrop-blur-md shadow-2xl transition-all hover:border-[var(--accent-border)] group`}>
+  <div className={`relative overflow-hidden rounded-2xl border ${highlight ? 'border-[var(--accent-border)]' : 'border-[var(--border)]'} bg-[var(--bg-card)] p-6 shadow-sm min-h-[156px] transition-all hover:border-[var(--border-strong)] hover:shadow-md group`}>
     <div className={`flex items-start justify-between gap-2 text-xs font-bold uppercase tracking-widest ${highlight ? 'text-[var(--accent)]' : 'text-[var(--text-muted)]'}`}>
       <div className="flex items-center gap-2 min-w-0">
         <Icon className={`w-4 h-4 shrink-0 ${highlight ? 'text-[var(--accent)]' : 'text-[var(--accent)]/60 group-hover:text-[var(--accent)]'} transition-colors`} />
@@ -53,10 +53,7 @@ const KPICard: React.FC<KPICardProps> = ({ title, sub, midValue, low, high, unit
     ) : (
       <div className="h-6" />
     )}
-    <div className="mt-5 text-[11px] text-[var(--text-muted)] border-t border-[var(--border)]/50 pt-3 leading-relaxed">{sub}</div>
-
-    {/* Decorative inner glow (amber phosphor) */}
-    <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-[var(--accent-bg)] rounded-full blur-2xl group-hover:bg-[var(--accent-bg)] transition-all" />
+    <div className="mt-5 text-xs text-[var(--text-muted)] border-t border-[var(--border)] pt-3 leading-relaxed">{sub}</div>
   </div>
 );
 

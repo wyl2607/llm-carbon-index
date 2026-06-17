@@ -9,6 +9,8 @@ export type Lang = 'en' | 'zh' | 'de';
 
 export const translations = {
   en: {
+    skipToContent: 'Skip to content',
+    clearFilters: 'Clear filters',
     historySub: 'Tracking volume vs. efficiency over time.',
     kpiRange: 'Range:',
     modalWater: 'Water',
@@ -174,6 +176,7 @@ export const translations = {
     colOpenClosed: 'Open/Closed',
     colEnergySrc: 'Energy source',
     colGridSrc: 'Grid source',
+    colDataQuality: 'Data quality',
     colFlags: 'Flags',
 
     // History
@@ -251,6 +254,8 @@ export const translations = {
     esgFooter: 'Suitable for CSRD/ESRS E1 disclosure workbooks. Scale by modeled_traffic_fraction for your actual usage share. Always retain the embedded caveat when using in reports.',
   },
   zh: {
+    skipToContent: '跳转到主要内容',
+    clearFilters: '清除筛选',
     historySub: '持续追踪推理量与能效的历史变化。',
     kpiRange: '误差范围:',
     modalWater: '水足迹',
@@ -408,6 +413,7 @@ export const translations = {
     colOpenClosed: '开源/闭源',
     colEnergySrc: '能耗来源',
     colGridSrc: '电网数据源',
+    colDataQuality: '数据质量',
     colFlags: '标志',
 
     historyTitle: '历史趋势与效率演进',
@@ -482,6 +488,8 @@ export const translations = {
     esgFooter: '适用于 CSRD/ESRS E1 披露工作簿。请按 modeled_traffic_fraction 缩放为你的实际使用份额。在报告中使用时务必保留嵌入的声明。',
   },
   de: {
+    skipToContent: 'Zum Inhalt springen',
+    clearFilters: 'Filter zurücksetzen',
     historySub: 'Verfolgung von Volumen vs. Effizienz im Zeitverlauf.',
     kpiRange: 'Bereich:',
     modalWater: 'Wasser',
@@ -631,6 +639,7 @@ export const translations = {
     colOpenClosed: 'Offen/Geschl.',
     colEnergySrc: 'Energiequelle',
     colGridSrc: 'Netzquelle',
+    colDataQuality: 'Datenqualität',
     colFlags: 'Flags',
 
     historyTitle: 'Historische Trends',

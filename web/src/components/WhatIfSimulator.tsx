@@ -71,22 +71,19 @@ export const WhatIfSimulator: React.FC<Props> = ({
   const animatedReduction = useAnimatedNumber(reductionMid, 700);
 
   return (
-    <div className="my-8 card p-7 sm:p-9 text-[var(--text)] relative overflow-hidden border-[var(--accent-border)]" style={{background: 'linear-gradient(145deg, var(--bg-card), var(--bg))'}}>
-      <div className="absolute top-5 right-5 px-3 py-1 rounded-full text-[10px] font-bold tracking-[1.5px] uppercase bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)] backdrop-blur z-20">
+    <div className="my-8 card p-7 sm:p-9 text-[var(--text)] relative overflow-hidden border-[var(--accent-border)]">
+      <div className="absolute top-5 right-5 px-3 py-1 rounded-full text-[10px] font-bold tracking-[1.5px] uppercase bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)] z-20">
         {accountingMethod.toUpperCase()}-BASED
       </div>
 
-      <div className="absolute -top-40 -right-40 w-[520px] h-[520px] bg-[var(--accent-bg)] rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute -bottom-40 -left-40 w-[420px] h-[420px] bg-[var(--accent-bg)] rounded-full blur-[100px] pointer-events-none" />
-
       <div className="relative z-10">
         <div className="flex items-start gap-3 mb-3">
-          <div className="mt-1 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
-            <Zap className="w-5 h-5 text-emerald-400" />
+          <div className="mt-1 p-2.5 rounded-xl bg-[var(--accent-bg)] border border-[var(--accent-border)]">
+            <Zap className="w-5 h-5 text-[var(--accent)]" />
           </div>
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-[-0.02em]">{tt.scenarioTitle}</h2>
-            <p className="mt-1.5 max-w-3xl text-[15px] text-emerald-100/70 leading-relaxed">
+            <p className="mt-1.5 max-w-3xl text-[15px] text-[var(--text-secondary)] leading-relaxed">
               {tt.scenarioSubtitle}
             </p>
           </div>
@@ -98,8 +95,8 @@ export const WhatIfSimulator: React.FC<Props> = ({
               <label htmlFor="grid-shift" className="text-xs font-semibold tracking-widest text-[var(--accent)]/80 uppercase">
                 {tt.shiftLabel}
               </label>
-              <span className="font-mono text-4xl font-black text-[var(--accent)] tabular-nums tracking-[-1.5px] drop-shadow-[0_0_12px_rgba(255,191,0,0.25)]">
-                {greenShiftPercent}<span className="text-2xl font-semibold text-[var(--accent)]/60">%</span>
+              <span className="font-mono text-4xl font-black text-[var(--accent)] tabular-nums tracking-[-1.5px]">
+                {greenShiftPercent}<span className="text-2xl font-semibold text-[var(--accent)]/70">%</span>
               </span>
             </div>
 
@@ -118,7 +115,7 @@ export const WhatIfSimulator: React.FC<Props> = ({
               aria-label="Percentage of traffic shifted to clean grid"
             />
 
-            <div className="flex justify-between text-[10px] text-[var(--accent)]/50 font-medium tracking-widest px-0.5 mt-1.5">
+            <div className="flex justify-between text-[10px] text-[var(--text-muted)] font-medium tracking-widest px-0.5 mt-1.5">
               <div>0% — {tt.presetReality.split(' ')[0]}</div>
               <div>100% — MAX GREEN</div>
             </div>
@@ -167,7 +164,7 @@ export const WhatIfSimulator: React.FC<Props> = ({
                   className="impact-slider w-full accent-[var(--accent)] cursor-pointer"
                   aria-label="Prompt length regime slider (P6)"
                 />
-                <div className="flex justify-between text-[10px] text-[var(--accent)]/50 px-0.5">{tt.regimePromptScale}</div>
+                <div className="flex justify-between text-[10px] text-[var(--text-muted)] px-0.5">{tt.regimePromptScale}</div>
               </div>
 
               <div>
@@ -185,7 +182,7 @@ export const WhatIfSimulator: React.FC<Props> = ({
                   className="impact-slider w-full accent-[var(--accent)] cursor-pointer"
                   aria-label="Batch utilization regime slider (P6)"
                 />
-                <div className="flex justify-between text-[10px] text-[var(--accent)]/50 px-0.5">{tt.regimeBatchScale}</div>
+                <div className="flex justify-between text-[10px] text-[var(--text-muted)] px-0.5">{tt.regimeBatchScale}</div>
               </div>
 
               <div className="mt-3 text-[11px] px-1 font-mono text-[var(--accent)]/90">
@@ -200,7 +197,7 @@ export const WhatIfSimulator: React.FC<Props> = ({
               <div className="uppercase tracking-[2px] text-xs font-bold text-[var(--accent)]/70 mb-2 flex items-center justify-center gap-2">
                 <Leaf className="w-3.5 h-3.5" /> {tt.dailyAvoided}
               </div>
-              <div className="font-mono text-[56px] leading-none font-black text-[var(--accent)] tracking-[-3.5px] tabular-nums drop-shadow-[0_0_25px_rgba(255,191,0,.2)]">
+              <div className="font-mono text-[56px] leading-none font-black text-[var(--accent)] tracking-[-3.5px] tabular-nums">
                 −{nf(animatedReduction)}
               </div>
               <div className="text-[var(--accent)]/70 text-sm font-medium mt-1">{tt.kgCO2}</div>
@@ -250,7 +247,7 @@ export const WhatIfSimulator: React.FC<Props> = ({
                   {tt.equivEnergiewende}
                 </div>
               </div>
-              <p className="text-[10px] text-[var(--accent)]/50 mt-2 px-1 leading-snug">{tt.equivNote}</p>
+              <p className="text-[10px] text-[var(--text-muted)] mt-2 px-1 leading-snug">{tt.equivNote}</p>
             </div>
 
             <div className="pt-2">
@@ -276,7 +273,7 @@ export const WhatIfSimulator: React.FC<Props> = ({
                   ? tt.impactNote(reductionPercent)
                   : tt.impactNoteMarket(reductionPercent)
               ) : (
-                <span className="text-[var(--accent)]/50 italic">{tt.sliderHint}</span>
+                <span className="text-[var(--text-muted)] italic">{tt.sliderHint}</span>
               )}
               <div className="mt-2 text-[11px] text-[var(--text-secondary)]">{tt.deEuHint}</div>
             </div>

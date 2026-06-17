@@ -1,8 +1,8 @@
 /**
- * Retro-futurist / phosphor-terminal design tokens for LLM Carbon Index (Phase 6L).
- * Palette: amber-phosphor (#ffbf00) on near-black console (#0a0805).
+ * Light, professional data-dashboard design tokens for LLM Carbon Index.
+ * Clean white surfaces, neutral grays, a single readable emerald accent.
+ * Keep in sync with theme/tokens.css (CSS custom properties).
  * All components MUST import from here (or use CSS vars defined in tokens.css) — NO hardcoded hex in components.
- * See specs/phase-6l-retro-tech-frontend.md
  *
  * Type: monospace for data/labels (tabular), humanist sans for prose.
  * Labels: small ALL-CAPS + letter-spacing.
@@ -11,44 +11,43 @@
  */
 export const tokens = {
   colors: {
-    // Core surfaces (near-black console)
-    bg: '#0a0805',
-    bgElev: '#11100c',
-    bgCard: '#14120f',
-    bgCardHover: '#181612',
-    border: '#28241e',
-    borderStrong: '#3f362b',
+    // Core surfaces (clean white)
+    bg: '#ffffff',
+    bgElev: '#f6f7f9',
+    bgCard: '#ffffff',
+    bgCardHover: '#f3f5f7',
+    border: '#e4e7ec',
+    borderStrong: '#cdd2da',
 
-    // Text (warm off-white for phosphor terminal feel; high contrast on dark)
-    text: '#e8dfc9',
-    textSecondary: '#b0a38a',
-    textMuted: '#827a68',
+    // Text (near-black on white; AA verified)
+    text: '#15181d',
+    textSecondary: '#4a5160',
+    textMuted: '#6b7280',
 
-    // Phosphor amber accent (primary action / highlight / error bars)
-    // WCAG AA: amber #ffbf00 on #0a0805 yields >>4.5:1 (large) and normal text contrast sufficient when paired with weight.
-    accent: '#ffbf00',
-    accentDark: '#c48f00',
-    accentLight: '#ffcf40',
-    accentBg: 'rgba(255, 191, 0, 0.12)',
-    accentBorder: 'rgba(255, 191, 0, 0.35)',
+    // Emerald accent — readable as fill (white text) AND as text on white (~5.5:1)
+    accent: '#047857',
+    accentDark: '#065f46',
+    accentLight: '#059669',
+    accentBg: 'rgba(4, 120, 87, 0.08)',
+    accentBorder: 'rgba(4, 120, 87, 0.30)',
 
     // Warning / caution (for staleness, fallbacks)
-    warning: '#e67e22',
-    warningBg: 'rgba(230, 126, 34, 0.12)',
-    warningBorder: 'rgba(230, 126, 34, 0.35)',
+    warning: '#b45309',
+    warningBg: 'rgba(180, 83, 9, 0.09)',
+    warningBorder: 'rgba(180, 83, 9, 0.30)',
 
-    // Group / origin distinctions (phosphor-retro tinted, distinguishable)
-    open: '#c9b36b',       // gold-amber for open
-    closed: '#c46b6b',     // muted rose-amber
-    cn: '#e89f4a',         // warm amber-orange
-    us: '#5c9ab5',         // steel blue (cool phosphor adj)
-    eu: '#8f7ab5',         // muted violet
-    other: '#6b6760',      // warm slate
+    // Group / origin distinctions — clean categorical palette, distinct on white
+    open: '#059669',       // emerald for open
+    closed: '#64748b',     // slate for closed
+    cn: '#e8743b',         // warm orange
+    us: '#3b82f6',         // blue
+    eu: '#8b5cf6',         // violet
+    other: '#94a3b8',      // slate-gray
 
-    // Banner specific (keep distinct semantics, amber family)
-    scopeAmber: '#f4a261',
-    precisionSky: '#8ab4c8',  // cool variant for precision (kept for visual grouping)
-    fairness: '#c9b36b',
+    // Banner specific
+    scopeAmber: '#d97706',
+    precisionSky: '#2563eb',
+    fairness: '#059669',
   },
 
   // Typography scale + style

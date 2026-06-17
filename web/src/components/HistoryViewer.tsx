@@ -92,15 +92,15 @@ export const HistoryViewer: React.FC<Props> = ({ lang = 'en' }) => {
               <AreaChart data={chartData} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="cEff" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#5c9ab5" stopOpacity={0.35}/>
-                    <stop offset="95%" stopColor="#5c9ab5" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="var(--group-us)" stopOpacity={0.35}/>
+                    <stop offset="95%" stopColor="var(--group-us)" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="2 2" stroke="var(--grid-line)" />
                 <XAxis dataKey="date" tick={{fontSize:10, fill:'var(--text-muted)'}} tickLine={false} axisLine={{stroke:'var(--border)'}} />
                 <YAxis tickFormatter={v => nf(v, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} tick={{fontSize:10, fill:'var(--text-muted)'}} tickLine={false} axisLine={{stroke:'var(--border)'}} />
                 <Tooltip contentStyle={{background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:6, fontSize:12, color:'var(--text)'}} />
-                <Area type="monotone" dataKey="efficiency" stroke="#5c9ab5" strokeWidth={2.5} fill="url(#cEff)" />
+                <Area type="monotone" dataKey="efficiency" stroke="var(--group-us)" strokeWidth={2.5} fill="url(#cEff)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
