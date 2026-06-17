@@ -7,6 +7,8 @@
 
 Dies ist ein transparentes, öffentlich zugängliches Dashboard-Projekt, das entwickelt wurde, um den **geschätzten CO₂-Fußabdruck des über die [OpenRouter Rankings](https://openrouter.ai/rankings) sichtbaren LLM-Inferenzverkehrs** zu berechnen. Das Projekt bietet detaillierte Aufschlüsselungen nach Modell, Open-/Closed-Source, Anbieter, Herkunftsland des Modells und den Emissionsfaktoren des Stromnetzes am primären Standort.
 
+**▶ [Zum Live-Dashboard](https://wyl2607.github.io/llm-carbon-index/)** — Ranglisten nach Gesamt-CO₂ und nach Effizienz, Schieberegler für Ökostrom-Szenarien, ein markt- vs. standortbasierter Scope-2-Umschalter und eine Methodik-&-Unsicherheits-Seite. Dreisprachig (EN / 中文 / DE).
+
 ## Einschränkung des Anwendungsbereichs (Nicht verhandelbare Grundprinzipien)
 
 Dieses Projekt schätzt den CO₂-Fußabdruck des **sichtbaren LLM-Inferenzverkehrs auf OpenRouter** — dies stellt nur einen **repräsentativen, aber begrenzten Teil** der globalen KI-Nutzung dar. Große B2C-Anwendungen wie ChatGPT, Gemini und Claude sind **nicht** enthalten. Dies ist **keine** Messung der globalen Rechenzentrumsemissionen. **Alle Zahlen sind Schätzungen mit expliziten Unsicherheitsbereichen, keine Messungen** — insbesondere bei Closed-Source-Modellen, deren Parameter, Hardware und Rechenzentrumsstandorte nicht öffentlich bekannt gegeben werden.
@@ -21,74 +23,68 @@ Die in diesem Projekt generierten Daten sind vollständig quelloffen und für di
 
 ## Architektur (festgelegt)
 
-Statisch zuerst, kein Server zum Betreuen (gemäß `PLAN.md`):
+Statisch zuerst, kein Server zum Betreuen (gemäß [`PLAN.md`](PLAN.md)):
 
 ```
-OpenRouter rankings ─▶ pipeline (Python) ─▶ output/*.json (committed by CI) ─▶ web/ (Vite+React, static)
+OpenRouter rankings ─▶ pipeline (Python) ─▶ data/output/*.json (committed by CI) ─▶ web/ (Vite + React, static)
                                   │
-                      EcoLogits + AI Energy Score (energy)
-                      Electricity Maps + annual fallbacks (grid)
+                      EcoLogits + AI Energy Score   (Energie)
+                      Electricity Maps + jährliche Fallbacks   (Stromnetz)
 ```
 
-Kein Live-Backend für v1. Das Frontend liest committed JSON; Datenaktualisierungen erfolgen über einen GitHub Actions Cron (Phase 5).
+Kein Live-Backend für v1. Das Frontend liest committetes JSON; ein täglicher GitHub-Actions-Cron ([`.github/workflows/pipeline.yml`](.github/workflows/pipeline.yml)) führt die Pipeline erneut aus, friert deren Eingaben als Snapshot ein, durchläuft alle Gates und committet frisches JSON nur, wenn die Reproduzierbarkeitsprüfung (`make verify`) besteht.
 
-## Status und Versionierung
+## Status
 
-Bitte konsultieren Sie das [CHANGELOG_de.md](CHANGELOG_de.md) für ein vollständiges Update-Protokoll, das nach Versionsnummern nachvollziehbar ist. Alle zukünftigen Updates erfordern die gleichzeitige Aktualisierung der englischen, chinesischen und deutschen Dokumentation.
+Streng phasenweise gebaut ([`PLAN.md`](PLAN.md)); das maßgebliche Phasen-Register mit Commit-Hashes liegt in [`specs/INDEX.md`](specs/INDEX.md), das vollständige versionierte Protokoll im [CHANGELOG_de.md](CHANGELOG_de.md). Aktuelle Methodik-Version **0.7.0**; `main` ist grün (ruff · 149 pytest · `make verify` byte-identische Reproduktion · Web `tsc`+build · 20 vitest) und deployt. Alle künftigen Updates erfordern die gleichzeitige Aktualisierung der englischen, chinesischen und deutschen Dokumentation.
 
-## Dateimanifest — was ein vollständiges Projekt hier benötigt
+| Phase | Umfang | Status |
+|---|---|---|
+| 0–1 | Gerüst + Mathe-Nachweis · OpenRouter-Datenaufnahme | ✅ fertig |
+| 2 | Energieschätzung ([`pipeline/energy.py`](pipeline/energy.py)) | ✅ fertig |
+| 3 | CO₂ + Stromnetz + Ökostrom-Substitution ([`pipeline/carbon.py`](pipeline/carbon.py), [`pipeline/grid.py`](pipeline/grid.py)) | ✅ fertig |
+| 4 | Ausgabe-Assemblierung + Frontend ([`pipeline/output.py`](pipeline/output.py), [`web/`](web/)) | ✅ fertig |
+| 5 | Methodik-Dokument + CI + Deployment | ✅ fertig |
+| 6A–6E | Ökostrom-Szenarien · markt- vs. standortbasiert · Verlauf/Jevons · Wasser-Fußabdruck (WUE) · Abdeckungs-Automatisierung | ✅ fertig |
+| 6F–6I | Schätzungs-Ehrlichkeit · Provenienz-Register („keine Zahl ohne Quelle“-Gate) · Reproduzierbarkeits-Harness (`make verify`) · Fairness + Grenze | ✅ fertig |
+| 6J–6K | Gemessene Energie pro Token + Idle-Term (`energy_measured_fraction` 0 → 0.29) · OAT-Sensitivitätsanalyse | ✅ fertig |
+| 6L–6R | Retrofuturistisches Re-Skin · Ranking → Tiering · physischer Embodied-Schätzer · Literatur-Querprüfung · MoE-Aktivparameter-Energie · dynamisches Regime/Batching · ESG/CSRD-Scope-2-Export | ✅ fertig |
+| 7 | Mehrsprachigkeit i18n (en/zh/de) + UI-Lesbarkeit | ✅ fertig |
 
-Legende: ✅ existiert · 🟡 Stub/Seed · ⬜ geplant (in seiner Phase erstellt).
+## Repository-Struktur
+
+Modelldaten liegen **ausschließlich** in `data/*.yaml` (Harte Bedingung #6); die Pipeline ist reines Python; das Frontend ist eine statische Vite-+-React-App, die committetes JSON liest.
 
 ```
 llm-carbon-index/
-├── README.md                       ✅ this file (scope + reproduce + manifest)
-├── CLAUDE.md                       ✅ agent guardrails
-├── PLAN.md                         ✅ phased plan (canonical source of truth)
-├── LICENSE                         ✅ MIT + data-is-estimates notice
-├── CONTRIBUTING.md                 ✅ phase workflow + hard constraints
-├── SECURITY.md                     ✅ secrets policy + how to report
-├── CHANGELOG.md                    ✅ Keep-a-Changelog
-├── .gitignore                      ✅ incl. .env, node_modules, data/raw
-├── .editorconfig                   ✅ formatting baseline
-├── .env.example                    ✅ documents env var NAMES only
-├── pyproject.toml                  ✅ deps + pytest + ruff config
-├── data/                           model data ONLY here (Hard Constraint #6)
-│   ├── grid_fallback_factors.yaml  🟡 annual grid factors (seeded, cited)
-│   ├── provider_region_map.yaml    🟡 provider → likely region (seeded, cited)
-│   ├── model_crosswalk.yaml        🟡 schema stub (seeded in Phase 2)
-│   └── closed_model_assumptions.yaml 🟡 schema stub (seeded in Phase 2)
-├── pipeline/                       Python pipeline (Phases 1–4, 6)
-│   ├── README.md                   ✅ module map
-│   ├── fetch_openrouter.py         ✅ Phase 1
-│   ├── electricity.py              ✅ Phase 3
-│   ├── estimate_energy.py          ✅ Phase 2
-│   ├── estimate_carbon.py          ✅ Phase 3
-│   ├── build_outputs.py            ✅ Phase 4
-│   └── sensitivity.py              ✅ Phase 6K
-├── tests/
-│   ├── test_prove_math.py          ✅ conversion guards + sanity + ranges
-│   ├── test_energy.py              ✅ Phase 2
-│   ├── test_carbon.py              ✅ Phase 3
-│   └── fixtures/                   ✅ (.gitkeep)
-├── output/                         generated JSON (committed by CI, Phase 4+)
-│   └── .gitkeep                    ✅
-├── web/                            Vite + React static frontend (Phase 4, 6)
-│   └── README.md                   ✅ planned views + absorbed UI design
-├── docs/
-│   ├── methodology.md              ✅ thesis methodology (scope/formulas/sources)
-│   ├── absorbed-from-gemini.md     ✅ merge provenance + constraint reconciliation
-│   ├── DATA_SCHEMAS.md             ✅ Phase 6 docs
-│   ├── ASSUMPTIONS.md              ✅ Phase 6 docs
-│   ├── PROJECT_STATUS.md           ✅ Phase 6 docs
-│   ├── BOUNDARY.md                 ✅ Phase 6I
-│   └── FAIRNESS.md                 ✅ Phase 6I
-└── .github/
-    ├── workflows/
-    │   ├── ci.yml                  ✅ run tests + ruff on push/PR
-    │   └── update-data.yml         ✅ Phase 5 daily cron → commit JSON
-    ├── ISSUE_TEMPLATE/             ✅ bug + data-correction templates
-    └── PULL_REQUEST_TEMPLATE.md    ✅ constraint checklist
+├── PLAN.md · CLAUDE.md · README.md · LICENSE · SECURITY.md · CONTRIBUTING.md · CHANGELOG.md
+├── pyproject.toml · Makefile · .env.example      # Abhängigkeiten, `make verify|test|lint`, nur Env-Var-NAMEN
+├── data/                                         # Modelldaten nur hier (Harte Bedingung #6)
+│   ├── crosswalk/model_crosswalk.yaml            #   OpenRouter-Slug → Energiequelle + Annahmen
+│   ├── assumptions/                              #   Closed-Modelle, Embodied-Hardware, Hersteller-Claims, Regime-Sets
+│   ├── grid/annual_factors.yaml                  #   jährliche gCO₂/kWh-Fallbacks (Ember/IEA, zitiert)
+│   ├── energy/intensity.yaml                     #   Energieintensität pro Token (zitiert)
+│   ├── provenance/sources.yaml                   #   Quellenregister — jede Zahl muss hier auflösbar sein (6G-Gate)
+│   ├── validation/literature_anchors.yaml        #   externe Wh/Query-Anker zur Querprüfung
+│   ├── raw/snapshots/<date>/                      #   eingefrorene Tageseingaben für reproduzierbares Replay (6H)
+│   └── output/                                    #   generiertes JSON, von CI committet
+│       ├── latest.json · timeseries.json · sensitivity.json
+│       ├── validation.json · esg_export.json · manifest.json
+│       └── history/<date>.json
+├── pipeline/                                     # ingest → energy → carbon → embodied/water → output
+│   ├── ingest.py · openrouter.py · slugs.py · tokens.py
+│   ├── energy.py · carbon.py · grid.py · embodied.py · water.py
+│   ├── sensitivity.py · fairness.py · precision.py · ranges.py
+│   ├── provenance.py · snapshot.py · manifest.py · verify.py   # Provenienz + Reproduzierbarkeit (6G/6H)
+│   ├── validate_literature.py · output.py · run.py            # Querprüfung, Assemblierung, täglicher Einstieg
+│   └── README.md                                              # Modul-Karte
+├── tests/                                        # 149 Tests — vollständige CO₂-Kette + Einheiten-Wächter
+├── web/                                          # Vite + React statisches Dashboard (liest data/output/*.json)
+│   └── src/{components,lib,theme}                 # 6L retrofuturistisches Theme; dreisprachiges i18n (en/zh/de)
+├── docs/                                         # methodology · DATA_SCHEMAS · ASSUMPTIONS · BOUNDARY · FAIRNESS (je ×3 Sprachen)
+├── schemas/                                      # JSON-Schema für Ausgabe + ESG-Export
+├── specs/                                        # Phasen-Specs + INDEX.md (maßgebliches Phasen-Register)
+└── .github/workflows/                            # ci · pipeline (täglicher Cron) · deploy · codeql · gitleaks
 ```
 
 ## Reproduktion
@@ -105,5 +101,5 @@ make verify 2026-06-14  # Erwartete Ausgabe: PASS
 ## Datenquellen
 
 - **Ranking-Daten**: `Quelle: OpenRouter (openrouter.ai/rankings), Stand: {date}`.
-- **CO₂-Intensität des Stromnetzes**: Electricity Maps (Echtzeitdaten) + Ember/IEA (jährliche Durchschnittswerte).
+- **CO₂-Intensität des Stromnetzes**: Ember/IEA-Jahresdurchschnittsfaktoren (zeilenweise erfasst). Live-Electricity-Maps-Unterstützung existiert, ist aber für veröffentlichte, reproduzierbare Goldens **deaktiviert** (`grid_live_fraction = 0.0`); siehe `docs/methodology.md` §11a.
 - **Energieverbrauch**: EcoLogits + Hugging Face AI Energy Score. Siehe [`docs/methodology.md`](docs/methodology.md).

@@ -4,6 +4,13 @@
 > The agent must implement the project **one phase at a time**, in order,
 > and must obey the **Hard Constraints** section.
 
+> **Status (2026-06-17): fully delivered.** Phases 0–5 (this document) plus the
+> post-MVP roadmap (6A–6R) are all shipped; `main` is green and deployed.
+> This file is the **founding charter** — the scope, decisions, and hard
+> constraints below remain binding. For live phase status with commit hashes,
+> the authoritative ledger is [`specs/INDEX.md`](specs/INDEX.md); the future
+> backlog lives in [`PLANS.md`](PLANS.md).
+
 ---
 
 ## 1. What this project is

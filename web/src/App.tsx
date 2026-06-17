@@ -24,7 +24,7 @@ const isSampleData = (models: Model[]) =>
 
 function App() {
   const [data, setData] = useState<LatestData | null>(null);
-    const [sensData, setSensData] = useState<SensitivityData | null>(null);
+  const [sensData, setSensData] = useState<SensitivityData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -67,7 +67,7 @@ function App() {
     ]).then(([latestJson, _historyJson, sensJson]) => {
       if (!cancelled) {
         setData(latestJson);
-                setSensData(sensJson);
+        setSensData(sensJson);
         setError(null);
         setLoading(false);
       }
@@ -318,13 +318,6 @@ function App() {
                 </div>
                 <div className="flex items-center gap-3">
                   <GroupToggle groupBy={groupBy} onChange={setGroupBy} lang={lang} />
-                  <select 
-                    value="15" 
-                    onChange={() => { /* top-N wired if desired */ }} 
-                    className="text-xs py-1 px-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg"
-                  >
-                    <option>{tt.topEmitters}</option>
-                  </select>
                 </div>
               </div>
 
