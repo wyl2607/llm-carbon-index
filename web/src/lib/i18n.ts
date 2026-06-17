@@ -7,6 +7,24 @@
 
 export type Lang = 'en' | 'zh' | 'de';
 
+// Human-readable labels for the serving-region ids present in the data
+// (output/latest.json model.region). Plain place names, not model facts.
+const REGION_LABELS_EN: Record<string, string> = {
+  'cn-north': 'China (North)',
+  'us-east': 'United States (East)',
+  'europe-west': 'Europe (West)',
+};
+const REGION_LABELS_ZH: Record<string, string> = {
+  'cn-north': '中国（华北）',
+  'us-east': '美国（东部）',
+  'europe-west': '欧洲（西部）',
+};
+const REGION_LABELS_DE: Record<string, string> = {
+  'cn-north': 'China (Nord)',
+  'us-east': 'USA (Ost)',
+  'europe-west': 'Europa (West)',
+};
+
 export const translations = {
   en: {
     skipToContent: 'Skip to content',
@@ -252,6 +270,79 @@ export const translations = {
     esgTitle: 'ESG / CSRD Scope-2 Dual Reporting Export',
     esgCaveatNote: 'The scope & uncertainty statement above is embedded in every downloaded file and cannot be removed. Location-based uses physical grid intensity; market-based reflects contractual instruments (GHG Protocol Scope 2). Figures come directly from totals.co2_kg / co2_kg_market (no new values created).',
     esgFooter: 'Suitable for CSRD/ESRS E1 disclosure workbooks. Scale by modeled_traffic_fraction for your actual usage share. Always retain the embedded caveat when using in reports.',
+
+    // Navigation (multi-page)
+    navOverview: 'Overview',
+    navRankings: 'Rankings',
+    navRegions: 'Regions',
+    navRecommendations: 'Recommendations',
+    navMethodology: 'Methodology',
+
+    // Rankings page
+    rankTitle: 'Greenest models',
+    rankIntro: 'Leaderboards of OpenRouter-visible models by carbon efficiency and by absolute footprint. Lower CO₂ per output token = greener. All values are estimates with low–mid–high ranges.',
+    rankTokenizerNote: 'Tokenizer caveat: output-token counts come from different providers’ tokenizers and are not perfectly comparable, so per-token rankings are indicative, not exact.',
+    rankGreenestTitle: 'Most efficient (CO₂ / token)',
+    rankGreenestSub: 'Lowest grams CO₂ per 1k output tokens first.',
+    rankEffUnit: 'Values in g CO₂ per 1 000 output tokens (mid estimate).',
+    rankBiggestTitle: 'Largest absolute footprint',
+    rankBiggestSub: 'Highest total operational CO₂ for the day.',
+    rankBiggestUnit: 'Total operational CO₂ over the modelled day (mid estimate).',
+    rankFullTitle: 'Full model directory',
+
+    // Regions page
+    regTitle: 'Regions & electricity grid',
+    regIntro: 'Where the modelled traffic is likely served and how clean those grids are. Grid carbon intensity (gCO₂/kWh) is the single biggest lever on inference emissions.',
+    regBestTitle: 'Cleanest-region scenario',
+    regBestBody: (region: string, intensity: string | number, pct: string | number) =>
+      `If all modelled traffic ran on the cleanest available grid — ${region} (~${intensity} gCO₂/kWh) — estimated operational CO₂ would fall by about ${pct}%.`,
+    regionLabel: (r: string) => REGION_LABELS_EN[r] ?? r,
+    regBreakdownTitle: 'Per-region breakdown',
+    regCleanestFirst: 'cleanest grid first',
+    regColRegion: 'Region',
+    regColIntensity: 'Grid intensity',
+    regColRenewable: 'Renewable',
+    regColModels: 'Models',
+    regColCo2: 'Total CO₂',
+    regColShare: 'Share',
+    regCleanest: 'cleanest',
+    regNote: 'Intensity is energy-weighted across the region’s models. Renewable match is shown only where reported; “—” means not available. Region assignment is a likely-serving-region assumption, not a confirmed data-center location.',
+
+    // Recommendations page
+    recTitle: 'Choose a greener model',
+    recIntro: 'Two practical levers to cut inference emissions: switch to a more efficient model in the same open/closed class, and run on a cleaner grid.',
+    recLever1Title: 'Switch model',
+    recLever1Body: 'Pick a same-class model with lower CO₂ per output token for comparable tasks.',
+    recLever2Title: 'Cleaner electricity',
+    recLever2Body: (pct: string | number) => `Serving today’s traffic on a 100% low-carbon grid would cut estimated operational CO₂ by about ${pct}%.`,
+    recSwitchTitle: 'Same-class switch suggestions',
+    recSwitchSub: 'For the highest-traffic models, the most efficient alternative in the same open/closed class.',
+    recNone: 'No greener same-class alternative found in the current dataset.',
+    recColCurrent: 'Current model',
+    recColGreener: 'Greener alternative',
+    recColSaving: 'CO₂ / token saved',
+    recNote: 'Savings compare CO₂ per output token (with ranges). They do not account for capability differences — verify the alternative fits your task before switching.',
+
+    // Methodology page
+    methTitle: 'Methodology & uncertainty',
+    methVersionLine: (v: string, date: string) => `Methodology v${v} · data as of ${date}.`,
+    methScopeTitle: 'Scope (non-negotiable)',
+    methChainTitle: 'How the estimate is built',
+    methChainBody: 'Daily token volumes from OpenRouter rankings are converted to energy using EcoLogits and AI Energy Score, multiplied by data-center PUE, then by the serving grid’s carbon intensity to give operational CO₂. Embodied (hardware) emissions and water are added as separate lifecycle terms.',
+    methUncertaintyBody: 'Every quantity is carried as a {low, mid, high} range end-to-end and never collapsed to a single false-precision number. Closed models — whose parameters, hardware and data-center locations are undisclosed — carry the widest uncertainty.',
+    methAssumTitle: 'Key assumptions',
+    methAssumIoRatio: 'Input : output token ratio',
+    methAssumPue: 'PUE band (low / mid / high)',
+    methAssumPrefill: 'Prefill alpha',
+    methAssumEmbodied: 'Embodied : operational ratio',
+    methAssumWater: 'Water (L / kWh)',
+    methSourcesTitle: 'Data sources',
+    methSrcColTitle: 'Source',
+    methSrcColPublisher: 'Publisher',
+    methSrcColVersion: 'Version',
+    methAttribTitle: 'Attribution',
+    methAttribEm: 'Grid carbon intensity uses Electricity Maps where live data is available, falling back to annual average grid factors otherwise; the source used is recorded per row.',
+    methFullDoc: 'Full methodology doc',
   },
   zh: {
     skipToContent: '跳转到主要内容',
@@ -486,6 +577,79 @@ export const translations = {
     esgTitle: 'ESG / CSRD 范围二双重报告导出',
     esgCaveatNote: '上方的范围与不确定性声明已嵌入每个下载文件且不可移除。基于位置法使用物理电网强度；基于市场法反映合同工具（GHG Protocol 范围二）。数值直接取自 totals.co2_kg / co2_kg_market（不创造新数值）。',
     esgFooter: '适用于 CSRD/ESRS E1 披露工作簿。请按 modeled_traffic_fraction 缩放为你的实际使用份额。在报告中使用时务必保留嵌入的声明。',
+
+    // 导航（多页）
+    navOverview: '总览',
+    navRankings: '排行榜',
+    navRegions: '地区电网',
+    navRecommendations: '选型建议',
+    navMethodology: '方法论',
+
+    // 排行榜页
+    rankTitle: '最环保模型',
+    rankIntro: '按碳效率与绝对足迹对 OpenRouter 可见模型排名。每输出 token 的 CO₂ 越低越环保。所有数值均为带低/中/高区间的估算。',
+    rankTokenizerNote: '分词器说明：各服务商的输出 token 计数使用不同分词器，不完全可比，因此按 token 的排名仅供参考，并非精确值。',
+    rankGreenestTitle: '效率最高（CO₂ / token）',
+    rankGreenestSub: '每 1k 输出 token 克 CO₂ 最低者优先。',
+    rankEffUnit: '单位：每 1 000 输出 token 克 CO₂（中值估算）。',
+    rankBiggestTitle: '绝对足迹最大',
+    rankBiggestSub: '当日运营 CO₂ 总量最高。',
+    rankBiggestUnit: '建模当日运营 CO₂ 总量（中值估算）。',
+    rankFullTitle: '完整模型目录',
+
+    // 地区电网页
+    regTitle: '地区与电网',
+    regIntro: '建模流量大致在哪里被服务，以及这些电网有多干净。电网碳强度（gCO₂/kWh）是推理排放的最大杠杆。',
+    regBestTitle: '最干净地区情景',
+    regBestBody: (region: string, intensity: string | number, pct: string | number) =>
+      `若全部建模流量都运行在最干净的可用电网——${region}（约 ${intensity} gCO₂/kWh）——估算运营 CO₂ 将下降约 ${pct}%。`,
+    regionLabel: (r: string) => REGION_LABELS_ZH[r] ?? r,
+    regBreakdownTitle: '分地区明细',
+    regCleanestFirst: '最干净电网在前',
+    regColRegion: '地区',
+    regColIntensity: '电网强度',
+    regColRenewable: '可再生',
+    regColModels: '模型数',
+    regColCo2: 'CO₂ 总量',
+    regColShare: '占比',
+    regCleanest: '最干净',
+    regNote: '强度按地区内各模型能耗加权。可再生匹配仅在有上报时显示，“—”表示不可用。地区归属为“可能的服务地区”假设，并非确认的数据中心位置。',
+
+    // 选型建议页
+    recTitle: '选择更环保的模型',
+    recIntro: '降低推理排放的两个可操作杠杆：在同一开源/闭源档位内换用更高效的模型，以及运行在更干净的电网上。',
+    recLever1Title: '更换模型',
+    recLever1Body: '为同类任务选择同档位中每输出 token CO₂ 更低的模型。',
+    recLever2Title: '更清洁的电力',
+    recLever2Body: (pct: string | number) => `若把当日流量放在 100% 低碳电网上服务，估算运营 CO₂ 将下降约 ${pct}%。`,
+    recSwitchTitle: '同档位替换建议',
+    recSwitchSub: '针对高流量模型，给出同一开源/闭源档位中最高效的替代模型。',
+    recNone: '当前数据集中未找到更环保的同档位替代模型。',
+    recColCurrent: '当前模型',
+    recColGreener: '更环保替代',
+    recColSaving: '每 token CO₂ 节省',
+    recNote: '节省比较的是每输出 token 的 CO₂（含区间），不考虑能力差异——更换前请确认替代模型适合你的任务。',
+
+    // 方法论页
+    methTitle: '方法论与不确定性',
+    methVersionLine: (v: string, date: string) => `方法论 v${v} · 数据截至 ${date}。`,
+    methScopeTitle: '范围（不可妥协）',
+    methChainTitle: '估算如何构建',
+    methChainBody: '来自 OpenRouter 排行的每日 token 量用 EcoLogits 与 AI Energy Score 转换为能耗，乘以数据中心 PUE，再乘以服务电网碳强度得到运营 CO₂。隐含（硬件）排放与用水作为单独的生命周期项加入。',
+    methUncertaintyBody: '每个量都以 {低, 中, 高} 区间端到端传递，绝不收敛为单一的虚假精度数字。闭源模型——其参数、硬件与数据中心位置未公开——具有最大的不确定性。',
+    methAssumTitle: '关键假设',
+    methAssumIoRatio: '输入 : 输出 token 比例',
+    methAssumPue: 'PUE 区间（低 / 中 / 高）',
+    methAssumPrefill: 'Prefill alpha',
+    methAssumEmbodied: '隐含 : 运营 比例',
+    methAssumWater: '用水（L / kWh）',
+    methSourcesTitle: '数据来源',
+    methSrcColTitle: '来源',
+    methSrcColPublisher: '发布方',
+    methSrcColVersion: '版本',
+    methAttribTitle: '署名',
+    methAttribEm: '电网碳强度在有实时数据时使用 Electricity Maps，否则回退到年度平均电网因子；每行记录所用来源。',
+    methFullDoc: '完整方法论文档',
   },
   de: {
     skipToContent: 'Zum Inhalt springen',
@@ -712,6 +876,79 @@ export const translations = {
     esgTitle: 'ESG / CSRD Scope-2 Dual-Reporting-Export',
     esgCaveatNote: 'Die obige Scope- & Unsicherheitserklärung ist in jede heruntergeladene Datei eingebettet und kann nicht entfernt werden. Standortbasiert nutzt physische Netzintensität; marktbasiert spiegelt vertragliche Instrumente wider (GHG Protocol Scope 2). Zahlen stammen direkt aus totals.co2_kg / co2_kg_market (keine neuen Werte erzeugt).',
     esgFooter: 'Geeignet für CSRD/ESRS-E1-Offenlegungsarbeitsmappen. Mit modeled_traffic_fraction auf Ihren tatsächlichen Nutzungsanteil skalieren. Behalten Sie den eingebetteten Hinweis bei Verwendung in Berichten stets bei.',
+
+    // Navigation (mehrseitig)
+    navOverview: 'Überblick',
+    navRankings: 'Rangliste',
+    navRegions: 'Regionen',
+    navRecommendations: 'Empfehlungen',
+    navMethodology: 'Methodik',
+
+    // Rangliste-Seite
+    rankTitle: 'Umweltfreundlichste Modelle',
+    rankIntro: 'Ranglisten der über OpenRouter sichtbaren Modelle nach CO₂-Effizienz und absolutem Fußabdruck. Weniger CO₂ pro Ausgabe-Token = umweltfreundlicher. Alle Werte sind Schätzungen mit Low-Mid-High-Bereichen.',
+    rankTokenizerNote: 'Tokenizer-Hinweis: Ausgabe-Token-Zahlen stammen aus den Tokenizern verschiedener Anbieter und sind nicht exakt vergleichbar; Pro-Token-Ranglisten sind daher indikativ, nicht exakt.',
+    rankGreenestTitle: 'Effizienteste (CO₂ / Token)',
+    rankGreenestSub: 'Niedrigste Gramm CO₂ pro 1k Ausgabe-Token zuerst.',
+    rankEffUnit: 'Werte in g CO₂ pro 1 000 Ausgabe-Token (Mittelwert-Schätzung).',
+    rankBiggestTitle: 'Größter absoluter Fußabdruck',
+    rankBiggestSub: 'Höchstes operatives CO₂ des Tages.',
+    rankBiggestUnit: 'Operatives CO₂ gesamt über den modellierten Tag (Mittelwert-Schätzung).',
+    rankFullTitle: 'Vollständiges Modellverzeichnis',
+
+    // Regionen-Seite
+    regTitle: 'Regionen & Stromnetz',
+    regIntro: 'Wo der modellierte Verkehr wahrscheinlich bedient wird und wie sauber diese Netze sind. Die Netz-CO₂-Intensität (gCO₂/kWh) ist der größte Hebel für Inferenz-Emissionen.',
+    regBestTitle: 'Szenario sauberste Region',
+    regBestBody: (region: string, intensity: string | number, pct: string | number) =>
+      `Liefe der gesamte modellierte Verkehr über das sauberste verfügbare Netz — ${region} (~${intensity} gCO₂/kWh) — sänke das geschätzte operative CO₂ um etwa ${pct}%.`,
+    regionLabel: (r: string) => REGION_LABELS_DE[r] ?? r,
+    regBreakdownTitle: 'Aufschlüsselung nach Region',
+    regCleanestFirst: 'sauberstes Netz zuerst',
+    regColRegion: 'Region',
+    regColIntensity: 'Netzintensität',
+    regColRenewable: 'Erneuerbar',
+    regColModels: 'Modelle',
+    regColCo2: 'CO₂ gesamt',
+    regColShare: 'Anteil',
+    regCleanest: 'am saubersten',
+    regNote: 'Die Intensität ist über die Modelle der Region energiegewichtet. Der Erneuerbaren-Anteil wird nur angezeigt, wo gemeldet; „—“ bedeutet nicht verfügbar. Die Regionszuordnung ist eine Annahme zur wahrscheinlichen Bedien-Region, kein bestätigter Rechenzentrumsstandort.',
+
+    // Empfehlungen-Seite
+    recTitle: 'Wählen Sie ein umweltfreundlicheres Modell',
+    recIntro: 'Zwei praktische Hebel zur Senkung der Inferenz-Emissionen: Wechsel zu einem effizienteren Modell derselben Open/Closed-Klasse und Betrieb in einem saubereren Netz.',
+    recLever1Title: 'Modell wechseln',
+    recLever1Body: 'Wählen Sie ein Modell derselben Klasse mit weniger CO₂ pro Ausgabe-Token für vergleichbare Aufgaben.',
+    recLever2Title: 'Sauberer Strom',
+    recLever2Body: (pct: string | number) => `Der heutige Verkehr auf einem 100%-Niedrigkohlenstoff-Netz würde das geschätzte operative CO₂ um etwa ${pct}% senken.`,
+    recSwitchTitle: 'Wechselvorschläge derselben Klasse',
+    recSwitchSub: 'Für die verkehrsstärksten Modelle die effizienteste Alternative derselben Open/Closed-Klasse.',
+    recNone: 'Keine umweltfreundlichere Alternative derselben Klasse im aktuellen Datensatz gefunden.',
+    recColCurrent: 'Aktuelles Modell',
+    recColGreener: 'Umweltfreundlichere Alternative',
+    recColSaving: 'CO₂ / Token gespart',
+    recNote: 'Die Einsparung vergleicht CO₂ pro Ausgabe-Token (mit Bereichen). Fähigkeitsunterschiede sind nicht berücksichtigt — prüfen Sie vor dem Wechsel, ob die Alternative zu Ihrer Aufgabe passt.',
+
+    // Methodik-Seite
+    methTitle: 'Methodik & Unsicherheit',
+    methVersionLine: (v: string, date: string) => `Methodik v${v} · Daten Stand ${date}.`,
+    methScopeTitle: 'Geltungsbereich (nicht verhandelbar)',
+    methChainTitle: 'Wie die Schätzung aufgebaut ist',
+    methChainBody: 'Tägliche Token-Mengen aus den OpenRouter-Ranglisten werden mit EcoLogits und AI Energy Score in Energie umgerechnet, mit der Rechenzentrums-PUE und dann mit der CO₂-Intensität des Bedien-Netzes multipliziert, um operatives CO₂ zu ergeben. Graue (Hardware-)Emissionen und Wasser werden als separate Lebenszyklus-Terme hinzugefügt.',
+    methUncertaintyBody: 'Jede Größe wird durchgängig als {Low, Mid, High}-Bereich geführt und nie auf eine einzelne scheingenaue Zahl reduziert. Geschlossene Modelle — deren Parameter, Hardware und Rechenzentrumsstandorte nicht offengelegt sind — tragen die größte Unsicherheit.',
+    methAssumTitle: 'Wichtige Annahmen',
+    methAssumIoRatio: 'Verhältnis Eingabe : Ausgabe-Token',
+    methAssumPue: 'PUE-Band (low / mid / high)',
+    methAssumPrefill: 'Prefill-Alpha',
+    methAssumEmbodied: 'Verhältnis grau : operativ',
+    methAssumWater: 'Wasser (L / kWh)',
+    methSourcesTitle: 'Datenquellen',
+    methSrcColTitle: 'Quelle',
+    methSrcColPublisher: 'Herausgeber',
+    methSrcColVersion: 'Version',
+    methAttribTitle: 'Quellenangabe',
+    methAttribEm: 'Die Netz-CO₂-Intensität nutzt Electricity Maps, wo Live-Daten verfügbar sind, andernfalls jährliche Durchschnitts-Netzfaktoren; die verwendete Quelle wird pro Zeile vermerkt.',
+    methFullDoc: 'Vollständiges Methodik-Dokument',
   }
 } as const;
 
