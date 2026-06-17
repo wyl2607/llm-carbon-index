@@ -7,6 +7,15 @@ Public surface: carbon_intensity(region) -> (gco2_per_kwh, grid_source, source_i
 Never raises to caller on failure/unknown; always falls back and labels source.
 The source_id (Phase 6G) is the provenance key of the figure actually used:
 "GRID-EM-LIVE" for live, else the annual_factors row's source_id.
+
+L2 resolution: the live path is attempted only when electricitymaps_api_key()
+returns truthy AND em_zone_for_region finds a zone for the region. On any
+error (incl. missing key, which is the case for all reproducibility harness
+runs) it falls back to annual_factor and records that source explicitly.
+Live values are never required for verify (grid_replay supplies frozen).
+Annual fallback usage is always labelled; no number is sourceless.
+See docs/methodology.md for current status (grid_live_fraction permanently 0
+in published series under the present operational constraints).
 """
 
 from __future__ import annotations

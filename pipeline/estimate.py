@@ -167,6 +167,7 @@ def estimate(
         )
 
         # 4. grid (live or annual labelled + provenance source_id; replayable in verify)
+        #    L2: live only if key+zone at call time; published runs use annual exclusively.
         gco2, grid_src, grid_source_id = grid_lookup(region)
 
         # 5. PUE as a band (A4 revised). A known provider PUE centres the band's mid;

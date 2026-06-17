@@ -9,6 +9,14 @@ fabrication risk (CLAUDE.md scope statement reinforced, not weakened).
 `totals.modeled_traffic_fraction` — and computed over the modeled records only
 (the caller passes the estimates list, which already excludes the OpenRouter
 `other`/uncovered aggregate). Each axis sums to 1.0 (± float tolerance).
+
+L2 (live-grid honesty): grid_live_fraction (and grid_live_models) will be >0 only
+for runs where carbon_intensity actually returned "electricity_maps_live". In all
+committed history goldens and under the verify harness it is 0.0 because the
+reproducibility contract runs without ELECTRICITYMAPS_API_KEY (and verify is
+offline-only via snapshot replay). The code path exists and records sources
+correctly when a key is supplied at publish time; the metric honestly reflects
+published data (always annual fallback today). See docs/methodology.md §11a.
 """
 from __future__ import annotations
 
