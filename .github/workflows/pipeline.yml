@@ -11,12 +11,18 @@ concurrency:
   group: pipeline-refresh
   cancel-in-progress: false
 
-permissions:
-  contents: write          # to commit refreshed data/output/**
+# S5: least-privilege — only the refresh job needs write scopes.
+# contents:write is required solely for the atomic commit+push of data/output + snapshots
+# (gating from B1/B2 ensures only verified data reaches this path).
+# issues:write added for L1 cron-failure alerting below.
+permissions: {}
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
     steps:
       - uses: actions/checkout@v5
 
@@ -60,3 +66,29 @@ jobs:
           else
             echo "No data changes; nothing to commit."
           fi
+
+      # L1: cron-failure visibility. Runs only on job failure (gates or commit/push).
+      # Opens a new issue or comments on an existing open one with same title.
+      # Makes silent daily cron deaths actionable instead of invisible.
+      - name: Report failure (open or update issue)
+        if: failure()
+        run: |
+          TITLE="pipeline-refresh: daily data refresh failed"
+          BODY=$(printf '%s\n' \
+            "**Failed run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            "**Commit:** ${{ github.sha }}" \
+            "**Time (UTC):** $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            "" \
+            "This issue was auto-created/updated by the pipeline-refresh workflow to surface cron failures (L1)." \
+            "Previous failures may be linked below." \
+            "" \
+            "See logs for root cause (e.g. API rate limit, schema change, gate failure).")
+          # Find most recent open issue matching title (simple dedup)
+          EXISTING=$(gh issue list --state open --limit 5 --json title,number --jq '.[] | select(.title == "'"$TITLE"'") | .number' | head -1 || true)
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$BODY" || true
+          else
+            gh issue create --title "$TITLE" --body "$BODY" --label "pipeline,automation" || true
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
