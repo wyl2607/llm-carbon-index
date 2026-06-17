@@ -43,7 +43,7 @@ export const OriginDonut: React.FC<Props> = ({ models }) => {
             paddingAngle={2}
           >
             {data.map((entry, idx) => (
-              <Cell key={idx} fill={COLORS[entry.name] || '#64748b'} />
+              <Cell key={idx} fill={COLORS[entry.name] || tokens.colors.other} />
             ))}
           </Pie>
           <Tooltip 
@@ -56,9 +56,9 @@ export const OriginDonut: React.FC<Props> = ({ models }) => {
 
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs mt-1">
         {data.map(d => (
-          <div key={d.name} className="flex items-center gap-1.5 text-[#a1a6a1]">
+          <div key={d.name} className="flex items-center gap-1.5 text-[var(--text-secondary)]">
             <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{background: COLORS[d.name]}} />
-            {d.name} <span className="font-mono text-[#e4e7e4]/70">{((d.value / total) * 100).toFixed(0)}%</span>
+            {d.name} <span className="font-mono text-[var(--text)]/70">{((d.value / total) * 100).toFixed(0)}%</span>
           </div>
         ))}
       </div>

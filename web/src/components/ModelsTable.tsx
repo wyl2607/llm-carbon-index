@@ -320,7 +320,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                 const originClass = m.origin === 'CN' ? 'badge-cn' : m.origin === 'US' ? 'badge-us' : m.origin === 'EU' ? 'badge-eu' : 'badge';
                 const displayRank = i + 1;
                 nodes.push(
-                  <tr key={m.slug} className={`border-b border-[var(--border)] hover:bg-[var(--bg-elev)] transition-colors ${i % 2 === 0 ? '' : 'bg-[#0f0d0a]'}`}>
+                  <tr key={m.slug} className={`border-b border-[var(--border)] hover:bg-[var(--bg-elev)] transition-colors ${i % 2 === 0 ? '' : 'bg-[var(--row-stripe)]'}`}>
                     <td className="px-4 py-2 font-semibold text-[var(--text)]">
                       <span className="inline-block align-middle px-1 py-px mr-1.5 text-[10px] font-bold rounded bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)]">T{t}</span>
                       {m.display_name}
@@ -390,7 +390,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
           </tbody>
         </table>
       </div>
-      <div className="text-[11px] text-[#9ba19b] flex justify-between px-1">
+      <div className="text-[11px] text-[var(--text-muted)] flex justify-between px-1">
         <span>{tt.tableNote || 'Click headers to sort. All values carry low–mid–high ranges.'}</span>
         <span>{sorted.length} models</span>
       </div>
