@@ -51,6 +51,19 @@ def verify_date(data_date: str) -> bool:
     committed = json.loads(hist_path.read_text(encoding="utf-8"))
     reproduced = reproduce(data_date)
 
+    # L4 guard: methodology_version in goldens MUST match current METHODOLOGY_VERSION.
+    # Schema/methodology-affecting changes require bumping + regenerating the golden
+    # *and* its snapshot in one commit, or verify fails (and this explicit check fires).
+    cver = committed.get("methodology_version")
+    rver = reproduced.get("methodology_version")
+    if cver != rver:
+        print(
+            f"FAIL {data_date}: methodology_version mismatch (committed={cver}, current={rver}). "
+            "Per L4 migration rule (docs/methodology.md): methodology/schema changes (6J-class) "
+            "MUST regenerate golden + snapshot together in same commit."
+        )
+        return False
+
     a = json.dumps(_strip_volatile(committed), indent=2, sort_keys=True).splitlines()
     b = json.dumps(_strip_volatile(reproduced), indent=2, sort_keys=True).splitlines()
     if a == b:

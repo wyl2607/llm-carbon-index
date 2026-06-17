@@ -43,35 +43,35 @@ export const KpiCards: React.FC<Props> = ({ totals, shift = 0, lang, modeledFrac
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const KPICard = ({ title, sub, midValue, low, high, unit, icon: Icon, highlight = false }: any) => (
-    <div className={`relative overflow-hidden rounded-2xl border ${highlight ? 'border-emerald-500/40' : 'border-white/10'} bg-black/40 p-6 backdrop-blur-md shadow-2xl transition-all hover:border-emerald-500/30 group`}>
-      <div className={`flex items-center justify-between text-xs font-bold uppercase tracking-widest ${highlight ? 'text-emerald-400' : 'text-gray-400'}`}>
+    <div className={`relative overflow-hidden rounded-2xl border ${highlight ? 'border-[var(--accent-border)]' : 'border-[var(--border)]'} bg-[var(--bg-elev)]/60 p-6 backdrop-blur-md shadow-2xl transition-all hover:border-[var(--accent-border)] group`}>
+      <div className={`flex items-center justify-between text-xs font-bold uppercase tracking-widest ${highlight ? 'text-[var(--accent)]' : 'text-[var(--text-muted)]'}`}>
         <div className="flex items-center gap-2">
-          <Icon className={`w-4 h-4 ${highlight ? 'text-emerald-400' : 'text-emerald-500/60 group-hover:text-emerald-400'} transition-colors`} /> 
+          <Icon className={`w-4 h-4 ${highlight ? 'text-[var(--accent)]' : 'text-[var(--accent)]/60 group-hover:text-[var(--accent)]'} transition-colors`} /> 
           {title}
         </div>
-        {highlight && <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-900/50 font-black">SCENARIO</span>}
+        {highlight && <span className="text-[10px] px-2 py-0.5 rounded-full bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)] font-black">SCENARIO</span>}
       </div>
       <div className="mt-4 flex items-baseline gap-2">
-        <span className={`text-4xl sm:text-5xl font-black tracking-tight tabular-nums ${highlight ? 'text-emerald-400' : 'text-white'}`}>
+        <span className={`text-4xl sm:text-5xl font-black tracking-tight tabular-nums ${highlight ? 'text-[var(--accent)]' : 'text-[var(--text)]'}`}>
           {nf(midValue, { minimumFractionDigits: highlight ? 1 : 1, maximumFractionDigits: 1 })}
         </span>
-        {unit && <span className={`text-xl font-bold ${highlight ? 'text-emerald-400/80' : 'text-gray-500'}`}>{unit}</span>}
+        {unit && <span className={`text-xl font-bold ${highlight ? 'text-[var(--accent)]/80' : 'text-[var(--text-muted)]'}`}>{unit}</span>}
       </div>
       {(low !== undefined && high !== undefined && low !== 0 && high !== 0) ? (
-        <div className="mt-2 text-xs text-gray-500 font-mono flex items-center gap-1.5">
+        <div className="mt-2 text-xs text-[var(--text-muted)] font-mono flex items-center gap-1.5">
           <span className="opacity-60">{tt.kpiRange}</span> 
-          <span className="text-gray-400">{nf(low, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
+          <span className="text-[var(--text-secondary)]">{nf(low, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
           <span className="opacity-30">—</span>
-          <span className="text-gray-400">{nf(high, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
+          <span className="text-[var(--text-secondary)]">{nf(high, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
           <span className="opacity-60">{unit || 't'}</span>
         </div>
       ) : (
         <div className="h-6" /> 
       )}
-      <div className="mt-5 text-[11px] text-gray-400 border-t border-white/5 pt-3 leading-relaxed">{sub}</div>
+      <div className="mt-5 text-[11px] text-[var(--text-muted)] border-t border-[var(--border)]/50 pt-3 leading-relaxed">{sub}</div>
       
-      {/* Decorative inner glow */}
-      <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-all" />
+      {/* Decorative inner glow (amber phosphor) */}
+      <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-[var(--accent-bg)] rounded-full blur-2xl group-hover:bg-[var(--accent-bg)] transition-all" />
     </div>
   );
 

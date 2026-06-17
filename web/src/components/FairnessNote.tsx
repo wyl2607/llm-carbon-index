@@ -30,8 +30,8 @@ export const FairnessNote: React.FC<Props> = ({ fairness, lang = 'en' }) => {
 
   const isRobust = co2Changed === 0 && effChanged === 0;
   const stabilityLabel = tt.rankStabilityLabel(topN, maxDisp, isRobust);
-  const indicatorColor = isRobust ? 'text-emerald-400' : 'text-amber-400';
-  const indicatorBorder = isRobust ? 'border-emerald-900/40 bg-[#0a140b]' : 'border-amber-900/40 bg-[#140f0a]';
+  const indicatorColor = isRobust ? 'text-[var(--accent)]' : 'text-[var(--warning)]';
+  const indicatorBorder = isRobust ? 'border-[var(--accent-border)] bg-[var(--bg-elev)]' : 'border-[var(--warning-border)] bg-[var(--bg-elev)]';
 
   const methodologyBase = 'https://github.com/wyl2607/llm-carbon-index/blob/main/docs';
 
@@ -39,21 +39,21 @@ export const FairnessNote: React.FC<Props> = ({ fairness, lang = 'en' }) => {
     <div
       role="note"
       aria-label="Comparability and fairness note"
-      className={`card p-4 text-sm ${indicatorBorder} border-l-4 ${isRobust ? 'border-l-emerald-600' : 'border-l-amber-600'}`}
+      className={`card p-4 text-sm ${indicatorBorder} border-l-4 ${isRobust ? 'border-l-[var(--accent)]' : 'border-l-[var(--warning)]'}`}
     >
-      <div className={`uppercase tracking-[1px] ${indicatorColor} text-xs font-bold flex items-center gap-2 mb-1.5`}>
+      <div className={`uppercase tracking-[1px] ${indicatorColor} text-xs font-bold flex items-center gap-2 mb-1.5 label-sm`}>
         <span>⚖</span>
         {tt.fairnessHeader}
       </div>
-      <p className="text-[#c7c9c3] leading-snug font-medium">
+      <p className="text-[var(--text-secondary)] leading-snug font-medium">
         {tt.rankStability(stabilityLabel)}
       </p>
       {/* Phase 6m: louder, explicit numbers + tier honesty callout */}
-      <p className={`mt-2 text-xs font-semibold ${isRobust ? 'text-emerald-400' : 'text-amber-400'}`}>
+      <p className={`mt-2 text-xs font-semibold ${isRobust ? 'text-[var(--accent)]' : 'text-[var(--warning)]'}`}>
         by_co2: ranks_changed={co2Changed} / top_n={topN}, max_displacement={rank_stability.by_co2.max_displacement}.
         {' '}{tt.tierNote}
       </p>
-      <p className="text-[12px] text-[#9ba19b] mt-1.5 border-l-2 border-[#2a2f2a] pl-2.5">
+      <p className="text-[12px] text-[var(--text-muted)] mt-1.5 border-l-2 border-[var(--border)] pl-2.5">
         {tt.lTokenizerNote}
         {' '}
         <a

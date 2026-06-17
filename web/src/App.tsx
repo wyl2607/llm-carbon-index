@@ -132,19 +132,19 @@ function App() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0c0a] text-[#e4e7e4] selection:bg-emerald-800/40">
-      <header className="sticky top-0 z-50 border-b border-[#242924] bg-[#0a0c0a]/95 backdrop-blur">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] selection:bg-[var(--accent-bg)]">
+      <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/95 backdrop-blur">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3 text-sm">
           <div className="flex items-center gap-3">
             <div className="font-black tracking-[-0.5px] text-lg">LLM Carbon Index</div>
-            {data && <div className="text-[10px] px-2 py-px rounded bg-emerald-950 text-emerald-400 border border-emerald-900 font-bold tracking-widest">v{data.methodology_version}</div>}
+            {data && <div className="text-[10px] px-2 py-px rounded bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)] font-bold tracking-widest">v{data.methodology_version}</div>}
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
             <select 
               value={lang} 
               onChange={(e) => setLang(e.target.value as Lang)}
-              className="text-xs py-1 px-2 bg-[#0a0c0a] border border-[#242924] rounded-lg text-[#e4e7e4] hover:bg-[#151915] cursor-pointer"
+              className="text-xs py-1 px-2 bg-[var(--bg-elev)] border border-[var(--border)] rounded-lg text-[var(--text)] hover:bg-[var(--bg-card)] cursor-pointer"
             >
               <option value="de">{tt.langDe}</option>
               <option value="zh">{tt.langZh}</option>
@@ -165,18 +165,36 @@ function App() {
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-6">
-                <div className="text-sm text-[#9ba19b] font-mono">
+                <div className="text-sm text-[var(--text-muted)] font-mono">
                   {tt.methodologyVersion}{data ? data.methodology_version : '—'} • {data ? data.data_date : '—'}
                 </div>
+                {/* L1 UI staleness indicator (phase 6L).
+                    Driven by JSON data_date. N=7 days (see comment).
+                    Prominent, never buried. Localized keys have parity. */}
+                {data?.data_date && (() => {
+                  const d = new Date(data.data_date + 'T00:00:00Z');
+                  const ageDays = isNaN(d.getTime()) ? 0 : Math.floor((Date.now() - d.getTime()) / 86400000);
+                  const isStale = ageDays > 7; // N=7 threshold per spec requirement
+                  const label = tt.stalenessNote ? tt.stalenessNote(data.data_date) : `data as of ${data.data_date}`;
+                  return (
+                    <span
+                      className={`staleness ${isStale ? 'stale' : ''}`}
+                      title={label}
+                      aria-label={label}
+                    >
+                      {isStale ? label : (tt.stalenessNoteShort || (ageDays + 'd'))}
+                    </span>
+                  );
+                })()}
               </div>
-              <h1 className="text-6xl sm:text-8xl font-black tracking-[-3px] text-white mb-6 leading-[0.9]">
+              <h1 className="text-6xl sm:text-8xl font-black tracking-[-3px] text-[var(--text)] mb-6 leading-[0.9]">
                 {tt.heroTitle}
               </h1>
               <div className="space-y-4">
-                <p className="text-2xl sm:text-3xl text-emerald-400 font-bold tracking-tight leading-tight">
+                <p className="text-2xl sm:text-3xl text-[var(--accent)] font-bold tracking-tight leading-tight">
                   {tt.heroSubtitle}
                 </p>
-                <p className="text-lg text-[#a1a6a1] leading-relaxed max-w-2xl font-medium">
+                <p className="text-lg text-[var(--text-secondary)] leading-relaxed max-w-2xl font-medium">
                   {tt.heroDesc} 
                   <span className="block mt-2 opacity-60 font-normal italic">
                     {tt.heroDescSub}
@@ -219,29 +237,29 @@ function App() {
 
           {/* v0.2 lifecycle + water strip — operational vs embodied vs total + water */}
           {totals?.co2_kg_total && totals?.co2_kg_embodied && (
-            <div className="mt-5 rounded-2xl border border-[#242924] bg-black/30 p-5">
-              <div className="text-[11px] font-bold uppercase tracking-widest text-emerald-400/80 mb-3">{tt.lcaTitle}</div>
+            <div className="mt-5 rounded-2xl border border-[var(--border)] bg-black/30 p-5">
+              <div className="text-[11px] font-bold uppercase tracking-widest text-[var(--accent)]/80 mb-3">{tt.lcaTitle}</div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <div className="text-[11px] text-[#9ba19b] mb-0.5">{tt.lcaOperational}</div>
-                  <div className="font-mono text-[#e4e7e4]">{formatCO2Range(totals.co2_kg)}</div>
+                  <div className="text-[11px] text-[var(--text-muted)] mb-0.5">{tt.lcaOperational}</div>
+                  <div className="font-mono text-[var(--text)]">{formatCO2Range(totals.co2_kg)}</div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-[#9ba19b] mb-0.5">{tt.lcaEmbodied}</div>
-                  <div className="font-mono text-[#a1a6a1]">{formatCO2Range(totals.co2_kg_embodied)}</div>
+                  <div className="text-[11px] text-[var(--text-muted)] mb-0.5">{tt.lcaEmbodied}</div>
+                  <div className="font-mono text-[var(--text-secondary)]">{formatCO2Range(totals.co2_kg_embodied)}</div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-emerald-400/80 mb-0.5">{tt.lcaTotal}</div>
-                  <div className="font-mono text-emerald-300 font-semibold">{formatCO2Range(totals.co2_kg_total)}</div>
+                  <div className="text-[11px] text-[var(--accent)]/80 mb-0.5">{tt.lcaTotal}</div>
+                  <div className="font-mono text-[var(--accent)] font-semibold">{formatCO2Range(totals.co2_kg_total)}</div>
                 </div>
                 {totals.water_liters && (
                   <div>
-                    <div className="text-[11px] text-blue-300/70 mb-0.5">{tt.lcaWater}</div>
-                    <div className="font-mono text-blue-300">{formatWaterRange(totals.water_liters)}</div>
+                    <div className="text-[11px] text-[var(--accent)]/70 mb-0.5">{tt.lcaWater}</div>
+                    <div className="font-mono text-[var(--accent-light)]">{formatWaterRange(totals.water_liters)}</div>
                   </div>
                 )}
               </div>
-              <p className="mt-3 text-[11px] text-[#9ba19b] leading-relaxed max-w-3xl">{tt.lcaNote}</p>
+              <p className="mt-3 text-[11px] text-[var(--text-muted)] leading-relaxed max-w-3xl">{tt.lcaNote}</p>
             </div>
           )}
         </div>
@@ -262,7 +280,7 @@ function App() {
         )}
 
         {sample && (
-          <div className="my-4 p-3 rounded-xl border border-amber-900/40 bg-amber-950/20 text-amber-300 text-sm">
+          <div className="my-4 p-3 rounded-xl border border-[var(--warning-border)] bg-[var(--warning-bg)] text-[var(--warning)] text-sm">
             {tt.sampleWarning}
           </div>
         )}
@@ -296,14 +314,14 @@ function App() {
               <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
                 <div>
                   <h2 className="font-bold">{tt.vizTitle}</h2>
-                  <p className="text-xs text-[#9ba19b] mt-0.5">{tt.vizAllNote}</p>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">{tt.vizAllNote}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <GroupToggle groupBy={groupBy} onChange={setGroupBy} lang={lang} />
                   <select 
                     value="15" 
                     onChange={() => { /* top-N wired if desired */ }} 
-                    className="text-xs py-1 px-2 bg-[#0a0c0a] border border-[#242924] rounded-lg"
+                    className="text-xs py-1 px-2 bg-[var(--bg)] border border-[var(--border)] rounded-lg"
                   >
                     <option>{tt.topEmitters}</option>
                   </select>
@@ -314,8 +332,8 @@ function App() {
                 <div className="lg:col-span-3 min-h-[360px]">
                   <Co2BarChart models={models} groupBy={groupBy} showAll={showAllModels} onToggleShowAll={() => setShowAllModels(!showAllModels)} lang={lang} />
                 </div>
-                <div className="lg:col-span-2 card p-4 border-[#242924]">
-                  <div className="text-xs font-bold tracking-widest text-[#a1a6a1] mb-1.5">{tt.vizOriginBreakdown}</div>
+                <div className="lg:col-span-2 card p-4 border-[var(--border)]">
+                  <div className="text-xs font-bold tracking-widest text-[var(--text-secondary)] mb-1.5">{tt.vizOriginBreakdown}</div>
                   <OriginDonut models={models} />
                 </div>
               </div>
@@ -326,9 +344,9 @@ function App() {
               <div className="mb-4 flex items-baseline justify-between">
                 <div>
                   <h2 className="font-bold">{tt.tableTitle}</h2>
-                  <p className="text-xs text-[#9ba19b]">{tt.tableSubtitle}</p>
+                  <p className="text-xs text-[var(--text-muted)]">{tt.tableSubtitle}</p>
                 </div>
-                <div className="text-[11px] text-emerald-400/80 font-medium">{isScenario ? tt.scenarioActive : tt.baselineActive}</div>
+                <div className="text-[11px] text-[var(--accent)]/80 font-medium">{isScenario ? tt.scenarioActive : tt.baselineActive}</div>
               </div>
 
               <ModelsTable 
@@ -344,14 +362,14 @@ function App() {
 
             {/* For researchers & ESG reporting — slim thesis / CSRD block */}
             {data && (
-              <section className="card p-6 sm:p-7 bg-gradient-to-br from-[#0c100c] to-[#080a08] border-emerald-900/40">
+              <section className="card p-6 sm:p-7 bg-gradient-to-br from-[#0c0a07] to-[#080704] border-[var(--accent-border)]">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
                   <div className="max-w-2xl">
-                    <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-[11px] font-bold uppercase tracking-wider mb-3 border border-emerald-500/20">
+                    <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[var(--accent-bg)] text-[var(--accent)] text-[11px] font-bold uppercase tracking-wider mb-3 border border-[var(--accent-border)]">
                       <Zap size={13} /> {tt.thesisBadge}
                     </div>
-                    <h2 className="text-xl font-bold text-white mb-1.5">{tt.thesisTitle}</h2>
-                    <p className="text-sm text-[#a1a6a1] leading-relaxed">{tt.thesisSubtitle}</p>
+                    <h2 className="text-xl font-bold text-[var(--text)] mb-1.5">{tt.thesisTitle}</h2>
+                    <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{tt.thesisSubtitle}</p>
                   </div>
                   <div className="flex flex-wrap gap-2.5 shrink-0">
                     <button
@@ -360,32 +378,32 @@ function App() {
                     >
                       {tt.thesisCopyCitation}
                     </button>
-                    <a href={`${import.meta.env.BASE_URL}data/latest.json`} target="_blank" rel="noreferrer" className="btn btn-ghost border-[#242924] text-xs px-4 py-2.5 font-bold">
+                    <a href={`${import.meta.env.BASE_URL}data/latest.json`} target="_blank" rel="noreferrer" className="btn btn-ghost border-[var(--border)] text-xs px-4 py-2.5 font-bold">
                       {tt.rawJson}
                     </a>
                   </div>
                 </div>
-                <div className="mt-5 pt-4 border-t border-white/5 text-xs text-[#a1a6a1] leading-relaxed space-y-2">
-                  <p><strong className="text-emerald-400">{tt.csrdPrefix}</strong>{tt.csrdExample}</p>
-                  <p className="text-[#9ba19b] italic">{tt.thesisScopeNote}</p>
+                <div className="mt-5 pt-4 border-t border-white/5 text-xs text-[var(--text-secondary)] leading-relaxed space-y-2">
+                  <p><strong className="text-[var(--accent)]">{tt.csrdPrefix}</strong>{tt.csrdExample}</p>
+                  <p className="text-[var(--text-muted)] italic">{tt.thesisScopeNote}</p>
                 </div>
               </section>
             )}
 
             {/* Footer actions + full transparency */}
-            <footer className="pt-8 mt-4 border-t border-[#242924] text-xs text-[#9ba19b] flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 justify-between">
+            <footer className="pt-8 mt-4 border-t border-[var(--border)] text-xs text-[var(--text-muted)] flex flex-col md:flex-row md:items-center gap-x-6 gap-y-2 justify-between">
               <div className="max-w-md">
                 {tt.footerStatic}<br/>
                 <span className="opacity-60">{tt.footerCopyright}</span>
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-1">
-                <a href="https://linkedin.com/in/wyl2607" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] transition-colors">{tt.linkedin}</a>
-                <a href="https://github.com/wyl2607/llm-carbon-index" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] transition-colors">{tt.github}</a>
-                <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] transition-colors">{tt.changelog}</a>
-                <a href={`${import.meta.env.BASE_URL}data/latest.json`} className="hover:text-[#e4e7e4] underline-offset-2 hover:underline" target="_blank" rel="noreferrer">{tt.rawJson}</a>
-                <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/docs/methodology.md" target="_blank" rel="noreferrer" className="hover:text-[#e4e7e4] underline-offset-2 hover:underline">{tt.methodologyFull}</a>
+                <a href="https://linkedin.com/in/wyl2607" target="_blank" rel="noreferrer" className="hover:text-[var(--text)] transition-colors">{tt.linkedin}</a>
+                <a href="https://github.com/wyl2607/llm-carbon-index" target="_blank" rel="noreferrer" className="hover:text-[var(--text)] transition-colors">{tt.github}</a>
+                <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer" className="hover:text-[var(--text)] transition-colors">{tt.changelog}</a>
+                <a href={`${import.meta.env.BASE_URL}data/latest.json`} className="hover:text-[var(--text)] underline-offset-2 hover:underline" target="_blank" rel="noreferrer">{tt.rawJson}</a>
+                <a href="https://github.com/wyl2607/llm-carbon-index/blob/main/docs/methodology.md" target="_blank" rel="noreferrer" className="hover:text-[var(--text)] underline-offset-2 hover:underline">{tt.methodologyFull}</a>
                 {sensData && sensData.drivers && (
-                  <span className="text-emerald-500/80">
+                  <span className="text-[var(--accent)]/70">
                     {tt.sensitivityLabel} {tt.sensitivityDetail(sensData.dominant, Math.round(Math.max(...sensData.drivers.map(d => d.total_co2_swing_pct.high))))}
                   </span>
                 )}

@@ -45,16 +45,16 @@ export const EsgExportPanel: React.FC<Props> = ({ data, lang = 'en' }) => {
     <div
       role="region"
       aria-label="ESG CSRD Scope-2 dual reporting export"
-      className="card p-4 text-sm border border-[#242924] bg-[#0a0c0a]"
+      className="card p-4 text-sm border border-[var(--border)] bg-[var(--bg)]"
     >
-      <div className="uppercase tracking-[1px] text-[#9ba19b] text-xs font-bold mb-2 flex items-center gap-2">
+      <div className="uppercase tracking-[1px] text-[var(--text-muted)] text-xs font-bold mb-2 flex items-center gap-2 label-sm">
         <span>📊</span> {tt.esgTitle}
       </div>
 
-      <p className="text-[#c7c9c3] leading-snug mb-2">
+      <p className="text-[var(--text-secondary)] leading-snug mb-2">
         {SCOPE_CAVEAT}
       </p>
-      <p className="text-[11px] text-[#8a8f87] mb-3">
+      <p className="text-[11px] text-[var(--text-muted)] mb-3">
         {tt.esgCaveatNote}
       </p>
 

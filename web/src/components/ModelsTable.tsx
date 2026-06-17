@@ -121,7 +121,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
     return (
       <th
         onClick={key ? () => toggleSort(key) : undefined}
-        className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50 ${key ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors' : ''} whitespace-nowrap`}
+        className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] border-b border-[var(--border)] ${key ? 'cursor-pointer hover:bg-[var(--bg-elev)] transition-colors' : ''} whitespace-nowrap`}
         aria-sort={active ? (sortDir === 'desc' ? 'descending' : 'ascending') : undefined}
       >
         <div className="flex items-center gap-1.5">
@@ -140,22 +140,15 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
   const flagBadge = (f: string) => (
     <span
       key={f}
-      className="inline-block px-2 py-0.5 mr-1.5 mb-1.5 text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 rounded-md dark:bg-amber-900/40 dark:text-amber-200 dark:border-amber-800/50 uppercase tracking-wide"
+      className="badge"
     >
       {f.replace(/_/g, ' ')}
     </span>
   );
 
-  // Phase 6F: per-row precision tier, same badge mechanism as flags.
-  // Emerald = measured/live (trustworthy), amber = fallback estimate.
+  // Phase 6F: per-row precision tier badges — use theme classes (prominent, linkable flags untouched)
   const tierBadge = (label: string, measured: boolean) => (
-    <span
-      className={`inline-block px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wide border ${
-        measured
-          ? 'bg-emerald-900/40 text-emerald-300 border-emerald-800/50'
-          : 'bg-amber-900/40 text-amber-200 border-amber-800/50'
-      }`}
-    >
+    <span className={`badge ${measured ? 'badge-tier-measured' : 'badge-tier-fallback'}`}>
       {label}
     </span>
   );
@@ -211,11 +204,11 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
         <div className="flex flex-col md:flex-row gap-3 items-center w-full xl:w-auto">
           <div className="relative w-full md:w-64">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-[#9ba19b]" />
+              <Search className="h-4 w-4 text-[var(--text-muted)]" />
             </div>
             <input
               type="text"
-              className="block w-full pl-9 pr-3 py-2 border border-[#242924] rounded-xl bg-[#0a0c0a] placeholder-[#969c96] focus:border-emerald-600 text-sm"
+              className="block w-full pl-9 pr-3 py-2 border border-[var(--border)] rounded-xl bg-[var(--bg)] placeholder-[var(--text-muted)] focus:border-[var(--accent)] text-sm"
               placeholder={tt.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -223,23 +216,23 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
           </div>
 
           <div className="flex flex-wrap items-center gap-2 w-full md:w-auto text-xs">
-            <div className="flex gap-1 bg-[#0a0c0a] p-1 rounded-xl border border-[#242924]">
+            <div className="flex gap-1 bg-[var(--bg)] p-1 rounded-xl border border-[var(--border)]">
               {['ALL', 'CN', 'US', 'EU', 'OTHER'].map(o => (
                 <button 
                   key={o} 
                   onClick={() => setOriginFilter(o)}
-                  className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${originFilter === o ? 'bg-emerald-900/60 text-emerald-400' : 'text-gray-400 hover:text-gray-200'}`}
+                  className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${originFilter === o ? 'bg-[var(--accent-bg)] text-[var(--accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text)]'}`}
                 >
                   {o === 'ALL' ? tt.all : o}
                 </button>
               ))}
             </div>
-            <div className="flex gap-1 bg-[#0a0c0a] p-1 rounded-xl border border-[#242924]">
+            <div className="flex gap-1 bg-[var(--bg)] p-1 rounded-xl border border-[var(--border)]">
               {['ALL', 'open', 'closed'].map(t => (
                 <button 
                   key={t} 
                   onClick={() => setTypeFilter(t)}
-                  className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${typeFilter === t ? 'bg-blue-900/40 text-blue-400' : 'text-gray-400 hover:text-gray-200'}`}
+                  className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${typeFilter === t ? 'bg-[var(--accent-bg)] text-[var(--accent)]' : 'text-[var(--text-muted)] hover:text-[var(--text)]'}`}
                 >
                   {t === 'ALL' ? tt.all : t.charAt(0).toUpperCase() + t.slice(1)}
                 </button>
@@ -281,12 +274,12 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
       </div>
 
       {isScenario && (
-        <div className="text-xs px-4 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-900/40 text-emerald-300">
+        <div className="text-xs px-4 py-1.5 rounded-lg bg-[var(--accent-bg)] border border-[var(--accent-border)] text-[var(--accent)]">
           {tt.tableNote}
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-[#242924] bg-[#121512]">
+      <div className="overflow-x-auto rounded-2xl border border-[var(--border)] bg-[var(--bg-card)]">
         <table className={`${hasWater ? 'min-w-[980px]' : 'min-w-[880px]'} w-full text-sm`}>
           <thead>
             <tr>
@@ -310,8 +303,8 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                 const t = tierMap.get(m.slug) || 1;
                 if (t !== prevT) {
                   nodes.push(
-                    <tr key={`tierband-${t}`} className="bg-[#0a0c0a]">
-                      <td colSpan={hasWater ? 10 : 9} className="px-4 py-1 text-[10px] font-bold uppercase tracking-[1px] text-emerald-400 border-b border-[#242924]">
+                    <tr key={`tierband-${t}`} className="bg-[var(--bg-elev)]">
+                      <td colSpan={hasWater ? 10 : 9} className="px-4 py-1 text-[10px] font-bold uppercase tracking-[1px] text-[var(--accent)] border-b border-[var(--border)]">
                         {tt.tierBand(t, totalTierCount)}
                       </td>
                     </tr>
@@ -327,25 +320,25 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                 const originClass = m.origin === 'CN' ? 'badge-cn' : m.origin === 'US' ? 'badge-us' : m.origin === 'EU' ? 'badge-eu' : 'badge';
                 const displayRank = i + 1;
                 nodes.push(
-                  <tr key={m.slug} className={`border-b border-[#1f2420] hover:bg-[#151815] transition-colors ${i % 2 === 0 ? '' : 'bg-[#0f120f]'}`}>
-                    <td className="px-4 py-2 font-semibold text-[#e4e7e4]">
-                      <span className="inline-block align-middle px-1 py-px mr-1.5 text-[10px] font-bold rounded bg-emerald-900/60 text-emerald-300 border border-emerald-800/50">T{t}</span>
+                  <tr key={m.slug} className={`border-b border-[var(--border)] hover:bg-[var(--bg-elev)] transition-colors ${i % 2 === 0 ? '' : 'bg-[#0f0d0a]'}`}>
+                    <td className="px-4 py-2 font-semibold text-[var(--text)]">
+                      <span className="inline-block align-middle px-1 py-px mr-1.5 text-[10px] font-bold rounded bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)]">T{t}</span>
                       {m.display_name}
-                      <span className="ml-1.5 text-[10px] text-[#5a605a] font-mono">#{displayRank}</span>
+                      <span className="ml-1.5 text-[10px] text-[var(--text-muted)] font-mono">#{displayRank}</span>
                     </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-[#a1a6a1]">
-                      <span className="font-mono text-xs bg-[#0a0c0a] px-2 py-px rounded border border-[#242924]">{formatCO2Range(m.co2_kg)}</span>
+                    <td className="px-4 py-2 whitespace-nowrap text-[var(--text-secondary)]">
+                      <span className="font-mono text-xs bg-[var(--bg)] px-2 py-px rounded border border-[var(--border)]">{formatCO2Range(m.co2_kg)}</span>
                     </td>
                     {hasWater && (
-                      <td className="px-4 py-2 whitespace-nowrap text-[#a1a6a1]">
-                        <span className="font-mono text-xs bg-blue-950/30 text-blue-300 px-2 py-px rounded border border-blue-900/40">{formatWaterRange(m.water_liters)}</span>
+                      <td className="px-4 py-2 whitespace-nowrap text-[var(--text-secondary)]">
+                        <span className="font-mono text-xs bg-[var(--bg-elev)] text-[var(--text)] px-2 py-px rounded border border-[var(--border)]">{formatWaterRange(m.water_liters)}</span>
                       </td>
                     )}
                     <td className="px-4 py-2 whitespace-nowrap">
                       <span className={`font-mono px-2 py-px rounded text-xs font-bold border ${
-                        isHighEmission ? 'bg-rose-950/40 text-rose-400 border-rose-900/40' :
-                        isLowEmission ? 'bg-emerald-950/40 text-emerald-400 border-emerald-900/40' :
-                        'bg-[#0a0c0a] text-[#a1a6a1] border-[#242924]'
+                        isHighEmission ? 'bg-[var(--warning-bg)] text-[var(--warning)] border-[var(--warning-border)]' :
+                        isLowEmission ? 'bg-[var(--accent-bg)] text-[var(--accent)] border-[var(--accent-border)]' :
+                        'bg-[var(--bg)] text-[var(--text-secondary)] border-[var(--border)]'
                       }`}>
                         {formatCO2Per1kG(effG)}
                       </span>
@@ -356,7 +349,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                         {m.open_or_closed}
                       </span>
                     </td>
-                    <td className="px-4 py-2 text-xs text-[#9ba19b] max-w-[150px]" title={m.energy_source}>
+                    <td className="px-4 py-2 text-xs text-[var(--text-muted)] max-w-[150px]" title={m.energy_source}>
                       <div className="flex flex-col gap-1">
                         {tierBadge(
                           isEnergyMeasured ? tt.tierMeasured : tt.tierClassFallback,
@@ -365,16 +358,16 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                         <span className="truncate text-[10px] opacity-70">{m.energy_source}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-2 text-xs text-[#9ba19b] max-w-[150px]" title={m.grid_source}>
+                    <td className="px-4 py-2 text-xs text-[var(--text-muted)] max-w-[150px]" title={m.grid_source}>
                       <div className="flex flex-col gap-1">
                         {tierBadge(isGridLive ? tt.tierGridLive : tt.tierGridAnnual, isGridLive)}
                         <span className="truncate text-[10px] opacity-70">{m.grid_source}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-2 max-w-[170px] text-[11px]">{m.flags.length ? m.flags.map(flagBadge) : <span className="text-[#3f443f]">—</span>}</td>
+                    <td className="px-4 py-2 max-w-[170px] text-[11px]">{m.flags.length ? m.flags.map(flagBadge) : <span className="text-[var(--text-muted)]">—</span>}</td>
                     <td className="px-1 py-2">
                       {onInspect && (
-                        <button onClick={() => onInspect(m)} className="text-[#9ba19b] hover:text-emerald-400 p-1" aria-label={tt.details} title={tt.details}>
+                        <button onClick={() => onInspect(m)} className="text-[var(--text-muted)] hover:text-[var(--accent)] p-1" aria-label={tt.details} title={tt.details}>
                           <Eye size={15} />
                         </button>
                       )}
@@ -385,7 +378,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
               if (sorted.length === 0) {
                 nodes.push(
                   <tr key="no-match">
-                    <td colSpan={hasWater ? 10 : 9} className="px-4 py-12 text-center text-[#9ba19b] bg-[#0a0c0a]">
+                    <td colSpan={hasWater ? 10 : 9} className="px-4 py-12 text-center text-[var(--text-muted)] bg-[var(--bg)]">
                       <Search className="w-8 h-8 mx-auto mb-3 opacity-40" />
                       <p>{tt.tableNoMatch}</p>
                     </td>

@@ -1,0 +1,259 @@
+/**
+ * Retro-futurist design tokens (CSS custom properties).
+ * Amber-phosphor on near-black. Imported by index.css.
+ * Components reference via var(--*) or pre-defined .retro-* classes.
+ * NO hardcoded colors allowed in component source.
+ *
+ * Motion: CRT/scanline/flicker ONLY when (prefers-reduced-motion: no-preference).
+ * WCAG AA verified for --accent on --bg (amber #ffbf00 / #0a0805 ratio > 7:1 for UI text; 4.5:1 maintained for secondary).
+ *
+ * Staleness threshold: 7 days (see DataStaleness logic + code comment).
+ */
+:root {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* Surfaces */
+  --bg: #0a0805;
+  --bg-elev: #11100c;
+  --bg-card: #14120f;
+  --bg-card-hover: #181612;
+  --border: #28241e;
+  --border-strong: #3f362b;
+
+  /* Text */
+  --text: #e8dfc9;
+  --text-secondary: #b0a38a;
+  --text-muted: #827a68;
+
+  /* Phosphor amber accent */
+  --accent: #ffbf00;
+  --accent-dark: #c48f00;
+  --accent-light: #ffcf40;
+  --accent-bg: rgba(255, 191, 0, 0.12);
+  --accent-border: rgba(255, 191, 0, 0.35);
+
+  /* Warning */
+  --warning: #e67e22;
+  --warning-bg: rgba(230, 126, 34, 0.12);
+  --warning-border: rgba(230, 126, 34, 0.35);
+
+  /* Group accents (used via style or CSS where Recharts needs hex; source from tokens.ts) */
+  --group-open: #c9b36b;
+  --group-closed: #c46b6b;
+  --group-cn: #e89f4a;
+  --group-us: #5c9ab5;
+  --group-eu: #8f7ab5;
+  --group-other: #6b6760;
+
+  /* Instrument / panel */
+  --panel-bevel: inset 0 1px 0 rgba(255,255,255,0.03), 0 1px 3px rgba(0,0,0,0.6);
+  --grid-line: #25211b;
+
+  color-scheme: dark;
+}
+
+/* Base retro body + typography */
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-sans);
+  letter-spacing: -0.015em;
+  font-feature-settings: "tnum";
+}
+h1 { font-size: 2.65rem; font-weight: 800; line-height: 1.05; }
+h2 { font-size: 1.45rem; font-weight: 700; line-height: 1.15; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+
+@media (max-width: 768px) {
+  h1 { font-size: 1.95rem; }
+  h2 { font-size: 1.2rem; }
+}
+
+p { margin: 0; }
+
+code, .counter, .number, .kpi-value, table td, .mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+
+/* Label style (small ALL-CAPS technical labels) */
+.label, .label-sm {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Instrument-panel / card system (retrofuturist) */
+.card, .panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px; /* tighter, more "bezel" than soft modern */
+  box-shadow: var(--panel-bevel);
+  transition: transform var(--motion-base), box-shadow var(--motion-base), border-color var(--motion-base);
+}
+.card:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 8px 14px -4px rgb(0 0 0 / .5), 0 2px 4px -2px rgb(0 0 0 / .4);
+}
+.panel-dark {
+  background: #0c0a07;
+  border: 1px solid var(--border);
+}
+
+/* Hairline grid rules (subtle, instrument feel) */
+.hairline-grid {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.6;
+}
+
+/* Phosphor accent buttons (minimal, instrument) */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  font-weight: 600; font-size: .875rem; padding: .625rem 1.25rem;
+  border-radius: 4px; border: 1px solid transparent; transition: all var(--motion-fast);
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #0a0805;
+  border-color: var(--accent);
+  font-weight: 700;
+}
+.btn-primary:hover { background: var(--accent-light); transform: translateY(-1px); }
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn-secondary:hover { background: var(--bg-card-hover); border-color: var(--border-strong); }
+.btn-ghost { background: transparent; color: var(--text-secondary); }
+.btn-ghost:hover { background: var(--bg-elev); color: var(--text); }
+
+/* Controls */
+input[type="text"], select {
+  background: var(--bg-elev); border: 1px solid var(--border); color: var(--text);
+  border-radius: 4px; padding: .5rem .75rem;
+}
+input[type="text"]:focus, select:focus {
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-border);
+}
+input[type="range"] { accent-color: var(--accent); }
+
+/* Data table — retro tabular */
+table { border-collapse: collapse; }
+thead th {
+  font-weight: 700; font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-muted); background: var(--bg-elev);
+  border-bottom: 1px solid var(--border);
+}
+tbody tr { border-bottom: 1px solid var(--border); }
+tbody tr:hover { background: #16140f; }
+tbody td { font-feature-settings: "tnum"; }
+
+/* Badges — phosphor/amber family, linkable flags remain prominent */
+.badge {
+  display: inline-flex; align-items: center; padding: 1px 7px;
+  font-size: .625rem; font-weight: 700; letter-spacing: .03em;
+  border-radius: 3px; border: 1px solid;
+}
+.badge-open { background: rgba(201,179,107,.18); color:#d4c58a; border-color:rgba(201,179,107,.4); }
+.badge-closed { background: rgba(196,107,107,.18); color:#d99a9a; border-color:rgba(196,107,107,.4); }
+.badge-cn { background: rgba(232,159,74,.18); color:#f0c28a; border-color:rgba(232,159,74,.4); }
+.badge-us { background: rgba(92,154,181,.18); color:#a8c8d9; border-color:rgba(92,154,181,.4); }
+.badge-eu { background: rgba(143,122,181,.18); color:#c5b8d9; border-color:rgba(143,122,181,.4); }
+
+/* Tier / flag badges for precision (6F) — always visible */
+.badge-tier-measured { background: rgba(201,179,107,.18); color:#d4c58a; border-color:rgba(201,179,107,.35); }
+.badge-tier-fallback { background: rgba(130,122,104,.22); color:#a89f8b; border-color:rgba(130,122,104,.4); }
+
+/* Impact / range sliders */
+input[type="range"].impact-slider { height: 6px; background: #1f1b14; border-radius: 999px; }
+input[type="range"].impact-slider::-webkit-slider-thumb {
+  appearance: none; width: 16px; height: 16px; background: var(--accent);
+  border-radius: 999px; border: 3px solid #0a0805; box-shadow: 0 1px 6px rgba(255,191,0,.45); cursor: pointer;
+}
+input[type="range"].impact-slider::-moz-range-thumb {
+  width: 16px; height: 16px; background: var(--accent); border-radius: 999px;
+  border: 3px solid #0a0805; box-shadow: 0 1px 6px rgba(255,191,0,.45); cursor: pointer;
+}
+
+/* Skeletons */
+.skeleton {
+  background: linear-gradient(90deg, #14120f 25%, #1a1712 50%, #14120f 75%);
+  background-size: 200% 100%; animation: shimmer 1.35s infinite linear; border-radius: 4px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* Misc retro */
+.info-tip { cursor: help; border-bottom: 1px dotted var(--text-muted); }
+
+/* Focus — always visible */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Reduced motion: disable any CRT/scanline/flicker */
+@media (prefers-reduced-motion: reduce) {
+  .scanline, .crt, .flicker { animation: none !important; }
+  .card, .btn { transition: none; }
+}
+
+/* Optional very-low scanline texture (only when motion allowed) */
+@media (prefers-reduced-motion: no-preference) {
+  .instrument::after {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+    background: repeating-linear-gradient(
+      transparent,
+      transparent 3px,
+      rgba(255,191,0,0.035) 3px,
+      rgba(255,191,0,0.035) 4px
+    );
+    mix-blend-mode: screen;
+    opacity: 0.6;
+  }
+}
+
+/* Responsive instrument reflow */
+@media (max-width: 768px) {
+  .card { border-radius: 5px; }
+  .btn { padding: .65rem .9rem; font-size: .8125rem; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Staleness indicator (L1, prominent) */
+.staleness {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  padding: 1px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  color: var(--text-muted);
+}
+.staleness.stale {
+  border-color: var(--warning-border);
+  color: var(--warning);
+  background: var(--warning-bg);
+}
+
+/* Chart / viz base */
+.recharts-cartesian-grid line { stroke: var(--grid-line); }
+.recharts-tooltip { background: var(--bg-card) !important; border-color: var(--border) !important; }

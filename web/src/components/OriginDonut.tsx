@@ -1,12 +1,13 @@
 import React from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import type { Model } from '../types';
+import { tokens } from '../theme/tokens';
 
 const COLORS: Record<string, string> = {
-  CN: '#f97316',
-  US: '#3b82f6',
-  EU: '#8b5cf6',
-  OTHER: '#64748b',
+  CN: tokens.colors.cn,
+  US: tokens.colors.us,
+  EU: tokens.colors.eu,
+  OTHER: tokens.colors.other,
 };
 
 interface Props {
@@ -48,7 +49,7 @@ export const OriginDonut: React.FC<Props> = ({ models }) => {
           <Tooltip 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             formatter={(v: any) => [`${Math.round(Number(v) || 0).toLocaleString()} kg`, 'CO₂ mid'] as [string, string]}
-            contentStyle={{ background: '#121512', border: '1px solid #242924', borderRadius: 8, color: '#e4e7e4', fontSize: '12px' }}
+            contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: '12px' }}
           />
         </PieChart>
       </ResponsiveContainer>

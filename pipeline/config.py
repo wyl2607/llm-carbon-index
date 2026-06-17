@@ -41,6 +41,9 @@ PROVENANCE_GATED_PATHS = (
 OUTPUT_DIR = DATA_DIR / "output"
 OUTPUT_LATEST_PATH = OUTPUT_DIR / "latest.json"
 OUTPUT_HISTORY_DIR = OUTPUT_DIR / "history"          # data/output/history/{data_date}.json
+# L3: compact {data_date, totals} list for cheap multi-year timeseries rebuild
+# (avoids loading full per-day models[] on every write_timeseries call).
+OUTPUT_HISTORY_INDEX_PATH = OUTPUT_HISTORY_DIR / "index.json"
 OUTPUT_TIMESERIES_PATH = OUTPUT_DIR / "timeseries.json"
 MANIFEST_PATH = OUTPUT_DIR / "manifest.json"         # Phase 6H run manifest (append-only)
 SENSITIVITY_PATH = OUTPUT_DIR / "sensitivity.json"   # Phase 6K OAT sensitivity report (latest)

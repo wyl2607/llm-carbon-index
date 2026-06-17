@@ -22,6 +22,60 @@ from pipeline.provenance import compact_sources, load_sources
 from pipeline.sensitivity import oat_sensitivity
 from pipeline.types import ModelEstimate, NormalizedRecord
 
+
+# L3: history index helpers — keep timeseries rebuild cheap for multi-year daily cadence.
+# Full per-day history/*.json (with models[]) are kept indefinitely for verify/audit.
+# index.json stores only the lightweight per-date "totals" excerpts (same shape as
+# timeseries entries). write_timeseries prefers it; falls back to full scan if absent.
+def _history_index_path():
+    """Derive index path from (possibly monkeypatched) OUTPUT_HISTORY_DIR at call time.
+    Critical: tests patch OUTPUT_HISTORY_DIR to tmp; precomputed module attr at config
+    import time would otherwise point at real data/ and dirty it on pytest.
+    """
+    hdir = getattr(config, "OUTPUT_HISTORY_DIR", None)
+    if hdir is None:
+        # fallback (should not happen)
+        hdir = config.REPO_ROOT / "data" / "output" / "history"
+    return hdir / "index.json"
+
+
+def _load_history_index() -> list[dict]:
+    """Load compact index if present; [] on missing or parse failure."""
+    p = _history_index_path()
+    if not p.exists():
+        return []
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        if isinstance(data, list):
+            return data
+    except Exception:  # noqa: S110 - same fallback pattern as grid.py / snapshot.py
+        pass
+    return []
+
+
+def _write_history_index(entries: list[dict]) -> None:
+    """Write the index list deterministically (sorted by data_date)."""
+    p = _history_index_path()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    # stable order: chronological
+    ordered = sorted(
+        [e for e in entries if isinstance(e, dict) and "data_date" in e],
+        key=lambda e: e.get("data_date", ""),
+    )
+    with open(p, "w", encoding="utf-8") as f:
+        json.dump(ordered, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+
+
+def update_history_index(data_date: str, totals: dict) -> None:
+    """Insert or replace the entry for data_date and persist index.
+    Called after every history write so index stays in sync with committed goldens.
+    """
+    entries = _load_history_index()
+    entries = [e for e in entries if e.get("data_date") != data_date]
+    entries.append({"data_date": data_date, "totals": totals})
+    _write_history_index(entries)
+
 log = logging.getLogger(__name__)
 
 
@@ -330,7 +384,10 @@ def write_outputs(doc: dict) -> None:
         json.dump(doc, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
-    # Generate timeseries
+    # L3: maintain compact index for cheap long-term rebuilds (full files kept)
+    update_history_index(data_date, doc.get("totals", {}))
+
+    # Generate timeseries (prefers index when present)
     write_timeseries()
 
     # Phase 6K: OAT sensitivity report (always overwritten; reflects latest run).
@@ -340,24 +397,46 @@ def write_outputs(doc: dict) -> None:
     write_esg_export(doc)
 
 def write_timeseries() -> None:
-    """Aggregate data from all history/*.json files into timeseries.json."""
+    """Aggregate per-day totals into timeseries.json.
+    L3: prefer compact history/index.json (cheap, no full models[] parse).
+    Falls back to glob+extract of history/*.json for backward compat or when
+    index is absent. Rebuild remains correct and produces identical shape.
+    """
     hist_dir = config.OUTPUT_HISTORY_DIR
     if not hist_dir.exists():
         return
-        
-    timeseries = []
-    
-    for hist_file in sorted(hist_dir.glob("*.json")):
-        with open(hist_file, "r", encoding="utf-8") as f:
-            try:
-                day_data = json.load(f)
-                timeseries.append({
-                    "data_date": day_data["data_date"],
-                    "totals": day_data["totals"]
-                })
-            except (json.JSONDecodeError, KeyError):
+
+    index_path = _history_index_path()
+    timeseries: list[dict] = []
+    if index_path.exists():
+        try:
+            loaded = json.loads(index_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, list):
+                # keep only well-formed entries; preserve order from index (we keep it sorted)
+                timeseries = [
+                    {"data_date": e["data_date"], "totals": e["totals"]}
+                    for e in loaded
+                    if isinstance(e, dict) and "data_date" in e and "totals" in e
+                ]
+        except Exception:  # noqa: S110 - fallback to scan on corrupt index (consistent with project)
+            timeseries = []
+
+    if not timeseries:
+        # fallback: full scan (for legacy trees without index yet)
+        for hist_file in sorted(hist_dir.glob("*.json")):
+            # skip the index itself if it somehow matched glob in odd layout
+            if hist_file.name == "index.json":
                 continue
-                
+            with open(hist_file, "r", encoding="utf-8") as f:
+                try:
+                    day_data = json.load(f)
+                    timeseries.append({
+                        "data_date": day_data["data_date"],
+                        "totals": day_data["totals"]
+                    })
+                except (json.JSONDecodeError, KeyError):
+                    continue
+
     if timeseries:
         timeseries_path = config.OUTPUT_TIMESERIES_PATH
         with open(timeseries_path, "w", encoding="utf-8") as f:
@@ -390,6 +469,50 @@ def write_sensitivity_json(doc: dict) -> None:
         json.dump(ordered, f, ensure_ascii=False, indent=2)
         f.write("\n")
     log.info("sensitivity.json written to %s (dominant: %s)", sens_path, ordered.get("dominant"))
+
+
+# L3 retention/index test helper (new logic for update_history_index / write_timeseries index path).
+# Not collected by pytest (testpaths=tests) but provides explicit test coverage for the
+# retention/index function. Invoke directly:
+#   uv run python -c "
+#     from pipeline.output import _test_history_index; import tempfile; from pathlib import Path
+#     with tempfile.TemporaryDirectory() as td: _test_history_index(Path(td))
+#   "
+def _test_history_index(tmp_root: object) -> bool:  # object avoids ruff undefined in str-annot
+    """Minimal self-contained test for the L3 index functions using a tmp tree.
+    Returns True on pass. Mutates only under tmp_root (never real data/).
+    """
+    # simulate patched config paths under tmp (derive from DIR so test patching matches reality)
+    fake_hist = tmp_root / "history"
+    fake_idx = fake_hist / "index.json"
+    orig_dir = config.OUTPUT_HISTORY_DIR
+    orig_ts = config.OUTPUT_TIMESERIES_PATH
+    try:
+        config.OUTPUT_HISTORY_DIR = fake_hist
+        # first write
+        t1 = {"total_tokens": 1, "co2_kg": {"low": 0, "mid": 0, "high": 0}}
+        update_history_index("2026-06-10", t1)
+        assert fake_idx.exists(), "index not written"  # noqa: S101
+        idx = json.loads(fake_idx.read_text(encoding="utf-8"))
+        assert len(idx) == 1 and idx[0]["data_date"] == "2026-06-10"  # noqa: S101
+        # replace + add second
+        t2 = {"total_tokens": 2, "co2_kg": {"low": 1, "mid": 1, "high": 1}}
+        update_history_index("2026-06-11", t2)
+        update_history_index("2026-06-10", t1)  # idempotent replace
+        idx2 = json.loads(fake_idx.read_text(encoding="utf-8"))
+        assert len(idx2) == 2  # noqa: S101
+        dates = [e["data_date"] for e in idx2]
+        assert dates == ["2026-06-10", "2026-06-11"]  # noqa: S101
+        # write_timeseries path using index (must pick index because present)
+        ts_path = tmp_root / "timeseries.json"
+        config.OUTPUT_TIMESERIES_PATH = ts_path
+        write_timeseries()
+        ts = json.loads(ts_path.read_text(encoding="utf-8"))
+        assert len(ts) == 2 and ts[0]["data_date"] == "2026-06-10"  # noqa: S101
+        return True
+    finally:
+        config.OUTPUT_HISTORY_DIR = orig_dir
+        config.OUTPUT_TIMESERIES_PATH = orig_ts
 
 
 # --- P7: ESG/CSRD Scope-2 dual-reporting export (non-editable scope statement) ---

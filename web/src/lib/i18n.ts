@@ -38,6 +38,11 @@ export const translations = {
     exportData: 'Export Data',
     share: 'Share View',
 
+    // Phase 6L: L1 staleness indicator (N=7 days, cited in component + tokens)
+    dataAsOf: 'Data as of',
+    stalenessNote: (date: string) => `data as of ${date} — stale if older than 7 days`,
+    stalenessNoteShort: 'stale if >7 days',
+
     // Language
     langEn: 'EN',
     langZh: '中文',
@@ -271,6 +276,11 @@ export const translations = {
     exportData: '导出数据',
     share: '分享视图',
 
+    // Phase 6L: L1 staleness indicator (N=7 days)
+    dataAsOf: '数据日期',
+    stalenessNote: (date: string) => `数据日期 ${date} — 超过 7 天未更新即视为陈旧`,
+    stalenessNoteShort: '超过7天即陈旧',
+
     langEn: 'EN',
     langZh: '中文',
     langDe: 'Deutsch',
@@ -493,6 +503,11 @@ export const translations = {
     github: 'GitHub',
     exportData: 'Daten exportieren',
     share: 'Ansicht teilen',
+
+    // Phase 6L: L1 staleness indicator (N=7 days)
+    dataAsOf: 'Datenstand',
+    stalenessNote: (date: string) => `Datenstand ${date} — veraltet, wenn älter als 7 Tage`,
+    stalenessNoteShort: 'veraltet nach 7 Tagen',
 
     langEn: 'EN',
     langZh: '中文',
