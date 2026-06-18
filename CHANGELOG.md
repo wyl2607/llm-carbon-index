@@ -5,6 +5,15 @@
 All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.8.0] - 2026-06-18 (Efficiency frontier & rightsizing)
+### Added
+- **Efficiency frontier & rightsizing**: new `pipeline/frontier.py` (`compute_frontier`, `annotate_models`, `compute_fleet_rightsizing`) ranks models on a capability × energy-intensity plane and estimates the *avoidable* fraction of operational CO₂ under a capability-matched substitution (region/grid/PUE held constant). Per-model fields `energy_wh_per_mtok`, `capability_index`, `capability_source_id`, `on_frontier`, `frontier_reference_slug`, `rightsizing_gap_pct`, `avoidable_co2_kg` + a top-level `fleet_rightsizing` headline block; new flags `ON_FRONTIER` / `FALLBACK_CAPABILITY` / `LOW_CONFIDENCE_GAP` / `NO_FRONTIER_REFERENCE`.
+- **Capability axis data**: `data/model_capability.yaml` (Artificial Analysis Intelligence Index snapshot, keyed via a new `capability_key` in `data/model_crosswalk.yaml`). ⚠️ Current values are **provisional placeholders** (`provisional: true`) so the pipeline runs end-to-end; a cited real snapshot replaces them and adds the file to the provenance gate.
+- `tests/test_frontier.py` (executable contract); `docs/methodology.md` §16; extended `schemas/output.schema.json`.
+### Changed
+- `avoidable_co2_kg.x = co2_kg.x × rightsizing_gap_pct.x` (unit-safe) supersedes the spec §5 token-based draft; `specs/efficiency-frontier.md` §5 reconciled.
+- `methodology_version` bumped `0.7.0` → `0.8.0`; 2026-06-14 golden + snapshot + manifest regenerated together (L4 rule).
+
 ## [0.7.0] - 2026-06-16 (vNext: accuracy & coverage)
 ### Added
 - **Measured energy + idle (6J)**: pipeline now consumes AI Energy Score / EcoLogits measured intensities over fallback, plus an optional `E-IDLE` always-on term. `energy_measured_fraction` rises from 0.0 to ≈0.29 (3 of 50 models, token-weighted).
