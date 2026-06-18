@@ -52,6 +52,10 @@ export const WhatIfSimulator: React.FC<Props> = ({
     ? ((reductionMid / originalCo2.mid) * 100).toFixed(1)
     : '0';
 
+  // No scenario applied yet (or it produces no reduction): avoid the misleading
+  // green "−0" hero and the wall-of-zeros equivalents grid on first load.
+  const hasScenario = greenShiftPercent > 0 && reductionMid > 0;
+
   const equiv = computeEquivalents(reductionMid);
 
   const maxPotential = modeledFraction > 0 ? (modeledFraction * 42).toFixed(1) : '0';
@@ -197,8 +201,8 @@ export const WhatIfSimulator: React.FC<Props> = ({
               <div className="uppercase tracking-[2px] text-xs font-bold text-[var(--accent)]/70 mb-2 flex items-center justify-center gap-2">
                 <Leaf className="w-3.5 h-3.5" /> {tt.dailyAvoided}
               </div>
-              <div className="font-mono text-[56px] leading-none font-black text-[var(--accent)] tracking-[-3.5px] tabular-nums">
-                −{nf(animatedReduction)}
+              <div className={`font-mono text-[56px] leading-none font-black tracking-[-3.5px] tabular-nums ${hasScenario ? 'text-[var(--accent)]' : 'text-[var(--text-muted)]'}`}>
+                {hasScenario ? `−${nf(animatedReduction)}` : '0'}
               </div>
               <div className="text-[var(--accent)]/70 text-sm font-medium mt-1">{tt.kgCO2}</div>
               {/* P6 regime effect note (illustrative; scales base energy hence absolute CO2 for fixed grid) */}
@@ -222,6 +226,7 @@ export const WhatIfSimulator: React.FC<Props> = ({
                 {tt.equivTitle}
                 <span title={EQUIV_SOURCES} className="info-tip"><Info className="w-3.5 h-3.5" /></span>
               </div>
+              {hasScenario ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
                 <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-elev)] px-3 py-2.5">
                   <div className="font-mono text-2xl font-bold text-[var(--text)] tabular-nums">{nf(equiv.cars)}</div>
@@ -247,6 +252,11 @@ export const WhatIfSimulator: React.FC<Props> = ({
                   {tt.equivEnergiewende}
                 </div>
               </div>
+              ) : (
+              <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-elev)] px-4 py-3.5 text-[13px] text-[var(--text-muted)] leading-relaxed">
+                {tt.sliderHint}
+              </div>
+              )}
               <p className="text-[10px] text-[var(--text-muted)] mt-2 px-1 leading-snug">{tt.equivNote}</p>
             </div>
 
