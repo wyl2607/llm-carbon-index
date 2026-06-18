@@ -1,0 +1,62 @@
+# Capability scores for the X axis of the efficiency frontier (spec §2, §6).
+#
+# ============================ PLACEHOLDER DATA ============================
+# Commit 1 ("logic to green"): these capability_index values are PLACEHOLDERS,
+# not transcribed from any published source. They exist only so the pipeline
+# runs end-to-end and the frontier/rightsizing fields are exercised. Every entry
+# carries `provisional: true` and is NOT enforced by the provenance gate
+# (data/model_capability.yaml is deliberately absent from PROVENANCE_GATED_PATHS
+# until real values land).
+#
+# Commit 2 replaces these with a pinned, cited snapshot of the Artificial
+# Analysis Intelligence Index (drifts weekly -> snapshot, not a live pull),
+# drops `provisional`, and adds this file to the provenance gate. Per CLAUDE.md
+# ("do not invent capability scores — only transcribe published, cited values"),
+# real numbers MUST be transcribed, never estimated.
+# =========================================================================
+#
+# Keyed by `capability_key` (mapped from each OpenRouter slug in
+# data/crosswalk/model_crosswalk.yaml). Models with no key -> capability_index
+# null -> FALLBACK_CAPABILITY (greyed, excluded from frontier definition).
+
+sources:
+  - id: Q-AAII-V41
+    title: Artificial Analysis Intelligence Index
+    publisher: Artificial Analysis
+    url: https://artificialanalysis.ai/
+    version: "v4.1"
+    accessed: "2026-06-16"   # PLACEHOLDER snapshot date; refresh on real seed
+
+models:
+  # --- high-confidence frontier candidates (measured energy in intensity.yaml) ---
+  deepseek-v4-flash:
+    capability_index: 42.0
+    source_id: Q-AAII-V41
+    lmarena_elo: 1340
+    provisional: true
+  minimax-m3:
+    capability_index: 50.0
+    source_id: Q-AAII-V41
+    lmarena_elo: 1372
+    provisional: true
+  deepseek-v4-pro:
+    capability_index: 60.0
+    source_id: Q-AAII-V41
+    lmarena_elo: 1418
+    provisional: true
+  # --- fallback-energy models: scored but low-confidence gap (greyed in chart) ---
+  gemini-3.5-flash:
+    capability_index: 48.0
+    source_id: Q-AAII-V41
+    lmarena_elo: 1361
+    provisional: true
+  gpt-5.5:
+    capability_index: 62.0
+    source_id: Q-AAII-V41
+    lmarena_elo: 1430
+    provisional: true
+  claude-4.8-opus:
+    capability_index: 65.0
+    source_id: Q-AAII-V41
+    lmarena_elo: 1445
+    provisional: true
