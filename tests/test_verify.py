@@ -95,3 +95,28 @@ def test_reproduce_is_offline_no_api_key(
     # No key + no network: reproduction must still succeed from the snapshot alone.
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     assert verify_mod.verify_date(golden_env) is True
+
+
+# --- float-tolerance: cross-platform ULP drift must not fail the gate ----------
+
+def test_docs_equiv_absorbs_float_ulp_drift() -> None:
+    # The exact drift observed in CI: last-ULP differences from non-associative
+    # float summation across platforms — must compare equal.
+    committed = {"co2_kg": {"high": 8171693.203313796, "mid": 2220110.072271755}}
+    reproduced = {"co2_kg": {"high": 8171693.203313793, "mid": 2220110.0722717554}}
+    assert verify_mod._docs_equiv(committed, reproduced) is True
+
+
+def test_docs_equiv_rejects_material_difference() -> None:
+    # A real methodology drift is orders of magnitude larger than the tolerance.
+    assert verify_mod._docs_equiv({"x": 100.0}, {"x": 100.01}) is False
+    # Structural differences (keys, lengths, types) are still exact.
+    assert verify_mod._docs_equiv({"a": 1}, {"b": 1}) is False
+    assert verify_mod._docs_equiv([1, 2], [1, 2, 3]) is False
+    # Bool is not int: True must not equal 1.
+    assert verify_mod._docs_equiv({"f": True}, {"f": 1}) is False
+    # Integer counts are exact — a +1 tamper on a token count must be caught.
+    assert verify_mod._docs_equiv({"total_tokens": 1_000_000_000}, {"total_tokens": 1_000_000_001}) is False
+    # Near-zero values compared via abs_tol, not rel_tol.
+    assert verify_mod._docs_equiv({"z": 0.0}, {"z": 1e-12}) is True
+    assert verify_mod._docs_equiv({"z": 0.0}, {"z": 0.5}) is False
