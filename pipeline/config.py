@@ -18,6 +18,7 @@ OPENROUTER_RAW_DIR = RAW_DIR / "openrouter"          # data/raw/openrouter/{date
 NORMALIZED_PATH = RAW_DIR / "normalized.jsonl"       # appended, deduped on (date, slug)
 
 CROSSWALK_PATH = DATA_DIR / "crosswalk" / "model_crosswalk.yaml"
+CAPABILITY_PATH = DATA_DIR / "model_capability.yaml"   # Phase 6M frontier X axis (capability)
 INTENSITY_PATH = DATA_DIR / "energy" / "intensity.yaml"
 CLOSED_MODELS_PATH = DATA_DIR / "assumptions" / "closed_models.yaml"
 VENDOR_CLAIMS_PATH = DATA_DIR / "assumptions" / "vendor_claims.yaml"
@@ -31,6 +32,7 @@ PROVENANCE_SOURCES_PATH = DATA_DIR / "provenance" / "sources.yaml"
 # registry itself is the source of truth and is excluded from the walk.
 PROVENANCE_GATED_PATHS = (
     CROSSWALK_PATH,
+    CAPABILITY_PATH,
     INTENSITY_PATH,
     CLOSED_MODELS_PATH,
     VENDOR_CLAIMS_PATH,

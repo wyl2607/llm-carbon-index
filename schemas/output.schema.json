@@ -11,6 +11,12 @@
         "high": { "type": "number" }
       },
       "additionalProperties": false
+    },
+    "RangeOrNull": {
+      "anyOf": [
+        { "$ref": "#/definitions/Range" },
+        { "type": "null" }
+      ]
     }
   },
   "required": [
@@ -116,6 +122,13 @@
           "co2_kg_market": { "$ref": "#/definitions/Range" },
           "wue": { "type": "number" },
           "water_liters": { "$ref": "#/definitions/Range" },
+          "energy_wh_per_mtok": { "$ref": "#/definitions/Range" },
+          "capability_index": { "type": ["number", "null"] },
+          "capability_source_id": { "type": ["string", "null"] },
+          "on_frontier": { "type": "boolean" },
+          "frontier_reference_slug": { "type": ["string", "null"] },
+          "rightsizing_gap_pct": { "$ref": "#/definitions/RangeOrNull" },
+          "avoidable_co2_kg": { "$ref": "#/definitions/RangeOrNull" },
           "flags": {
             "type": "array",
             "items": {
@@ -126,7 +139,11 @@
                 "FALLBACK_GRID_ANNUAL",
                 "CLOSED_MODEL_ASSUMED",
                 "IDLE_INCLUDED",
-                "MARKET_RESIDUAL_FLOOR"
+                "MARKET_RESIDUAL_FLOOR",
+                "ON_FRONTIER",
+                "FALLBACK_CAPABILITY",
+                "LOW_CONFIDENCE_GAP",
+                "NO_FRONTIER_REFERENCE"
               ]
             }
           }
@@ -276,6 +293,26 @@
           },
           "additionalProperties": false
         }
+      },
+      "additionalProperties": false
+    },
+    "fleet_rightsizing": {
+      "type": "object",
+      "required": [
+        "basis",
+        "avoidable_co2_kg",
+        "avoidable_pct_of_total",
+        "models_included",
+        "models_excluded_low_confidence"
+      ],
+      "properties": {
+        "basis": { "type": "string" },
+        "avoidable_co2_kg": { "$ref": "#/definitions/Range" },
+        "avoidable_pct_of_total": { "$ref": "#/definitions/Range" },
+        "models_included": { "type": "integer", "minimum": 0 },
+        "models_excluded_low_confidence": { "type": "integer", "minimum": 0 },
+        "capability_index_version": { "type": ["string", "null"] },
+        "capability_index_accessed": { "type": ["string", "null"] }
       },
       "additionalProperties": false
     }

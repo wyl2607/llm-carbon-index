@@ -5,4 +5,4 @@ resolution in `pipeline.config`. See docs/DATA_SCHEMAS.md (canonical shapes)
 and docs/ENGINEERING_STANDARDS.md.
 """
 
-METHODOLOGY_VERSION = "0.7.0"
+METHODOLOGY_VERSION = "0.8.0"

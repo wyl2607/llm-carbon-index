@@ -16,6 +16,7 @@ export function Nav({ lang }: Props) {
     { to: '/', label: tt.navOverview, end: true },
     { to: '/rankings', label: tt.navRankings },
     { to: '/regions', label: tt.navRegions },
+    { to: '/frontier', label: tt.navFrontier },
     { to: '/recommendations', label: tt.navRecommendations },
     { to: '/methodology', label: tt.navMethodology },
   ];

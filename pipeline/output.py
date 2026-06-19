@@ -17,9 +17,11 @@ import yaml
 import pipeline.config as config
 from pipeline import METHODOLOGY_VERSION
 from pipeline.fairness import indistinguishable_tiers, rank_stability
+from pipeline.frontier import annotate_models, compute_fleet_rightsizing
 from pipeline.precision import energy_tier, grid_tier, precision_fractions
 from pipeline.provenance import compact_sources, load_sources
 from pipeline.sensitivity import oat_sensitivity
+from pipeline.slugs import normalize_slug
 from pipeline.types import ModelEstimate, NormalizedRecord
 
 
@@ -77,6 +79,49 @@ def update_history_index(data_date: str, totals: dict) -> None:
     _write_history_index(entries)
 
 log = logging.getLogger(__name__)
+
+
+def _load_capability() -> tuple[dict, str | None, str | None]:
+    """I/O boundary: load data/model_capability.yaml (Phase 6M frontier X axis).
+
+    Returns (models_map, capability_index_version, capability_index_accessed). The
+    version/accessed describe the pinned snapshot (from the first sources[] entry).
+    Fail-safe: missing/unreadable -> ({}, None, None) so the rest of the pipeline
+    proceeds with every model FALLBACK_CAPABILITY rather than aborting.
+    """
+    p = config.CAPABILITY_PATH
+    try:
+        with open(p, encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+        models = data.get("models")
+        models = models if isinstance(models, dict) else {}
+        version = accessed = None
+        srcs = data.get("sources")
+        if isinstance(srcs, list) and srcs and isinstance(srcs[0], dict):
+            s0 = srcs[0]
+            version = (f"{s0.get('title', '')} {s0.get('version', '')}".strip()) or None
+            accessed = s0.get("accessed")
+        return ({k: v for k, v in models.items() if isinstance(v, dict)}, version, accessed)
+    except Exception:  # noqa: S110 - deliberate fallback (mirrors _load_alt_assumption_sets)
+        return ({}, None, None)
+
+
+def _load_capability_keys() -> dict[str, str]:
+    """I/O boundary: map normalized OpenRouter slug -> capability_key from the crosswalk.
+
+    Fail-safe: missing/unreadable -> {} (everything falls back to FALLBACK_CAPABILITY).
+    """
+    out: dict[str, str] = {}
+    try:
+        with open(config.CROSSWALK_PATH, encoding="utf-8") as f:
+            cw = yaml.safe_load(f) or []
+        if isinstance(cw, list):
+            for e in cw:
+                if isinstance(e, dict) and e.get("capability_key") and e.get("openrouter_slug"):
+                    out[normalize_slug(e["openrouter_slug"])] = e["capability_key"]
+    except Exception:  # noqa: S110 - deliberate fallback (mirrors _load_alt_assumption_sets)
+        out = {}
+    return out
 
 
 def build_output(
@@ -336,6 +381,34 @@ def build_output(
     referenced_ids.discard(None)
     sources = compact_sources(referenced_ids, sources_registry)
 
+    # Phase 6M efficiency frontier / rightsizing. Derive the intensity axis
+    # (energy_wh_per_mtok = wh_per_output_token * 1e6, band carried), join the cited
+    # capability score (via the crosswalk capability_key), then annotate each model
+    # with on_frontier / rightsizing_gap_pct / avoidable_co2_kg and roll up the fleet
+    # headline. Region/grid/PUE are held constant (model-rightsizing lever only).
+    cap_models, cap_version, cap_accessed = _load_capability()
+    cap_keys = _load_capability_keys()
+    frontier_input: list[dict] = []
+    for m in estimates:
+        wh = m.get("wh_per_output_token") or {}
+        key = cap_keys.get(normalize_slug(m["slug"]))
+        entry = cap_models.get(key) if key else None
+        cap_index = entry.get("capability_index") if entry else None
+        fm = dict(m)
+        fm["energy_wh_per_mtok"] = {x: float(wh.get(x, 0.0)) * 1e6 for x in ("low", "mid", "high")}
+        fm["capability_index"] = cap_index
+        fm["capability_source_id"] = (
+            entry.get("source_id") if (entry and cap_index is not None) else None
+        )
+        frontier_input.append(fm)
+
+    models_out = annotate_models(frontier_input)
+    fleet_rightsizing = compute_fleet_rightsizing(
+        frontier_input,
+        capability_index_version=cap_version,
+        capability_index_accessed=cap_accessed,
+    )
+
     doc: dict = {
         "methodology_version": METHODOLOGY_VERSION,
         "generated_at": generated_at,
@@ -344,8 +417,9 @@ def build_output(
         "scope_note": scope_note,
         "assumptions": assumptions,
         "sources": sources,
-        "models": list(estimates),
+        "models": models_out,
         "totals": totals,
+        "fleet_rightsizing": fleet_rightsizing,
     }
     return doc
 
