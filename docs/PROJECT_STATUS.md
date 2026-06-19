@@ -1,6 +1,6 @@
 # Project status & handoff
 
-_Last updated: 2026-06-16._
+_Last updated: 2026-06-19 (post EIA + frontier handoff)._
 
 ## What this is
 LLM Carbon Index — estimates the CO₂ footprint of **OpenRouter-visible** LLM
@@ -77,3 +77,12 @@ slice, not global emissions). Static pipeline → committed JSON → static fron
 - Coordinator must freeze cross-phase contracts (`types.py`/`config.py`/`schemas/
   output.schema.json`/pinned deps/fixtures) before fan-out, then verify each
   diff/build/test and integrate.
+
+## 2026-06-19 handoff status (EIA + efficiency frontier closeout)
+- All implementation complete (EIA adapter + fuel factors + provenance; real AA v4.1 capability snapshot; frontier computation + full `/frontier` UI with scatter, headline, toggle).
+- Local main has integrated #21 (verify glob) + #24 (float tolerance) + #23 (EIA) + #18 (CN grid/PUE) + #22 (frontier) + golden regen + web data sync. Full gates green: 177 tests, ruff, provenance, `make verify` PASS.
+- `EIA_API_KEY` secret set in repo (user action today). Live path is CI-only.
+- 5 PRs remain open on GitHub; local integration ahead of origin. Recommended merge order on remote: #21 → #24 → #23 → #18 → #22.
+- "Operational gotchas" in CONTRIBUTING.md expanded with agent workflow, CI-secret verify instructions, and the two verify failure modes. ENGINEERING_STANDARDS DoD now points agents at the gotchas.
+- Next concrete action (once authorized): throwaway dispatch on a branch containing the verify fixes + EIA to capture a committed snapshot with `grid_source: eia_live` + ~349.7 intensity; then remote merges.
+- This handoff demonstrated the cheap-model (worktree) + Grok (review, integration, live CI evidence, doc capture) loop end-to-end for credibility-critical work. Lessons persisted so future agents do not re-investigate.

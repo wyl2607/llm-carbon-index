@@ -121,13 +121,20 @@ Built as 2 lanes (grok): Lane E = P5+P6 serial (both `energy.py`); Lane F = P7 (
 - ✅ **P6 / 6O** — dynamic-regime / batching + prompt-length scenarios: `regime_factors.yaml` + regime multiplier in `energy.py` + WhatIfSimulator sliders + `scenario.ts` (monotonic).
 - ✅ **P7 / 6R** — ESG / CSRD Scope-2 dual-reporting export: `esg_export.json` (location + market `{low,mid,high}` + ESRS-E1 line item + non-removable scope caveat), EsgExportPanel download.
 
-### vNext fully landed → next candidates (not yet scoped)
-- Live grid-intensity integration:
-  - EIA hourly for us-east/PJM (free, via EIA_API_KEY) implemented in feat/grid-eia-us-east worktree (2026-06-18/19).
-  - Electricity Maps path remains (needs key; currently 0 in published).
-  - grid_live_fraction will rise on first keyed publish + snapshot.
-- Verify gate unfrozen (index.json filter) + provenance extended for fuel factors.
-- Fix the two integration findings below (most resolved).
+### vNext fully landed (2026-06-19 closeout)
+- ✅ Live grid-intensity integration (EIA):
+  - EIA v2 hourly fuel-type for us-east/PJM wired as highest-priority (fallback to annual eGRID); `data/grid/fuel_emission_factors.yaml` (IPCC-sourced, C-GRID-EIA-* provenance); `precision.py` + schema updated.
+  - `EIA_API_KEY` GitHub secret only (no local .env possible); live path exercised via `pipeline-refresh` dispatch on throwaway + snapshot inspection (`grid_source: eia_live`, intensity ~349.7 vs 380 fallback).
+  - Verify fixes (#21 glob + #24 float-tolerance) landed first so gates no longer block cron/EIA publish.
+- ✅ Efficiency frontier + real capability data + UI (PR #22 + supporting):
+  - `data/model_capability.yaml` seeded with transcribed AA Intelligence Index v4.1 (max effort config, accessed 2026-06-19, source Q-AAII-V41); all 6 roster models have published scores, no placeholders.
+  - `pipeline/frontier.py` + `compute_fleet_rightsizing` produces `fleet_rightsizing` + per-model avoidable fields.
+  - `/frontier` page (recharts scatter + connected envelope on log-y, size=traffic, measured vs fallback, headline card with avoidable % band + low-conf toggle, §8 caveats).
+  - PR body, methodology §16, changelog updated; golden regenerated with real data (fleet avoidable ~9.4%).
+- ✅ All supporting verify/provenance/golden regen integrated locally (main) and prepared for remote PR merges in order #21→#24→#23→#18→#22.
+- The agent handoff pattern (cheap model in worktree + Grok review/integration/live-verify + gotchas capture) is documented in CONTRIBUTING "Operational gotchas".
+
+(The "Integration findings" and Phase 7 sections below remain historical.)
 
 ### Integration findings — RESOLVED 2026-06-17
 - ✅ **Test output pollution:** FIXED. `validate_literature(out_path=…)` + `test_output.py` monkeypatches (`OUTPUT_DIR` + `OUTPUT_TIMESERIES_PATH` + `SENSITIVITY_PATH`) route every output-writing test through tmp. Verified: the full suite leaves `data/output/*` clean. (PR#4 + merge `c01bd35`)

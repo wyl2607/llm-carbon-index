@@ -198,9 +198,9 @@ models:
 # ... seed only what's in the current OpenRouter top-N; null the rest.
 ```
 
-(Values above are placeholders — pull the real snapshot when seeding.)
-
 ---
+
+(The real cited snapshot lives in `data/model_capability.yaml` with source Q-AAII-V41; see PLANS.md and CONTRIBUTING for the 2026-06-19 transcription + regeneration process.)
 
 ## 7. Frontend view
 

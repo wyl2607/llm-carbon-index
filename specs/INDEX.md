@@ -38,6 +38,8 @@ Always-loaded context lives in `/CLAUDE.md` (hard rules) and these three governa
 | **6Q** | (vNext P5; spec inline in roadmap) | MoE-aware energy: parameter-class fallback band keyed on `active_params_b` (not total) | ✅ done (Wave 2) |
 | **6O** | (vNext P6; spec inline in roadmap) | dynamic regime / batching + prompt-length scenarios (`regime_factors.yaml` + WhatIfSimulator sliders + scenario.ts) | ✅ done (Wave 2) |
 | **6R** | (vNext P7; spec inline in roadmap) | ESG / CSRD Scope-2 dual-reporting export (`esg_export.json` + EsgExportPanel + ESRS-E1 line item, non-removable caveat) | ✅ done (Wave 2) |
+| Grid live (EIA) | (feat/grid-eia-us-east + #23) | EIA v2 hourly fuel-type-data for us-east/PJM as highest-priority live source (fallback to annual); provenance-gated factors; CI-only secret; precision surface `eia_live` | ✅ done (local integration a256166 + PR #23; live verified via dispatch) |
+| Efficiency frontier + real data + UI | (specs/efficiency-frontier.md + #22) | `data/model_capability.yaml` (AA Intelligence Index v4.1 max-effort snapshot, Q-AAII-V41); `pipeline/frontier.py` + fleet_rightsizing; `/frontier` recharts view (scatter + envelope + headline + low-conf toggle) | ✅ done (real data 2026-06-19; UI wired in main.tsx + Nav + i18n; PR #22) |
 
 When a phase is finished, update its row to ✅ and note the commit hash.
 
