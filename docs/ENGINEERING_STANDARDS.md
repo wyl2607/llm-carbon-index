@@ -57,4 +57,5 @@ Any artifact derived from OpenRouter data carries: `Source: OpenRouter (openrout
 - [ ] No model facts hardcoded in `.py` (grep clean).
 - [ ] Scope statement not violated; every emitted number carries a range or an explicit source/flag.
 - [ ] `specs/INDEX.md` status row updated to ✅ with the commit hash.
+- [ ] Read `CONTRIBUTING.md` "Operational gotchas" (and update it with any newly discovered facts about reproducibility, live paths, agent workflow, or data handling). This is the primary anti-re-investigation surface for future agents (cheap model or Grok).
 - [ ] Committed locally. (Not pushed unless asked.)
