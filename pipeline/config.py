@@ -31,6 +31,7 @@ PROVENANCE_SOURCES_PATH = DATA_DIR / "provenance" / "sources.yaml"
 # registry itself is the source of truth and is excluded from the walk.
 PROVENANCE_GATED_PATHS = (
     CROSSWALK_PATH,
+    CAPABILITY_PATH,
     INTENSITY_PATH,
     CLOSED_MODELS_PATH,
     VENDOR_CLAIMS_PATH,

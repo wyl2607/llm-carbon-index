@@ -306,8 +306,10 @@ Artificial Analysis's intelligence-vs-price frontier. Implementation: `pipeline/
 (`compute_frontier` / `annotate_models` / `compute_fleet_rightsizing`), wired into `build_output`.
 
 **The two axes.**
-- **X — capability**: the Artificial Analysis Intelligence Index (0–100 composite), a pinned, cited
-  snapshot in `data/model_capability.yaml` (the index drifts weekly → snapshot, not a live pull),
+- **X — capability**: the Artificial Analysis Intelligence Index v4.1 (0–100 composite), a pinned, cited
+  snapshot in `data/model_capability.yaml` (source `Q-AAII-V41`, accessed 2026-06-19; the index drifts
+  weekly → snapshot, not a live pull). Each value is transcribed from the public leaderboard at the
+  model's **maximum reasoning effort** (the configuration AA ranks on); none is estimated. Scores are
   mapped to each OpenRouter slug via the `capability_key` field in `data/model_crosswalk.yaml`. Models
   with no published score get `capability_index: null` + flag `FALLBACK_CAPABILITY` and are excluded
   from frontier definition. LMArena Elo may be stored as an optional cross-check but is **not** the axis.
