@@ -97,6 +97,16 @@ def test_reproduce_is_offline_no_api_key(
     assert verify_mod.verify_date(golden_env) is True
 
 
+def test_all_dates_skips_non_date_files(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    hist_dst = tmp_path / "history"
+    hist_dst.mkdir()
+    (hist_dst / "2026-06-14.json").write_text("{}")
+    (hist_dst / "index.json").write_text("{}")
+    (hist_dst / "foo.json").write_text("{}")
+    monkeypatch.setattr(config, "OUTPUT_HISTORY_DIR", hist_dst)
+    assert verify_mod._all_dates() == ["2026-06-14"]
+
+
 # --- float-tolerance: cross-platform ULP drift must not fail the gate ----------
 
 def test_docs_equiv_absorbs_float_ulp_drift() -> None:
