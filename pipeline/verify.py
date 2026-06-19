@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import difflib
 import json
+import re
 import sys
 
 import pipeline.config as config
@@ -83,7 +84,10 @@ def verify_date(data_date: str) -> bool:
 def _all_dates() -> list[str]:
     if not config.OUTPUT_HISTORY_DIR.exists():
         return []
-    return sorted(p.stem for p in config.OUTPUT_HISTORY_DIR.glob("*.json"))
+    return sorted(
+        p.stem for p in config.OUTPUT_HISTORY_DIR.glob("*.json")
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", p.stem)
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
