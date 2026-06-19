@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Outlet } from 'react-router-dom';
+import { Leaf } from 'lucide-react';
 import type { LatestData, Model, SensitivityData } from './types';
 import type { Lang } from './lib/i18n';
 import { useI18n } from './lib/i18n';
@@ -141,6 +142,9 @@ function Layout() {
       <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-[var(--bg)]/95 backdrop-blur">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 min-h-14 py-2.5 sm:py-0 sm:h-14 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-sm">
           <div className="flex items-center gap-3 shrink-0">
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-[var(--accent)] text-white shrink-0">
+              <Leaf className="w-[18px] h-[18px]" strokeWidth={2.1} />
+            </span>
             <div className="font-black tracking-[-0.5px] text-lg">LLM Carbon Index</div>
             {data && <div className="text-[10px] px-2 py-px rounded bg-[var(--accent-bg)] text-[var(--accent)] border border-[var(--accent-border)] font-bold tracking-widest">v{data.methodology_version}</div>}
           </div>
