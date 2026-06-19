@@ -5,6 +5,10 @@ import {
   formatTokens,
   formatCO2Parts,
   formatWaterParts,
+  pickCO2Unit,
+  formatCO2InUnit,
+  pickWaterUnit,
+  formatWaterInUnit,
   formatCO2Range,
   formatWaterRange,
   formatCO2Per1kGShort,
@@ -86,6 +90,58 @@ describe('formatWaterParts', () => {
     expect(parts.unit).toBe('kL');
     expect(parts.mid).toBe('3');
     expect(parts.range).toBe('1–5');
+  });
+});
+
+describe('column-consistent units (pickCO2Unit + formatCO2InUnit)', () => {
+  it('picks one unit for the whole column from its largest value', () => {
+    // Largest mid 77 000 kg -> column is tonnes even though small rows are < 1 t.
+    const col = [
+      { low: 24e3, mid: 77e3, high: 226e3 },
+      { low: 300, mid: 850, high: 2400 },
+    ];
+    expect(pickCO2Unit(col)).toBe('t');
+  });
+
+  it('stays in kg when every value is below the 1000 kg threshold', () => {
+    expect(pickCO2Unit([{ low: 100, mid: 500, high: 900 }])).toBe('kg');
+  });
+
+  it('renders every row in the chosen unit (no mixed t/kg in a column)', () => {
+    // Big row: 0 decimals. Small (<1 t) row: keeps decimals so it is not "0 t".
+    expect(formatCO2InUnit({ low: 24e3, mid: 77e3, high: 226e3 }, 't')).toEqual({
+      mid: '77',
+      range: '24–226',
+    });
+    expect(formatCO2InUnit({ low: 300, mid: 850, high: 2400 }, 't')).toEqual({
+      mid: '0.85',
+      range: '0.30–2.40',
+    });
+  });
+
+  it('uses 1 decimal for single-digit tonnes', () => {
+    expect(formatCO2InUnit({ low: 3e3, mid: 5.2e3, high: 8e3 }, 't')).toEqual({
+      mid: '5.2',
+      range: '3.0–8.0',
+    });
+  });
+
+  it('handles an empty column without throwing (defaults to kg)', () => {
+    expect(pickCO2Unit([])).toBe('kg');
+  });
+});
+
+describe('column-consistent units (pickWaterUnit + formatWaterInUnit)', () => {
+  it('picks kL when the largest value reaches the 1000 L threshold', () => {
+    expect(pickWaterUnit([{ low: 500, mid: 6233e3, high: 27832e3 }])).toBe('kL');
+    expect(pickWaterUnit([{ low: 10, mid: 50, high: 90 }])).toBe('L');
+  });
+
+  it('formats each row in the shared water unit', () => {
+    expect(formatWaterInUnit({ low: 1104e3, mid: 6233e3, high: 27832e3 }, 'kL')).toEqual({
+      mid: '6,233',
+      range: '1,104–27,832',
+    });
   });
 });
 
