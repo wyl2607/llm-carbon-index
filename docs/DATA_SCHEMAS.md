@@ -44,7 +44,7 @@ The single source of truth for every artifact shape. If a phase needs to change 
       "energy_source_id": "E-MINIMAX-M2.5",     // Phase 6G: provenance key of this energy figure -> sources.yaml
       "region": "us-east",
       "carbon_intensity_gco2_kwh": 380,
-      "grid_source": "electricity_maps_live",   // electricity_maps_live | annual_factor
+      "grid_source": "eia_live",   // electricity_maps_live | eia_live | annual_factor
       "grid_source_id": "GRID-EM-LIVE",         // Phase 6G: provenance key of this grid figure -> sources.yaml
       "pue": 1.25,                              // representative scalar (mid of A4 band)
       "co2_kg": { "low": 332, "mid": 622, "high": 1245 },          // operational, location-based
@@ -63,7 +63,7 @@ The single source of truth for every artifact shape. If a phase needs to change 
     "precision": {                               // Phase 6F: estimation-tier honesty (reports existing energy_source/grid_source flags; no new sourced numbers)
       "energy_measured_fraction": 0.0,           // token-weighted; measured (ai_energy_score/ecologits) ÷ modeled tokens
       "energy_class_fallback_fraction": 1.0,     // sums to 1.0 with energy_measured_fraction
-      "grid_live_fraction": 0.0,                 // token-weighted; electricity_maps_live ÷ modeled tokens
+      "grid_live_fraction": 0.0,                 // token-weighted; (electricity_maps_live | eia_live) ÷ modeled tokens
       "grid_annual_fallback_fraction": 1.0,      // sums to 1.0 with grid_live_fraction
       "models_measured": 0, "models_total": 50, "grid_live_models": 0  // count companion for UI copy
     },

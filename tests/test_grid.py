@@ -43,3 +43,52 @@ def test_carbon_intensity_falls_back_to_annual_without_key():
     assert gco2 > 0
     assert src == "annual_factor"
     assert sid
+
+
+# --- EIA tests (mocked; real key exercised only in CI/cron with secret) ---
+
+def test_eia_path_used_when_key_and_us_east(monkeypatch):
+    import pipeline.grid as gmod
+    from pipeline.grid import carbon_intensity
+
+    def fake_fetch(key):
+        assert key == "fake-eia"
+        return 412.3
+
+    monkeypatch.setattr(gmod, "_fetch_eia_pjm_intensity", fake_fetch)
+    monkeypatch.setattr(gmod, "eia_api_key", lambda: "fake-eia")
+
+    gco2, src, sid = carbon_intensity("us-east")
+    assert gco2 == 412.3
+    assert src == "eia_live"
+    assert sid == "GRID-EIA-PJM-HOURLY"
+
+
+def test_eia_falls_back_on_fetch_failure(monkeypatch):
+    import pipeline.grid as gmod
+    from pipeline.grid import carbon_intensity
+
+    monkeypatch.setattr(gmod, "_fetch_eia_pjm_intensity", lambda k: None)
+    monkeypatch.setattr(gmod, "eia_api_key", lambda: "fake-eia")
+
+    gco2, src, sid = carbon_intensity("us-east")
+    assert gco2 > 0
+    assert src == "annual_factor"
+    assert sid  # from annual table
+
+
+def test_non_us_east_ignores_eia_key(monkeypatch):
+    import pipeline.grid as gmod
+    from pipeline.grid import carbon_intensity
+
+    calls = []
+    def fake_fetch(key):
+        calls.append(key)
+        return 1.0
+
+    monkeypatch.setattr(gmod, "_fetch_eia_pjm_intensity", fake_fetch)
+    monkeypatch.setattr(gmod, "eia_api_key", lambda: "fake-eia")
+
+    gco2, src, sid = carbon_intensity("cn-north")
+    assert src == "annual_factor"
+    assert len(calls) == 0  # EIA never called for non us-east

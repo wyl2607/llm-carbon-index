@@ -24,6 +24,7 @@ CLOSED_MODELS_PATH = DATA_DIR / "assumptions" / "closed_models.yaml"
 VENDOR_CLAIMS_PATH = DATA_DIR / "assumptions" / "vendor_claims.yaml"
 METHODOLOGY_FACTORS_PATH = DATA_DIR / "assumptions" / "methodology_factors.yaml"
 ANNUAL_FACTORS_PATH = DATA_DIR / "grid" / "annual_factors.yaml"
+FUEL_EMISSION_FACTORS_PATH = DATA_DIR / "grid" / "fuel_emission_factors.yaml"
 ALT_ASSUMPTION_SETS_PATH = DATA_DIR / "assumptions" / "alt_assumption_sets.yaml"
 PROVENANCE_SOURCES_PATH = DATA_DIR / "provenance" / "sources.yaml"
 
@@ -37,6 +38,7 @@ PROVENANCE_GATED_PATHS = (
     VENDOR_CLAIMS_PATH,
     METHODOLOGY_FACTORS_PATH,
     ANNUAL_FACTORS_PATH,
+    FUEL_EMISSION_FACTORS_PATH,
     ALT_ASSUMPTION_SETS_PATH,
 )
 
@@ -75,3 +77,9 @@ def electricitymaps_api_key() -> str | None:
     """Read ELECTRICITYMAPS_API_KEY from env (optional; absence triggers the
     annual-factor fallback, never a crash)."""
     return os.environ.get("ELECTRICITYMAPS_API_KEY") or None
+
+
+def eia_api_key() -> str | None:
+    """Read EIA_API_KEY from env (optional; absence triggers annual fallback
+    for us-east; never a crash)."""
+    return os.environ.get("EIA_API_KEY") or None

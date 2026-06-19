@@ -194,7 +194,7 @@ in `README.md`.
 
 - `Source: OpenRouter (openrouter.ai/rankings), as of {data_date}` — stored in
   `source_citation` and shown in the UI (L-OR-CITATION).
-- Grid intensity: Electricity Maps (live) + Ember / EPA eGRID (annual fallback),
+- Grid intensity: EIA hourly (PJM/us-east when EIA_API_KEY present) + Electricity Maps (live) + Ember / EPA eGRID (annual fallback),
   recorded per row via `grid_source`.
 - Energy: Hugging Face **AI Energy Score** + **EcoLogits** (E-METHOD).
 
@@ -212,7 +212,7 @@ make verify 2026-06-14  # expect PASS
 ## 11a. Pipeline long-termism (L2–L4 audit items)
 
 **L2 — Live grid honesty resolution.**  
-`grid_live_fraction` (and `grid_live_models`) is 0.0 in every committed history golden and in the reproducibility harness. `pipeline/grid.py` *does* implement the live Electricity Maps fetch (guarded by `ELECTRICITYMAPS_API_KEY` + zone mapping from annual_factors.yaml; falls back on any failure including missing key). When live succeeds the row receives `grid_source: "electricity_maps_live"`, `grid_source_id: "GRID-EM-LIVE"`. However, the runs that produce published goldens (and `make verify`) never supply the key and never perform network calls (snapshots replay frozen annual values). Therefore the published metric honestly reports 0 % live today; it is not a silent/wrong claim. Annual fallback is always explicitly recorded per row (`grid_source`, `grid_source_id`, `FALLBACK_GRID_ANNUAL` flag in estimates). Live activation would snapshot a time-varying value at publish instant; that is feasible for ad-hoc runs but outside the current reproducibility contract for the committed series. (See also CLAUDE.md Electricity Maps rule and `pipeline/precision.py` / `grid.py` L2 notes.)
+`grid_live_fraction` (and `grid_live_models`) is 0.0 in every committed history golden and in the reproducibility harness. `pipeline/grid.py` implements live paths: EIA v2 fuel-type hourly for us-east (PJM) when `EIA_API_KEY` present (source "eia_live", id "GRID-EIA-PJM-HOURLY"), plus Electricity Maps for mapped zones when `ELECTRICITYMAPS_API_KEY` present. Both fall back on any error (incl. missing key) to annual_factor with explicit source. Published runs and `make verify` replay frozen snapshots (annual for 2026-06-14 and prior). When a keyed run publishes, the snapshot captures the live value+label for that instant and `grid_live_fraction` becomes >0 honestly. No silent 0s; every figure keeps its `grid_source` / `source_id`. (See `grid.py`, `precision.py`, and `data/grid/fuel_emission_factors.yaml`.)
 
 **L3 — History retention / compaction policy.**  
 - Full `history/{YYYY-MM-DD}.json` files (complete with per-model detail) are retained *indefinitely* for all published dates. This is required for `pipeline.verify` (every golden must be replayable) and for audit. No code in `pipeline/` deletes history entries.  

@@ -12,7 +12,7 @@ export interface Range {
 export type Origin = 'CN' | 'US' | 'EU' | 'OTHER';
 export type OpenOrClosed = 'open' | 'closed';
 export type EnergySource = 'ai_energy_score' | 'ecologits' | 'parameter_class_fallback';
-export type GridSource = 'electricity_maps_live' | 'annual_factor';
+export type GridSource = 'electricity_maps_live' | 'eia_live' | 'annual_factor';
 
 export interface Model {
   slug: string;

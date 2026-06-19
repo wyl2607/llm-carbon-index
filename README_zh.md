@@ -104,5 +104,5 @@ make verify 2026-06-14  # 预期输出：PASS
 ## 数据归属与引用
 
 - **排名数据**: `来源: OpenRouter (openrouter.ai/rankings), 截至 {date}`。
-- **电网碳强度**: Ember/IEA 年度平均因子（逐行记录）。实时 Electricity Maps 支持已具备，但在发布的可复现黄金数据中**关闭**（`grid_live_fraction = 0.0`）；详见 `docs/methodology.md` 第 11a 节。
+- **电网碳强度**: EIA 小时级（us-east/PJM，有 EIA_API_KEY 时）+ Ember/IEA 年度回退。实时路径存在；已发布黄金中 `grid_live_fraction = 0.0` 直到带 key 的运行提交（详见 `docs/methodology.md` 第 11a 节）。
 - **能耗数据**: EcoLogits + Hugging Face AI Energy Score。参见 [`docs/methodology.md`](docs/methodology.md)。
