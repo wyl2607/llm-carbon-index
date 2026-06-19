@@ -38,6 +38,25 @@ export interface Model {
   wue?: number;
   water_liters?: Range;
   flags: string[];
+  // Efficiency-frontier / rightsizing (spec specs/efficiency-frontier.md §6). Present
+  // once the frontier pipeline has run; null/absent for models without a capability score.
+  capability_index?: number | null;
+  capability_source_id?: string | null;
+  energy_wh_per_mtok?: Range;
+  on_frontier?: boolean;
+  frontier_reference_slug?: string | null;
+  rightsizing_gap_pct?: Range | null;
+  avoidable_co2_kg?: Range | null;
+}
+
+export interface FleetRightsizing {
+  basis: string;
+  avoidable_co2_kg: Range;
+  avoidable_pct_of_total: Range;
+  models_included: number;
+  models_excluded_low_confidence: number;
+  capability_index_version: string;
+  capability_index_accessed: string;
 }
 
 export interface Precision {
@@ -111,6 +130,7 @@ export interface LatestData {
   sources?: Source[];
   models: Model[];
   totals: Totals;
+  fleet_rightsizing?: FleetRightsizing;
 }
 
 export interface TimeseriesDay {

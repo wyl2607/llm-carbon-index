@@ -381,7 +381,7 @@ def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path)
     )
 
     # Basic presence and values
-    assert doc["methodology_version"] == "0.7.0"
+    assert doc["methodology_version"] == "0.8.0"
     assert doc["generated_at"] == "2026-06-15T00:00:00Z"
     assert doc["data_date"] == GOLDEN_DATE
     assert doc["source_citation"] == (
@@ -393,9 +393,26 @@ def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path)
     assert "pue_band" in doc["assumptions"]
     assert "prefill_alpha" in doc["assumptions"]
 
-    # models length (other excluded), passed through unchanged from estimate()
+    # models length (other excluded). Each carries the original estimate fields
+    # (passed through) PLUS the additive Phase 6M frontier fields.
     assert len(doc["models"]) == 3
-    assert doc["models"] == list(estimates)
+    frontier_keys = {
+        "energy_wh_per_mtok",
+        "capability_index",
+        "capability_source_id",
+        "on_frontier",
+        "frontier_reference_slug",
+        "rightsizing_gap_pct",
+        "avoidable_co2_kg",
+    }
+    for out_m, est_m in zip(doc["models"], estimates, strict=True):
+        for k, v in est_m.items():
+            if k == "flags":
+                # frontier annotation only APPENDS flags; originals must survive
+                assert set(v).issubset(set(out_m["flags"])), out_m["slug"]
+            else:
+                assert out_m[k] == v, (out_m["slug"], k)
+        assert frontier_keys.issubset(out_m.keys())
 
     # flags, sources, identity preserved
     mini = next(m for m in doc["models"] if "minimax" in m["slug"])

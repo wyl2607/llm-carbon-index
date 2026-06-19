@@ -1,0 +1,46 @@
+# Capability scores for the X axis of the efficiency frontier (spec §2, §6).
+#
+# Pinned snapshot of the Artificial Analysis Intelligence Index (v4.1). The index
+# drifts weekly, so this is a frozen snapshot — NOT a live pull. Every value is
+# transcribed from the public leaderboard at https://artificialanalysis.ai/leaderboards/models
+# (accessed 2026-06-19), taking each model's headline index at its MAXIMUM reasoning
+# effort (the configuration AA uses to rank the leaderboard — xhigh / max). Per
+# CLAUDE.md ("do not invent capability scores — only transcribe published, cited
+# values"), no number here is estimated. Source registered as Q-AAII-V41 in
+# data/provenance/sources.yaml and enforced by the provenance gate.
+#
+# Keyed by `capability_key` (mapped from each OpenRouter slug in
+# data/crosswalk/model_crosswalk.yaml). Models with no published score get
+# capability_index: null -> FALLBACK_CAPABILITY (greyed, excluded from frontier
+# definition). All six current top-N keys have a published score, so none are null.
+
+sources:
+  - id: Q-AAII-V41
+    title: Artificial Analysis Intelligence Index
+    publisher: Artificial Analysis
+    url: https://artificialanalysis.ai/leaderboards/models
+    version: "v4.1"
+    accessed: "2026-06-19"
+
+models:
+  # capability_index = AA Intelligence Index v4.1 at maximum reasoning effort.
+  # --- high-confidence frontier candidates (measured energy in intensity.yaml) ---
+  deepseek-v4-flash:
+    capability_index: 40.0
+    source_id: Q-AAII-V41
+  minimax-m3:
+    capability_index: 44.0
+    source_id: Q-AAII-V41
+  deepseek-v4-pro:
+    capability_index: 44.0
+    source_id: Q-AAII-V41
+  # --- fallback-energy models: scored but low-confidence gap (greyed in chart) ---
+  gemini-3.5-flash:
+    capability_index: 50.0
+    source_id: Q-AAII-V41
+  gpt-5.5:
+    capability_index: 55.0
+    source_id: Q-AAII-V41
+  claude-4.8-opus:
+    capability_index: 56.0
+    source_id: Q-AAII-V41

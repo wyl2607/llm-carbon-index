@@ -296,3 +296,68 @@ Out-of-band verified anchors are retained in `validation.json` and can be inspec
 **ESG / CSRD Scope-2 export (6r).** `pipeline/output.py` emits `data/output/esg_export.json` mapping location-based (`totals.co2_kg`) and market-based (`totals.co2_kg_market`) figures to GHG-Protocol Scope-2 dual reporting plus an ESRS-E1-flavored line item. The project scope/uncertainty caveat is embedded verbatim and non-removable in every exported artifact; no new numbers are created. A download surface is available in the web UI.
 
 This mechanism keeps the project honest against the external literature while respecting the "no silent 0 / no magic numbers / ranges end-to-end" invariants.
+
+## 16. Rightsizing & efficiency frontier (methodology v0.8.0)
+
+The base model answers *which* models emit the most; this view answers whether that emission was
+**necessary** — how much OpenRouter-visible inference CO₂ is attributable to running a more capable
+(and more energy-intensive) model than the delivered task quality required. It is the carbon analog of
+Artificial Analysis's intelligence-vs-price frontier. Implementation: `pipeline/frontier.py`
+(`compute_frontier` / `annotate_models` / `compute_fleet_rightsizing`), wired into `build_output`.
+
+**The two axes.**
+- **X — capability**: the Artificial Analysis Intelligence Index v4.1 (0–100 composite), a pinned, cited
+  snapshot in `data/model_capability.yaml` (source `Q-AAII-V41`, accessed 2026-06-19; the index drifts
+  weekly → snapshot, not a live pull). Each value is transcribed from the public leaderboard at the
+  model's **maximum reasoning effort** (the configuration AA ranks on); none is estimated. Scores are
+  mapped to each OpenRouter slug via the `capability_key` field in `data/model_crosswalk.yaml`. Models
+  with no published score get `capability_index: null` + flag `FALLBACK_CAPABILITY` and are excluded
+  from frontier definition. LMArena Elo may be stored as an optional cross-check but is **not** the axis.
+- **Y — energy intensity**: `energy_wh_per_mtok = wh_per_output_token × 1e6`, carried as a
+  `{low, mid, high}` band. The frontier is a property of the *model*, not of how much it is used, so
+  traffic enters only in the fleet roll-up. The frontend plots this on a log scale.
+
+**Frontier definition (Pareto).** In the plane (capability ↑ better, intensity ↓ better) model **M**
+is on the frontier iff no other *eligible* model **N** satisfies
+`capability_N ≥ capability_M AND intensity_N ≤ intensity_M` with at least one strict. Eligible to
+**define** the frontier means high-confidence only: `energy_source == "ai_energy_score"` **and**
+`capability_index != null`. Fallback-energy models are still plotted (greyed) and still get a gap, but
+they carry `LOW_CONFIDENCE_GAP` and never define the line. The frontier is computed on **mid** intensity.
+
+**Rightsizing gap (per model).** Reference **F** = the frontier model with the *minimum* mid-intensity
+among frontier models that deliver *at least* M's capability. The gap band clamps the low end at 0:
+
+```
+gap_mid  = (e_M.mid  − e_F.mid ) / e_M.mid
+gap_low  = max(0, (e_M.low  − e_F.high) / e_M.low )
+gap_high =        (e_M.high − e_F.low ) / e_M.high
+```
+
+A frontier member, or any model already at/under the frontier for its tier, gets gap `{0,0,0}`. The
+single most capable model has no reference (`rightsizing_gap_pct: null`, flag `NO_FRONTIER_REFERENCE`):
+you cannot rightsize down without losing capability — that is not waste.
+
+**Fleet realized waste (the headline).** Avoidable operational CO₂ is the model's own location-based
+CO₂ scaled by its gap, band-to-band (unit-safe; `co2_kg` already encodes traffic, grid intensity and
+PUE, so region/grid/PUE are held constant automatically):
+
+```
+avoidable_co2_kg_M.x   = co2_kg_M.x × rightsizing_gap_pct_M.x        for x in {low, mid, high}
+fleet_avoidable_co2_kg = Σ avoidable_co2_kg_M   over models with a defined, high-confidence gap
+fleet_avoidable_pct    = fleet_avoidable_co2_kg / total_co2_kg
+```
+
+Low-confidence (fallback-energy) models are excluded from the headline by default (UI toggle to
+include). This supersedes the spec's earlier token-based `avoidable_kwh` draft (see
+`specs/efficiency-frontier.md` §5); the executable contract is `tests/test_frontier.py`.
+
+**What this does NOT claim (scope discipline).**
+- **Capability ≠ task fitness.** A composite benchmark score is not a guarantee that a smaller model
+  fits a specific user's task. The gap is an *opportunity ceiling*, not a recommendation to switch.
+- **Region/grid/PUE held constant.** This view does not combine with grid-shifting; that is a separate
+  lever and would be double-counted if merged.
+- **Built mostly on estimated energy.** For `parameter_class_fallback` models the gap is low-confidence
+  and excluded from the headline by default.
+- **Ignores substitution friction** — latency, context window, modality, tool support, provider
+  availability, price. A frontier-equivalent model may be unusable for reasons outside this plane.
+- **OpenRouter-visible slice only** (existing scope guard; consumer apps excluded).
