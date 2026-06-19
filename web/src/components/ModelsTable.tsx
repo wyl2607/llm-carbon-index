@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import type { Model } from '../types';
-import { co2Per1kOutputTokens, formatCO2Parts, formatWaterParts, formatCO2Per1kGShort } from '../lib/format';
+import { co2Per1kOutputTokens, pickCO2Unit, formatCO2InUnit, pickWaterUnit, formatWaterInUnit, formatCO2Per1kGShort } from '../lib/format';
 import { Search, Download, Eye } from 'lucide-react';
 import type { Lang } from '../lib/i18n';
 import { useI18n } from '../lib/i18n';
@@ -196,6 +196,13 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
   const isScenario = isScenarioActive;
   const hasWater = models.some(m => !!m.water_liters && m.water_liters.mid > 0);
 
+  // One unit per column (chosen from the column's largest value) so every row
+  // shares it and the header label matches the cells — no mixed t/kg or kL/L.
+  const co2Unit = pickCO2Unit(models.map(m => m.co2_kg));
+  const waterUnit = pickWaterUnit(
+    models.filter(m => m.water_liters && m.water_liters.mid > 0).map(m => m.water_liters!)
+  );
+
   // effectiveTiers + tierMap computed early (above) for sort + render grouping
 
   return (
@@ -284,8 +291,8 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
           <thead>
             <tr>
               {header(tt.colModel)}
-              {header(tt.colCo2, 'co2', 'right')}
-              {hasWater && header(tt.colWater, 'water', 'right')}
+              {header(tt.colCo2(co2Unit), 'co2', 'right')}
+              {hasWater && header(tt.colWater(waterUnit), 'water', 'right')}
               {header(tt.colEff, 'efficiency', 'right')}
               {header(tt.colOrigin)}
               {header(tt.colOpenClosed)}
@@ -318,8 +325,8 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                 const isGridLive = m.grid_source === 'electricity_maps_live' || m.grid_source === 'eia_live';
                 const originClass = m.origin === 'CN' ? 'badge-cn' : m.origin === 'US' ? 'badge-us' : m.origin === 'EU' ? 'badge-eu' : 'badge';
                 const displayRank = i + 1;
-                const co2 = formatCO2Parts(m.co2_kg);
-                const water = m.water_liters && m.water_liters.mid > 0 ? formatWaterParts(m.water_liters) : null;
+                const co2 = formatCO2InUnit(m.co2_kg, co2Unit);
+                const water = m.water_liters && m.water_liters.mid > 0 ? formatWaterInUnit(m.water_liters, waterUnit) : null;
                 const effColor = isHighEmission ? 'text-[var(--warning)]' : isLowEmission ? 'text-[var(--accent)]' : 'text-[var(--text-secondary)]';
                 nodes.push(
                   <tr key={m.slug} className={`border-b border-[var(--border)] hover:bg-[var(--bg-card-hover)] transition-colors ${i % 2 === 0 ? '' : 'bg-[var(--row-stripe)]'}`}>
@@ -328,14 +335,14 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                       <span className="font-semibold text-[var(--text)]">{m.display_name}</span>
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
-                      <div className="font-mono font-semibold text-[var(--text)]">{co2.mid} <span className="font-normal text-[var(--text-muted)]">{co2.unit}</span></div>
+                      <div className="font-mono font-semibold text-[var(--text)]">{co2.mid} <span className="font-normal text-[var(--text-muted)]">{co2Unit}</span></div>
                       <div className="font-mono text-[11px] text-[var(--text-muted)]">{co2.range}</div>
                     </td>
                     {hasWater && (
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         {water ? (
                           <>
-                            <div className="font-mono font-semibold text-[var(--text)]">{water.mid} <span className="font-normal text-[var(--text-muted)]">{water.unit}</span></div>
+                            <div className="font-mono font-semibold text-[var(--text)]">{water.mid} <span className="font-normal text-[var(--text-muted)]">{waterUnit}</span></div>
                             <div className="font-mono text-[11px] text-[var(--text-muted)]">{water.range}</div>
                           </>
                         ) : (

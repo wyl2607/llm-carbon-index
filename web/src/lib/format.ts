@@ -58,6 +58,39 @@ export function formatWaterParts(r: Range): { mid: string; range: string; unit: 
   return { mid: fmt(r.mid), range: `${fmt(r.low)}–${fmt(r.high)}`, unit };
 }
 
+/**
+ * Column-consistent units. In a table every row must share ONE unit, otherwise
+ * a column shows a mix of "t" and "kg" (or "kL" and "L") and the header label
+ * contradicts most cells. These helpers pick a single unit for the whole column
+ * from its largest value, then format each row in that unit. Decimals adapt to
+ * the row magnitude so small values stay legible (no false-precision "0 t").
+ */
+export function pickCO2Unit(ranges: Range[]): 't' | 'kg' {
+  const max = ranges.reduce((m, r) => Math.max(m, r.high, r.mid), 0);
+  return max >= 1000 ? 't' : 'kg';
+}
+
+export function formatCO2InUnit(r: Range, unit: 't' | 'kg'): { mid: string; range: string } {
+  const scale = unit === 't' ? 1000 : 1;
+  const scaledMid = r.mid / scale;
+  const dec = unit === 'kg' ? 0 : scaledMid < 1 ? 2 : scaledMid < 10 ? 1 : 0;
+  const fmt = (v: number) => nf(v / scale, { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  return { mid: fmt(r.mid), range: `${fmt(r.low)}–${fmt(r.high)}` };
+}
+
+export function pickWaterUnit(ranges: Range[]): 'kL' | 'L' {
+  const max = ranges.reduce((m, r) => Math.max(m, r.high, r.mid), 0);
+  return max >= 1000 ? 'kL' : 'L';
+}
+
+export function formatWaterInUnit(r: Range, unit: 'kL' | 'L'): { mid: string; range: string } {
+  const scale = unit === 'kL' ? 1000 : 1;
+  const scaledMid = r.mid / scale;
+  const dec = unit === 'L' ? 0 : scaledMid < 1 ? 2 : scaledMid < 10 ? 1 : 0;
+  const fmt = (v: number) => nf(v / scale, { minimumFractionDigits: dec, maximumFractionDigits: dec });
+  return { mid: fmt(r.mid), range: `${fmt(r.low)}–${fmt(r.high)}` };
+}
+
 export function formatCO2Range(r: Range): string {
   const { mid, range, unit } = formatCO2Parts(r);
   return `${mid} ${unit} (${range} ${unit})`;
