@@ -65,6 +65,19 @@ export default function Frontier() {
     return { frontierPts: frontier, measuredPts: measured, fallbackPts: fallback };
   }, [data.models]);
 
+  // Recharts' log YAxis mis-computes an 'auto' domain for a handful of points and
+  // (with allowDataOverflow) clamps the out-of-range ones onto the axis edges, so
+  // the scatter collapses into the corners. Derive an explicit, multiplicatively
+  // padded domain from the visible points so every dot lands inside the plot.
+  const yDomain = useMemo<[number, number] | ['auto', 'auto']>(() => {
+    const visible = includeLowConf
+      ? [...frontierPts, ...measuredPts, ...fallbackPts]
+      : [...frontierPts, ...measuredPts];
+    const ys = visible.map(p => p.y).filter(v => v > 0);
+    if (!ys.length) return ['auto', 'auto'];
+    return [Math.min(...ys) / 1.6, Math.max(...ys) * 1.6];
+  }, [frontierPts, measuredPts, fallbackPts, includeLowConf]);
+
   // Headline: default excludes low-confidence (fleet_rightsizing as emitted). When the
   // toggle is on, add the low-confidence (fallback-energy) models' avoidable CO₂ and
   // re-derive the percentage against the same operational total.
@@ -181,9 +194,9 @@ export default function Frontier() {
                 dataKey="y"
                 name={tt.frChartY}
                 scale="log"
-                domain={['auto', 'auto']}
+                domain={yDomain}
                 allowDataOverflow
-                tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`)}
+                tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : `${Math.round(v)}`)}
                 tick={{ fontSize: 11, fill: 'var(--text-muted)' }}
                 tickLine={{ stroke: 'var(--border)' }}
                 axisLine={{ stroke: 'var(--border)' }}
