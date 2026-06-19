@@ -315,7 +315,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
                 const isLowEmission = effG < 0.5;
                 const isEnergyMeasured =
                   m.energy_source === 'ai_energy_score' || m.energy_source === 'ecologits';
-                const isGridLive = m.grid_source === 'electricity_maps_live';
+                const isGridLive = m.grid_source === 'electricity_maps_live' || m.grid_source === 'eia_live';
                 const originClass = m.origin === 'CN' ? 'badge-cn' : m.origin === 'US' ? 'badge-us' : m.origin === 'EU' ? 'badge-eu' : 'badge';
                 const displayRank = i + 1;
                 const co2 = formatCO2Parts(m.co2_kg);

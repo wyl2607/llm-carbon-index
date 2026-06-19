@@ -118,5 +118,5 @@ See `docs/methodology.md` §11 for snapshot layout, `manifest.json` checksums, g
 ## Attribution
 
 - Rankings: `Source: OpenRouter (openrouter.ai/rankings), as of {date}`.
-- Grid intensity: Ember/IEA annual-average factors (recorded per row). Live Electricity Maps support exists but is **off** for published, reproducible goldens (`grid_live_fraction = 0.0`); see `docs/methodology.md` §11a.
+- Grid intensity: EIA hourly (PJM for us-east when keyed) + Ember/IEA annual (fallback). Live paths exist; `grid_live_fraction = 0.0` in published goldens until a keyed run is committed (see `docs/methodology.md` §11a).
 - Energy: EcoLogits + Hugging Face AI Energy Score. See [`docs/methodology.md`](docs/methodology.md).
