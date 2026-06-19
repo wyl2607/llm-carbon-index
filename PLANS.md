@@ -122,8 +122,12 @@ Built as 2 lanes (grok): Lane E = P5+P6 serial (both `energy.py`); Lane F = P7 (
 - ✅ **P7 / 6R** — ESG / CSRD Scope-2 dual-reporting export: `esg_export.json` (location + market `{low,mid,high}` + ESRS-E1 line item + non-removable scope caveat), EsgExportPanel download.
 
 ### vNext fully landed → next candidates (not yet scoped)
-- Live grid-intensity integration (Electricity Maps; needs `ELECTRICITYMAPS_API_KEY`).
-- Fix the two integration findings below.
+- Live grid-intensity integration:
+  - EIA hourly for us-east/PJM (free, via EIA_API_KEY) implemented in feat/grid-eia-us-east worktree (2026-06-18/19).
+  - Electricity Maps path remains (needs key; currently 0 in published).
+  - grid_live_fraction will rise on first keyed publish + snapshot.
+- Verify gate unfrozen (index.json filter) + provenance extended for fuel factors.
+- Fix the two integration findings below (most resolved).
 
 ### Integration findings — RESOLVED 2026-06-17
 - ✅ **Test output pollution:** FIXED. `validate_literature(out_path=…)` + `test_output.py` monkeypatches (`OUTPUT_DIR` + `OUTPUT_TIMESERIES_PATH` + `SENSITIVITY_PATH`) route every output-writing test through tmp. Verified: the full suite leaves `data/output/*` clean. (PR#4 + merge `c01bd35`)

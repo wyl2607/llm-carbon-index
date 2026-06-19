@@ -11,12 +11,11 @@ fabrication risk (CLAUDE.md scope statement reinforced, not weakened).
 `other`/uncovered aggregate). Each axis sums to 1.0 (± float tolerance).
 
 L2 (live-grid honesty): grid_live_fraction (and grid_live_models) will be >0 only
-for runs where carbon_intensity actually returned "electricity_maps_live". In all
-committed history goldens and under the verify harness it is 0.0 because the
-reproducibility contract runs without ELECTRICITYMAPS_API_KEY (and verify is
-offline-only via snapshot replay). The code path exists and records sources
-correctly when a key is supplied at publish time; the metric honestly reflects
-published data (always annual fallback today). See docs/methodology.md §11a.
+for runs where carbon_intensity actually returned a live source ("electricity_maps_live"
+or "eia_live"). In all committed history goldens and under the verify harness it is
+0.0 because the reproducibility contract runs without live API keys (and verify is
+offline-only via snapshot replay). The code paths exist and record sources correctly
+when keys are supplied; the metric honestly reflects published data. See docs/methodology.md §11a.
 """
 from __future__ import annotations
 
@@ -27,8 +26,8 @@ from pipeline.types import ModelEstimate
 # energy_source values that count as a real measurement vs a parameter-class guess.
 # (DATA_SCHEMAS §1: energy_source ∈ ai_energy_score | ecologits | parameter_class_fallback)
 _MEASURED_ENERGY_SOURCES = ("ai_energy_score", "ecologits")
-# grid_source values (DATA_SCHEMAS §1: grid_source ∈ electricity_maps_live | annual_factor)
-_LIVE_GRID_SOURCE = "electricity_maps_live"
+# grid_source values (DATA_SCHEMAS §1)
+_LIVE_GRID_SOURCES = ("electricity_maps_live", "eia_live")  # | annual_factor
 
 
 def energy_tier(model: ModelEstimate) -> str:
@@ -44,9 +43,9 @@ def energy_tier(model: ModelEstimate) -> str:
 def grid_tier(model: ModelEstimate) -> str:
     """Map a model's grid_source to its precision tier.
 
-    Returns "live" for electricity_maps_live, else "annual_fallback".
+    Returns "live" for any live source (electricity_maps_live or eia_live), else "annual_fallback".
     """
-    return "live" if model.get("grid_source") == _LIVE_GRID_SOURCE else "annual_fallback"
+    return "live" if model.get("grid_source") in _LIVE_GRID_SOURCES else "annual_fallback"
 
 
 def precision_fractions(models: Iterable[ModelEstimate]) -> dict:
