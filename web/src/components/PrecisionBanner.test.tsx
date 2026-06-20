@@ -38,9 +38,13 @@ describe('Phase 6F estimation-tier honesty (PrecisionBanner)', () => {
   it('renders an always-visible note reflecting the measured / live fractions from today\'s data', () => {
     render(<PrecisionBanner precision={sample.totals.precision} lang="en" />);
     const banner = screen.getByRole('note');
-    // post-6j reality: top-traffic models are now measured (≈29%), grid still 0% live.
-    expect(banner.textContent).toMatch(/29% measured energy/);
-    expect(banner.textContent).toMatch(/0% live grid/);
+    // Derive the expected percentages from the fixture itself: latest.json is
+    // rewritten on every CI data refresh, so hardcoding values here is brittle.
+    const p = sample.totals.precision!;
+    const energyPct = (p.energy_measured_fraction * 100).toFixed(0);
+    const gridPct = (p.grid_live_fraction * 100).toFixed(0);
+    expect(banner.textContent).toMatch(new RegExp(`${energyPct}% measured energy`));
+    expect(banner.textContent).toMatch(new RegExp(`${gridPct}% live grid`));
   });
 
   it('reflects a mixed precision block when one is supplied', () => {

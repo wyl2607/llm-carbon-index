@@ -11,16 +11,19 @@ export type Lang = 'en' | 'zh' | 'de';
 // (output/latest.json model.region). Plain place names, not model facts.
 const REGION_LABELS_EN: Record<string, string> = {
   'cn-north': 'China (North)',
+  'cn-east': 'China (East)',
   'us-east': 'United States (East)',
   'europe-west': 'Europe (West)',
 };
 const REGION_LABELS_ZH: Record<string, string> = {
   'cn-north': '中国（华北）',
+  'cn-east': '中国（华东）',
   'us-east': '美国（东部）',
   'europe-west': '欧洲（西部）',
 };
 const REGION_LABELS_DE: Record<string, string> = {
   'cn-north': 'China (Nord)',
+  'cn-east': 'China (Ost)',
   'us-east': 'USA (Ost)',
   'europe-west': 'Europa (West)',
 };
