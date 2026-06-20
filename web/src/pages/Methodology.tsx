@@ -29,7 +29,7 @@ export default function Methodology() {
           <ShieldAlert size={20} className="text-[var(--accent)] shrink-0 mt-0.5" />
           <div>
             <h2 className="font-bold text-[var(--accent)] mb-1">{tt.methScopeTitle}</h2>
-            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{data.scope_note}</p>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{tt.scopeMain}</p>
           </div>
         </div>
       </section>
