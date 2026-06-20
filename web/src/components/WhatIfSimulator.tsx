@@ -208,7 +208,7 @@ export const WhatIfSimulator: React.FC<Props> = ({
               {/* P6 regime effect note (illustrative; scales base energy hence absolute CO2 for fixed grid) */}
               {regimeEffectiveCo2 && (
                 <div className="mt-2 text-[10px] text-[var(--warning)]/80">
-                  {tt.regimeEffectNote(regimeMult.mid.toFixed(2), nf(regimeEffectiveCo2.mid))}
+                  {tt.regimeEffectNote(regimeMult.mid.toFixed(2), nf(regimeEffectiveCo2.mid, { maximumFractionDigits: 0 }))}
                 </div>
               )}
 
