@@ -15,6 +15,7 @@ concurrency:
 # contents:write is required solely for the atomic commit+push of data/output + snapshots
 # (gating from B1/B2 ensures only verified data reaches this path).
 # issues:write added for L1 cron-failure alerting below.
+# pull-requests:write added for S5 (create dated branch + PR; never direct push to main).
 permissions: {}
 
 jobs:
@@ -23,6 +24,7 @@ jobs:
     permissions:
       contents: write
       issues: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v6
 
@@ -53,7 +55,7 @@ jobs:
       - name: Reproducibility gate (replay every golden from its frozen snapshot)
         run: uv run python -m pipeline.verify
 
-      - name: Commit refreshed output + snapshot (only if changed)
+      - name: Create dated branch + commit + open PR (only if changed)
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -61,12 +63,30 @@ jobs:
           # produced. Otherwise every auto-refreshed golden is an unverifiable orphan
           # (no snapshot → `make verify` can never replay it).
           if [ -n "$(git status --porcelain data/output data/raw/snapshots)" ]; then
+            BRANCH="data-refresh/$(date -u +%Y-%m-%d-%H%M%S)"
+            git checkout -b "$BRANCH"
             git add data/output data/raw/snapshots
             git commit -m "chore(data): refresh output + snapshot $(date -u +%Y-%m-%d)"
-            git push
+            git push origin "$BRANCH"
+            BODY=$(printf '%s\n' \
+              "Automated daily data refresh (LLM Carbon Index)." \
+              "" \
+              "**Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+              "**Base commit:** ${{ github.sha }}" \
+              "**Generated (UTC):** $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              "" \
+              "This PR was created by the pipeline-refresh workflow after all gates passed." \
+              "A human must review and merge. Do not enable auto-merge.")
+            gh pr create \
+              --title "chore(data): daily data refresh $(date -u +%Y-%m-%d)" \
+              --body "$BODY" \
+              --base main \
+              --head "$BRANCH" || true
           else
             echo "No data changes; nothing to commit."
           fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # L1: cron-failure visibility. Runs only on job failure (gates or commit/push).
       # Opens a new issue or comments on an existing open one with same title.
