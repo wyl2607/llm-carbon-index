@@ -256,8 +256,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
             onClick={() => {
               const payload = {
                 exported_at: new Date().toISOString(),
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                scenario: { greenShiftPercent: (window as any).__currentShift || 0, accountingMethod: 'location-or-market' },
+                scenario: { greenShiftPercent: ((window as unknown) as { __currentShift?: number }).__currentShift || 0, accountingMethod: 'location-or-market' },
                 note: 'All values reflect the active grid substitution scenario. Ranges are low/mid/high.',
                 models: sorted.map(m => ({
                   ...m,
