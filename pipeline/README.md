@@ -13,5 +13,5 @@ created in their phase — none are implemented yet.
 | `build_outputs.py` | 4 | Assemble `output/latest.json` + `output/timeseries.json`: per-model tokens/Wh/CO₂(+range)/efficiency/open-closed/origin/provider/region/renewable%/scenarios, plus ecosystem aggregates. |
 
 Tests for the whole chain live in `tests/` (conversion guards are mandatory).
-The Phase-0 prover (`scratch/prove_math.py`) is the throwaway predecessor to
+The Phase-0 prover (`scratch/prove_math.py`, since removed) is the throwaway predecessor to
 `estimate_energy.py` + `estimate_carbon.py`.

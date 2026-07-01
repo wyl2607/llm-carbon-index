@@ -21,7 +21,7 @@ slice, not global emissions). Static pipeline → committed JSON → static fron
   (P2), `output.py` + `run.py` (P3). `schemas/output.schema.json`.
 - `data/` — `crosswalk/`, `energy/`, `assumptions/`, `grid/` (seeded YAML),
   `output/latest.json` + `history/{date}.json` (committed by CI). `data/raw/` is cache (gitignored).
-- `web/` — Vite+React+TS dashboard reading `data/output/latest.json`. `scratch/prove_math.py` is the Phase-0 prover.
+- `web/` — Vite+React+TS dashboard reading `data/output/latest.json`. `scratch/prove_math.py` was the Phase-0 prover (since removed).
 
 ## Status — MVP (0–5) + Phase 6A–6E done
 | Phase | State |

@@ -14,7 +14,7 @@ Always-loaded context lives in `/CLAUDE.md` (hard rules) and these three governa
 
 | Phase | Spec | Output | Status |
 |-------|------|--------|--------|
-| 0 | (done — see scratch/prove_math.py) | end-to-end math proven, magnitude sane | ✅ done |
+| 0 | (done — `scratch/prove_math.py`, since removed) | end-to-end math proven, magnitude sane | ✅ done |
 | 1 | `phase-1-ingestion.md` | normalized OpenRouter time series | ✅ done |
 | 2 | `phase-2-estimation.md` | per-model energy + CO₂ with ranges | ✅ done |
 | 3 | `phase-3-output-json.md` | validated `data/output/latest.json` | ✅ done |

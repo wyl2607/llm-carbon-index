@@ -18,7 +18,7 @@ LLM Carbon Index —— 估算 **OpenRouter 可见** LLM 推理的 CO₂ 足迹�
 - `docs/ENGINEERING_STANDARDS.md`、`docs/DATA_SCHEMAS.md`（规范工件形状）、`docs/ASSUMPTIONS.md`（每个数字 + 来源）、`docs/methodology.md`（论文级撰写）、`docs/absorbed-from-gemini.md`（合并来源）。
 - `pipeline/` —— `config.py`/`types.py`（冻结的跨阶段契约）、`openrouter.py` + `storage.py` + `ingest.py`（P1）、`ranges/tokens/energy/grid/carbon/estimate.py`（P2）、`output.py` + `run.py`（P3）。`schemas/output.schema.json`。
 - `data/` —— `crosswalk/`、`energy/`、`assumptions/`、`grid/`（种子 YAML）、`output/latest.json` + `history/{date}.json`（由 CI 提交）。`data/raw/` 是缓存（gitignored）。
-- `web/` —— 读取 `data/output/latest.json` 的 Vite+React+TS 仪表盘。`scratch/prove_math.py` 是 Phase-0 证明器。
+- `web/` —— 读取 `data/output/latest.json` 的 Vite+React+TS 仪表盘。`scratch/prove_math.py` 是 Phase-0 证明器（已删除）。
 
 ## 状态 —— MVP (0–5) + Phase 6A–6E 完成
 

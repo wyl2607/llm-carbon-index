@@ -18,7 +18,7 @@ LLM Carbon Index — schätzt den CO₂-Fußabdruck der **OpenRouter-sichtbaren*
 - `docs/ENGINEERING_STANDARDS.md`, `docs/DATA_SCHEMAS.md` (kanonische Artefaktformen), `docs/ASSUMPTIONS.md` (jede Zahl + Quelle), `docs/methodology.md` (thesis-grade Writeup), `docs/absorbed-from-gemini.md` (Merge-Provenienz).
 - `pipeline/` — `config.py`/`types.py` (eingefrorene phasenübergreifende Verträge), `openrouter.py` + `storage.py` + `ingest.py` (P1), `ranges/tokens/energy/grid/carbon/estimate.py` (P2), `output.py` + `run.py` (P3). `schemas/output.schema.json`.
 - `data/` — `crosswalk/`, `energy/`, `assumptions/`, `grid/` (gesetzte YAML), `output/latest.json` + `history/{date}.json` (von CI committed). `data/raw/` ist Cache (gitignored).
-- `web/` — Vite+React+TS Dashboard, das `data/output/latest.json` liest. `scratch/prove_math.py` ist der Phase-0-Beweiser.
+- `web/` — Vite+React+TS Dashboard, das `data/output/latest.json` liest. `scratch/prove_math.py` war der Phase-0-Beweiser (inzwischen entfernt).
 
 ## Status — MVP (0–5) + Phase 6A–6E erledigt
 
