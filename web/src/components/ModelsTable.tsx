@@ -7,6 +7,29 @@ import { useI18n } from '../lib/i18n';
 
 type SortKey = 'co2' | 'efficiency' | 'water';
 
+// Phase 6m tier computation. Module-level (not component-local) since it only
+// depends on its argument — keeps it out of useMemo dependency arrays below.
+function computeClientTiers(ms: Model[]): string[][] {
+  if (!ms.length) return [];
+  const sortedByMidDesc = [...ms].sort((x, y) => y.co2_kg.mid - x.co2_kg.mid);
+  const groups: string[][] = [];
+  let cur = [sortedByMidDesc[0].slug];
+  for (const m of sortedByMidDesc.slice(1)) {
+    const minLow = Math.min(...cur.map(sl => {
+      const found = ms.find(x => x.slug === sl);
+      return found ? found.co2_kg.low : 0;
+    }));
+    if (m.co2_kg.high < minLow) {
+      groups.push(cur);
+      cur = [m.slug];
+    } else {
+      cur.push(m.slug);
+    }
+  }
+  groups.push(cur);
+  return groups;
+}
+
 interface Props {
   models: Model[];
   lang?: Lang;
@@ -28,26 +51,6 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
   const [typeFilter, setTypeFilter] = useState('ALL');
 
   // Phase 6m tier computation (early so sorted can primary-key on it)
-  const computeClientTiers = (ms: Model[]): string[][] => {
-    if (!ms.length) return [];
-    const sortedByMidDesc = [...ms].sort((x, y) => y.co2_kg.mid - x.co2_kg.mid);
-    const groups: string[][] = [];
-    let cur = [sortedByMidDesc[0].slug];
-    for (const m of sortedByMidDesc.slice(1)) {
-      const minLow = Math.min(...cur.map(sl => {
-        const found = ms.find(x => x.slug === sl);
-        return found ? found.co2_kg.low : 0;
-      }));
-      if (m.co2_kg.high < minLow) {
-        groups.push(cur);
-        cur = [m.slug];
-      } else {
-        cur.push(m.slug);
-      }
-    }
-    groups.push(cur);
-    return groups;
-  };
   const { tierMap, totalTierCount } = useMemo(() => {
     const clientTiersRaw = computeClientTiers(models);
     const clientTiersBestFirst = clientTiersRaw.length ? clientTiersRaw.slice().reverse() : [];
