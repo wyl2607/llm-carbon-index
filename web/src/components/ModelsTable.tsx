@@ -48,16 +48,18 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
     groups.push(cur);
     return groups;
   };
-  const clientTiersRaw = computeClientTiers(models);
-  const clientTiersBestFirst = clientTiersRaw.length ? clientTiersRaw.slice().reverse() : [];
-  const serverTiersBestFirst = (incomingTiersProp && incomingTiersProp.length) ? incomingTiersProp.slice().reverse() : null;
-  const effectiveTiers: string[][] = serverTiersBestFirst || clientTiersBestFirst;
-  const tierMap = new Map<string, number>();
-  effectiveTiers.forEach((group, idx) => {
-    const tnum = idx + 1;
-    group.forEach(sl => tierMap.set(sl, tnum));
-  });
-  const totalTierCount = effectiveTiers.length || 1;
+  const { tierMap, totalTierCount } = useMemo(() => {
+    const clientTiersRaw = computeClientTiers(models);
+    const clientTiersBestFirst = clientTiersRaw.length ? clientTiersRaw.slice().reverse() : [];
+    const serverTiersBestFirst = (incomingTiersProp && incomingTiersProp.length) ? incomingTiersProp.slice().reverse() : null;
+    const effectiveTiers: string[][] = serverTiersBestFirst || clientTiersBestFirst;
+    const map = new Map<string, number>();
+    effectiveTiers.forEach((group, idx) => {
+      const tnum = idx + 1;
+      group.forEach(sl => map.set(sl, tnum));
+    });
+    return { tierMap: map, totalTierCount: effectiveTiers.length || 1 };
+  }, [models, incomingTiersProp]);
 
   const sorted = useMemo(() => {
     let arr = [...models];
@@ -105,7 +107,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
       return sec;
     });
     return arr;
-  }, [models, sortKey, sortDir, searchTerm, originFilter, typeFilter]);
+  }, [models, sortKey, sortDir, searchTerm, originFilter, typeFilter, tierMap]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
