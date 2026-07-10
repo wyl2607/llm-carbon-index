@@ -1,5 +1,6 @@
 import React from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import type { TooltipValueType } from 'recharts';
 import type { Model } from '../types';
 import { tokens } from '../theme/tokens';
 
@@ -47,8 +48,7 @@ export const OriginDonut: React.FC<Props> = ({ models }) => {
             ))}
           </Pie>
           <Tooltip 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            formatter={(v: any) => [`${Math.round(Number(v) || 0).toLocaleString()} kg`, 'CO₂ mid'] as [string, string]}
+            formatter={(value: TooltipValueType | undefined) => [`${Math.round(Number(value) || 0).toLocaleString()} kg`, 'CO₂ mid'] as [string, string]}
             contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text)', fontSize: '12px' }}
           />
         </PieChart>
