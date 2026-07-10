@@ -7,6 +7,29 @@ import { useI18n } from '../lib/i18n';
 
 type SortKey = 'co2' | 'efficiency' | 'water';
 
+// Phase 6m tier computation. Module-level (not component-local) since it only
+// depends on its argument — keeps it out of useMemo dependency arrays below.
+function computeClientTiers(ms: Model[]): string[][] {
+  if (!ms.length) return [];
+  const sortedByMidDesc = [...ms].sort((x, y) => y.co2_kg.mid - x.co2_kg.mid);
+  const groups: string[][] = [];
+  let cur = [sortedByMidDesc[0].slug];
+  for (const m of sortedByMidDesc.slice(1)) {
+    const minLow = Math.min(...cur.map(sl => {
+      const found = ms.find(x => x.slug === sl);
+      return found ? found.co2_kg.low : 0;
+    }));
+    if (m.co2_kg.high < minLow) {
+      groups.push(cur);
+      cur = [m.slug];
+    } else {
+      cur.push(m.slug);
+    }
+  }
+  groups.push(cur);
+  return groups;
+}
+
 interface Props {
   models: Model[];
   lang?: Lang;
@@ -28,36 +51,18 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
   const [typeFilter, setTypeFilter] = useState('ALL');
 
   // Phase 6m tier computation (early so sorted can primary-key on it)
-  const computeClientTiers = (ms: Model[]): string[][] => {
-    if (!ms.length) return [];
-    const sortedByMidDesc = [...ms].sort((x, y) => y.co2_kg.mid - x.co2_kg.mid);
-    const groups: string[][] = [];
-    let cur = [sortedByMidDesc[0].slug];
-    for (const m of sortedByMidDesc.slice(1)) {
-      const minLow = Math.min(...cur.map(sl => {
-        const found = ms.find(x => x.slug === sl);
-        return found ? found.co2_kg.low : 0;
-      }));
-      if (m.co2_kg.high < minLow) {
-        groups.push(cur);
-        cur = [m.slug];
-      } else {
-        cur.push(m.slug);
-      }
-    }
-    groups.push(cur);
-    return groups;
-  };
-  const clientTiersRaw = computeClientTiers(models);
-  const clientTiersBestFirst = clientTiersRaw.length ? clientTiersRaw.slice().reverse() : [];
-  const serverTiersBestFirst = (incomingTiersProp && incomingTiersProp.length) ? incomingTiersProp.slice().reverse() : null;
-  const effectiveTiers: string[][] = serverTiersBestFirst || clientTiersBestFirst;
-  const tierMap = new Map<string, number>();
-  effectiveTiers.forEach((group, idx) => {
-    const tnum = idx + 1;
-    group.forEach(sl => tierMap.set(sl, tnum));
-  });
-  const totalTierCount = effectiveTiers.length || 1;
+  const { tierMap, totalTierCount } = useMemo(() => {
+    const clientTiersRaw = computeClientTiers(models);
+    const clientTiersBestFirst = clientTiersRaw.length ? clientTiersRaw.slice().reverse() : [];
+    const serverTiersBestFirst = (incomingTiersProp && incomingTiersProp.length) ? incomingTiersProp.slice().reverse() : null;
+    const effectiveTiers: string[][] = serverTiersBestFirst || clientTiersBestFirst;
+    const map = new Map<string, number>();
+    effectiveTiers.forEach((group, idx) => {
+      const tnum = idx + 1;
+      group.forEach(sl => map.set(sl, tnum));
+    });
+    return { tierMap: map, totalTierCount: effectiveTiers.length || 1 };
+  }, [models, incomingTiersProp]);
 
   const sorted = useMemo(() => {
     let arr = [...models];
@@ -105,7 +110,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
       return sec;
     });
     return arr;
-  }, [models, sortKey, sortDir, searchTerm, originFilter, typeFilter]);
+  }, [models, sortKey, sortDir, searchTerm, originFilter, typeFilter, tierMap]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -256,8 +261,7 @@ export const ModelsTable: React.FC<Props> = ({ models, lang = 'en', onInspect, i
             onClick={() => {
               const payload = {
                 exported_at: new Date().toISOString(),
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                scenario: { greenShiftPercent: (window as any).__currentShift || 0, accountingMethod: 'location-or-market' },
+                scenario: { greenShiftPercent: ((window as unknown) as { __currentShift?: number }).__currentShift || 0, accountingMethod: 'location-or-market' },
                 note: 'All values reflect the active grid substitution scenario. Ranges are low/mid/high.',
                 models: sorted.map(m => ({
                   ...m,

@@ -208,4 +208,4 @@ so every published number is traceable end-to-end.
 } ] }
 ```
 
-Snapshots (under `data/raw/snapshots/{data_date}/`) are **inputs** to a run, not published artifacts. Retention policy: keep the last N days' snapshots in-repo; archive or drop older ones. Every `sha256:` value is the digest over the *exact* bytes of the corresponding snapshot file (or the annual-factor fallback record used in place of a grid response).
+Snapshots (under `data/raw/snapshots/{data_date}/`) are **inputs** to a run, not published artifacts. All committed snapshots are retained *indefinitely* (for reproducibility and `make verify` replay of every history golden). This matches the history retention policy in docs/methodology.md §11a. No pruning logic exists in the pipeline. Every `sha256:` value is the digest over the *exact* bytes of the corresponding snapshot file (or the annual-factor fallback record used in place of a grid response).

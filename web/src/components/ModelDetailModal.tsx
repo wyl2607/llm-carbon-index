@@ -25,7 +25,7 @@ export const ModelDetailModal: React.FC<Props & {lang?: Lang}> = ({ model, onClo
   const eff = co2Per1kOutputTokens(model);
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgb(15,23,42)]/45 backdrop-blur-sm p-4" onClick={onClose} role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--modal-overlay)] backdrop-blur-sm p-4" onClick={onClose} role="dialog" aria-modal="true">
       <div 
         className="card w-full max-w-lg p-6 text-left" 
         onClick={e => e.stopPropagation()}
