@@ -48,6 +48,9 @@ export const tokens = {
     scopeAmber: '#d97706',
     precisionSky: '#2563eb',
     fairness: '#059669',
+
+    // Modal overlay (dark scrim; used for backdrop contrast on light theme)
+    modalOverlay: 'rgba(15, 23, 42, 0.45)',
   },
 
   // Typography scale + style

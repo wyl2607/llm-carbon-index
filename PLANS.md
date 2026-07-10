@@ -31,9 +31,7 @@
   preserved every honesty surface (scope banner verified non-dismissible, PrecisionBanner,
   ErrorBars kept, flag→source links, FairnessNote), WCAG-AA amber-on-dark (>7:1), keyboard +
   `:focus-visible` + `prefers-reduced-motion` + semantic table/`aria-sort`, mobile reflow.
-  `npm run build` (tsc+vite) green, 20/20 vitest pass. *Minor follow-up:* ~10 residual hex
-  literals (mostly chart series colors) could move into tokens; specs/INDEX.md + OG image
-  not updated (left for a design-review pass).
+  `npm run build` (tsc+vite) green, 20/20 vitest pass. *Minor follow-up resolved in audit-fixes-2026-07-01:* OG image added to web/public; final non-token overlay color moved to CSS var (see ModelDetailModal + tokens); specs/INDEX.md updated. (Chart series colors intentionally kept in tokens.ts usage.)
 - [x] **D1 — arXiv draft numbers re-derived from latest.json.** ✅ DONE 2026-06-17 (Claude).
   In `~/Downloads/inference_carbon_index_arxiv_draft.md`: §4 dominant driver io/PUE →
   **energy_intensity** (≈ −59%/+136%, then PUE, then io); illustrative **7.7k/2.0–31.5k/16×
@@ -91,8 +89,8 @@ All S-items DONE 2026-06-17 (grok Lane A, commit `51e7c36`; all `.github/**` YAM
 > green on the merged branch: ruff + 149 pytest + provenance + `make verify` PASS, web
 > `tsc`+build + 20 vitest, all `.github` YAML valid.
 > **Only deferred (intentional, non-blocking):** S5 branch+PR flow for the bot (B2 gating
-> already blocks bad data); 6L polish (residual chart-color literals → tokens, specs/INDEX +
-> OG image) for a design-review pass. The project is publishable in substance and now
+> already blocks bad data). 6L polish items (OG image, specs/INDEX, stray token) completed in
+> audit-fixes-2026-07-01. The project is publishable in substance and now
 > self-maintaining for the 1-year horizon.
 >
 > **Post-merge fixes (PR #5, same day):** (1) the morning cron (`2d3771a`, old pre-B1
