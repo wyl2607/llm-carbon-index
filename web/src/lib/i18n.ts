@@ -1054,12 +1054,9 @@ export function useI18n(lang: Lang) {
   return translations[lang];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function t(lang: Lang, key: keyof typeof translations.en, ...args: any[]): string {
-  const dict = translations[lang];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const val = (dict as any)[key];
-  if (typeof val === 'function') return val(...args);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return val ?? (translations.en as any)[key] ?? String(key);
+export function t(lang: Lang, key: keyof typeof translations.en, ...args: unknown[]): string {
+  const dict = translations[lang] as Record<string, unknown>;
+  const val = dict[key];
+  if (typeof val === 'function') return (val as (...a: unknown[]) => string)(...args);
+  return (val as string | undefined) ?? (translations.en as Record<string, unknown>)[key] as string ?? String(key);
 }
