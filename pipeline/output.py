@@ -10,6 +10,7 @@ import logging
 import math
 from collections.abc import Iterable
 from datetime import datetime, timezone
+from pathlib import Path
 
 import jsonschema
 import yaml
@@ -29,7 +30,7 @@ from pipeline.types import ModelEstimate, NormalizedRecord
 # Full per-day history/*.json (with models[]) are kept indefinitely for verify/audit.
 # index.json stores only the lightweight per-date "totals" excerpts (same shape as
 # timeseries entries). write_timeseries prefers it; falls back to full scan if absent.
-def _history_index_path():
+def _history_index_path() -> Path:
     """Derive index path from (possibly monkeypatched) OUTPUT_HISTORY_DIR at call time.
     Critical: tests patch OUTPUT_HISTORY_DIR to tmp; precomputed module attr at config
     import time would otherwise point at real data/ and dirty it on pytest.
