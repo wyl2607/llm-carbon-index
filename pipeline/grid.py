@@ -152,7 +152,7 @@ def carbon_intensity(region: str) -> tuple[float, str, str]:
     - If EIA_API_KEY present AND region=="us-east": query EIA v2 fuel-type-data
       for PJM (hourly, latest period), weight by fuel gen using factors in
       fuel_emission_factors.yaml. Returns "eia_live", "GRID-EIA-PJM-HOURLY".
-    - Else if ELECTRICITYMAPS_API_KEY present AND zone mapped: EM /v3/... live.
+    - Else if ELECTRICITYMAPS_API_KEY present AND zone mapped: EM /v4/... live.
     - Fallback: annual_factors exact match (labelled "annual_factor").
 
     Any error (missing key, network, parse, bad data) falls through silently
