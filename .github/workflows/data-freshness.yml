@@ -103,3 +103,45 @@ jobs:
           fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Assert static source snapshots are not too old
+        id: static
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet pyyaml
+          set +e
+          OUT=$(python3 -m pipeline.source_freshness 2>&1)
+          CODE=$?
+          set -e
+          echo "$OUT"
+          {
+            echo "static_out<<EOF"
+            echo "$OUT"
+            echo "EOF"
+            echo "static_failed=$CODE"
+          } >> "$GITHUB_OUTPUT"
+          exit "$CODE"
+
+      - name: Report stale static sources (open or update issue)
+        if: failure() && steps.static.outputs.static_failed == '1'
+        run: |
+          set -euo pipefail
+          TITLE="Static source snapshots are stale"
+          BODY=$(printf '%s\n' \
+            "Pinned YAML snapshots (capability / AI Energy Score) have \`accessed\` dates past the policy window." \
+            "Numbers are not auto-updated — refresh by re-transcribing the public leaderboard and bumping \`accessed\`." \
+            "" \
+            "\`\`\`" \
+            "${{ steps.static.outputs.static_out }}" \
+            "\`\`\`" \
+            "" \
+            "**Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}")
+          EXISTING=$(gh issue list --state open --limit 5 --json title,number \
+            --jq '.[] | select(.title == "'"$TITLE"'") | .number' | head -1)
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

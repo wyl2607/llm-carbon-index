@@ -45,6 +45,49 @@ def test_carbon_intensity_falls_back_to_annual_without_key():
     assert sid
 
 
+def test_em_live_path_hits_v4_base_url(monkeypatch):
+    """When EM key is present for a non-us-east region, call the v4 host."""
+    import pipeline.grid as gmod
+    from pipeline.config import ELECTRICITYMAPS_BASE_URL
+    from pipeline.grid import carbon_intensity
+
+    calls: list[dict] = []
+
+    class FakeResp:
+        ok = True
+
+        def json(self):
+            return {"carbonIntensity": 211.0}
+
+    def fake_get(url, headers=None, timeout=None):
+        calls.append({"url": url, "headers": headers, "timeout": timeout})
+        return FakeResp()
+
+    monkeypatch.setattr(gmod, "eia_api_key", lambda: None)
+    monkeypatch.setattr(gmod, "electricitymaps_api_key", lambda: "em-test-key")
+    monkeypatch.setattr(gmod.requests, "get", fake_get)
+    monkeypatch.setattr(
+        gmod,
+        "_load_annual",
+        lambda: [
+            {
+                "region": "europe-west",
+                "gco2_per_kwh": 230,
+                "electricitymaps_zone": "IE",
+                "source_id": "C-GRID-EU",
+            }
+        ],
+    )
+
+    gco2, src, sid = carbon_intensity("europe-west")
+    assert gco2 == 211.0
+    assert src == "electricity_maps_live"
+    assert sid == "GRID-EM-LIVE"
+    assert calls and calls[0]["url"].startswith(ELECTRICITYMAPS_BASE_URL)
+    assert "/carbon-intensity/latest?zone=IE" in calls[0]["url"]
+    assert calls[0]["headers"]["auth-token"] == "em-test-key"
+
+
 # --- EIA tests (mocked; real key exercised only in CI/cron with secret) ---
 
 def test_eia_path_used_when_key_and_us_east(monkeypatch):

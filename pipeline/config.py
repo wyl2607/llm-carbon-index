@@ -64,7 +64,9 @@ OPENROUTER_RANKINGS_PATH = "/datasets/rankings-daily"
 OPENROUTER_MAX_REQ_PER_MIN = 30
 OPENROUTER_MAX_REQ_PER_DAY = 500
 
-ELECTRICITYMAPS_BASE_URL = "https://api.electricitymap.org/v3"
+# Electricity Maps public API host/version (2026-07 docs use plural domain + v4).
+# Path remains /carbon-intensity/latest; auth header remains auth-token.
+ELECTRICITYMAPS_BASE_URL = "https://api.electricitymaps.com/v4"
 
 
 def openrouter_api_key() -> str | None:
