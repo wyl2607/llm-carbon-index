@@ -1,0 +1,105 @@
+# This gate exists because pipeline-refresh ran green for 28 consecutive days
+# (2026-07-02 → 07-29) while publishing nothing. Every check we had was attached
+# to the *job*: gates passed, the commit was made, the branch was pushed, exit 0.
+# Nothing was attached to the *artifact*, so main served data_date=2026-06-30 to
+# the public for 29 days and no alert fired.
+#
+# The rule this encodes: for a scheduled job whose whole purpose is to land an
+# artifact, "the job succeeded" is not evidence of anything. Assert on the thing
+# users actually receive.
+name: data-freshness
+
+on:
+  schedule:
+    # 08:00 UTC — ~1.5h after pipeline-refresh (30 6 * * *), so a healthy run has
+    # had time to open its PR and (if a human is quick) be merged. This gate is
+    # meant to catch multi-day drift, not to race the pipeline.
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Assert published data is fresh
+        id: check
+        run: |
+          set -euo pipefail
+
+          # MAX_AGE_DAYS=3 tolerates one missed run plus a weekend of slow review.
+          # Anything beyond that is drift a human needs to see.
+          MAX_AGE_DAYS=3
+
+          DATA_DATE=$(python3 -c "import json;print(json.load(open('data/output/latest.json'))['data_date'])")
+          AGE=$(( ( $(date -u +%s) - $(date -u -d "$DATA_DATE" +%s) ) / 86400 ))
+          echo "data_date=$DATA_DATE (age ${AGE}d, limit ${MAX_AGE_DAYS}d)"
+
+          # Branches pushed by the pipeline that never became a PR. This is the
+          # exact signature of the 2026-07 outage: branches accumulate, PR count
+          # stays zero, and the only visible symptom is data quietly going stale.
+          ORPHANS=0
+          ORPHAN_LIST=""
+          for b in $(git branch -r --list 'origin/data-refresh/*' | sed 's|.*origin/||'); do
+            if [ "$(gh pr list --head "$b" --state all --json number --jq 'length')" = "0" ]; then
+              ORPHANS=$((ORPHANS+1))
+              ORPHAN_LIST="${ORPHAN_LIST}- \`${b}\`"$'\n'
+            fi
+          done
+          echo "orphaned refresh branches without a PR: $ORPHANS"
+
+          {
+            echo "data_date=$DATA_DATE"
+            echo "age=$AGE"
+            echo "max_age=$MAX_AGE_DAYS"
+            echo "orphans=$ORPHANS"
+            echo "orphan_list<<EOF"
+            echo "${ORPHAN_LIST:-(none)}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          FAIL=0
+          if [ "$AGE" -gt "$MAX_AGE_DAYS" ]; then FAIL=1; fi
+          if [ "$ORPHANS" -gt 0 ]; then FAIL=1; fi
+          echo "failed=$FAIL" >> "$GITHUB_OUTPUT"
+          exit "$FAIL"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Report stale data (open or update issue)
+        if: failure() && steps.check.outputs.failed == '1'
+        run: |
+          set -euo pipefail
+          TITLE="Published data is stale"
+          BODY=$(printf '%s\n' \
+            "The daily refresh has not been landing on \`main\`." \
+            "" \
+            "- **latest.json data_date:** ${{ steps.check.outputs.data_date }} (${{ steps.check.outputs.age }} days old, limit ${{ steps.check.outputs.max_age }})" \
+            "- **Refresh branches with no PR:** ${{ steps.check.outputs.orphans }}" \
+            "" \
+            "${{ steps.check.outputs.orphan_list }}" \
+            "" \
+            "**Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            "" \
+            "If orphaned branches are piling up, check that *Settings → Actions →" \
+            "General → Workflow permissions → Allow GitHub Actions to create and" \
+            "approve pull requests* is still enabled. That setting being off is what" \
+            "caused the 2026-07 outage.")
+
+          EXISTING=$(gh issue list --state open --limit 5 --json title,number \
+            --jq '.[] | select(.title == "'"$TITLE"'") | .number' | head -1)
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

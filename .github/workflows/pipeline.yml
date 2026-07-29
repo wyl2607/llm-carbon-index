@@ -77,11 +77,17 @@ jobs:
               "" \
               "This PR was created by the pipeline-refresh workflow after all gates passed." \
               "A human must review and merge. Do not enable auto-merge.")
+            # NOT `|| true`. A swallowed failure here is exactly how this workflow
+            # ran green for 28 straight days (2026-07-02 → 07-29) while pushing
+            # branches nobody ever saw: gh rejected the call with "GitHub Actions
+            # is not permitted to create or approve pull requests", `|| true` hid
+            # it, and the failure-triggered reporter below therefore never fired.
+            # Pushing a branch is not the deliverable — an open PR is.
             gh pr create \
               --title "chore(data): daily data refresh $(date -u +%Y-%m-%d)" \
               --body "$BODY" \
               --base main \
-              --head "$BRANCH" || true
+              --head "$BRANCH"
           else
             echo "No data changes; nothing to commit."
           fi
