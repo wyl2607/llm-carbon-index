@@ -39,10 +39,6 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - name: Install dependencies
         run: npm ci
-      - name: Audit prod dependencies (fail on high/critical only)
-        # S4: production-only, --audit-level=high so low/moderate (incl. dev) do not fail.
-        # Runs in deploy path (triggered on web/** changes and post-pipeline).
-        run: npm audit --omit=dev --audit-level=high
       - name: Build (includes copy-data prebuild hook)
         run: npm run build
       # Explicit safety: ensure latest data is always copied even if prebuild hook changes
@@ -62,3 +58,10 @@ jobs:
           publish_dir: ./web/dist
           publish_branch: gh-pages
           force_orphan: true
+      - name: Audit prod dependencies (fail on high/critical only)
+        # S4: production-only, --audit-level=high so low/moderate (incl. dev) do not fail.
+        # Ordered after the Pages publish on purpose: an upstream advisory against a prod
+        # dependency must surface as a red workflow, but must not block shipping the site.
+        # (Placing it before Build — or between Build and Deploy — meant a single new
+        # advisory froze Pages with no code change; that stalled deploys 2026-07-25..29.)
+        run: npm audit --omit=dev --audit-level=high
