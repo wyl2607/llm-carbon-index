@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router';
 import { Leaf } from 'lucide-react';
 import type { LatestData, Model, SensitivityData } from './types';
 import type { Lang } from './lib/i18n';

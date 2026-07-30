@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router';
 import { useI18n, type Lang } from '../lib/i18n';
 
 interface Props {
