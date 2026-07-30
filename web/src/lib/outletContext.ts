@@ -1,4 +1,4 @@
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext } from 'react-router';
 import type { LatestData, Model, Range, SensitivityData, Totals } from '../types';
 import type { Lang } from './i18n';
 import type { AccountingMethod } from '../components/AccountingToggle';
