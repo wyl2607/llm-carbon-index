@@ -81,6 +81,24 @@ def estimate(
     replay over a frozen snapshot so a run reproduces byte-for-byte offline.
     """
     grid_lookup = carbon_intensity_fn or carbon_intensity
+    # Resolve each region's grid intensity ONCE per run.
+    #
+    # The per-model loop below asks for the region's intensity on every model.
+    # `grid.carbon_intensity` queries a live API (EIA hourly for us-east) and
+    # falls back to the annual factor on any error, so an uncached lookup lets
+    # one transient failure mid-run give some models in a region the live figure
+    # while their siblings get the annual one. `snapshot.write_snapshot` records
+    # exactly one figure per region, so such a day can never replay identically
+    # and `pipeline.verify` discards it — that is how 2026-08-15..17 ended up
+    # with no data at all (committed 397.12 vs replayed 380.0 for us-east).
+    # Caching also cuts the live calls from one-per-model to one-per-region.
+    _grid_cache: dict[str, tuple[float, str, str]] = {}
+
+    def grid_for(region: str) -> tuple[float, str, str]:
+        if region not in _grid_cache:
+            _grid_cache[region] = grid_lookup(region)
+        return _grid_cache[region]
+
     # --- load injected data tables (I/O isolated here; pure funcs receive dicts) ---
     crosswalk: list[dict] = _load_yaml_list(CROSSWALK_PATH)
     intensity: dict = _load_yaml_dict(INTENSITY_PATH)
@@ -168,7 +186,7 @@ def estimate(
 
         # 4. grid (live or annual labelled + provenance source_id; replayable in verify)
         #    L2: live only if key+zone at call time; published runs use annual exclusively.
-        gco2, grid_src, grid_source_id = grid_lookup(region)
+        gco2, grid_src, grid_source_id = grid_for(region)
 
         # 5. PUE as a band (A4 revised). A known provider PUE centres the band's mid;
         #    low/high come from the Uptime-informed global band.
