@@ -514,8 +514,10 @@ parameter_class_fallback:
     monkeypatch.setattr(est_mod, "estimate", estimate_with_slug_norm)
     # Rebind the name bound by `from pipeline.estimate import estimate` at top
     # so the call below matches the literal in the task spec.
-    global estimate
-    estimate = est_mod.estimate
+    # Must go through monkeypatch: a bare `global estimate = ...` is never undone,
+    # so it leaked this wrapper into every test defined below this one (the wrapper
+    # drops kwargs and rewrites slugs), silently changing what they exercised.
+    monkeypatch.setattr(sys.modules[__name__], "estimate", est_mod.estimate)
 
     recs = [
         {
@@ -603,3 +605,73 @@ def test_load_yaml_dict_wrong_top_level_type(tmp_path):
     p = tmp_path / "list_not_dict.yaml"
     p.write_text("- 1\n- 2\n", encoding="utf-8")
     assert _load_yaml_dict(p) == {}
+
+
+def test_grid_intensity_resolved_once_per_region(monkeypatch, tmp_path):
+    """A region's carbon intensity must be constant within one run.
+
+    Regression for the 2026-08-15..17 data loss. `grid.carbon_intensity` hits a
+    live API and silently falls back to the annual factor on any error, so an
+    uncached per-model lookup let one flaky call give a model the annual figure
+    while its same-region siblings kept the live one. `write_snapshot` stores a
+    single figure per region, so `pipeline.verify` could never replay that day
+    and the whole day's data was discarded.
+
+    The injected lookup here returns a DIFFERENT value on every call, so it fails
+    if `estimate` ever queries a region more than once.
+    """
+    cw = _write_yaml(tmp_path, "cw.yaml", CROSSWALK_YAML)
+    inten = _write_yaml(tmp_path, "intensity.yaml", INTENSITY_YAML)
+    clo = _write_yaml(tmp_path, "closed.yaml", CLOSED_YAML)
+    ann = _write_yaml(tmp_path, "annual.yaml", ANNUAL_YAML)
+    monkeypatch.setattr(cfg, "CROSSWALK_PATH", cw)
+    monkeypatch.setattr(cfg, "INTENSITY_PATH", inten)
+    monkeypatch.setattr(cfg, "CLOSED_MODELS_PATH", clo)
+    monkeypatch.setattr(cfg, "ANNUAL_FACTORS_PATH", ann)
+    monkeypatch.setattr("pipeline.estimate.CROSSWALK_PATH", cw)
+    monkeypatch.setattr("pipeline.estimate.INTENSITY_PATH", inten)
+    monkeypatch.setattr("pipeline.estimate.CLOSED_MODELS_PATH", clo)
+    monkeypatch.setattr("pipeline.grid.ANNUAL_FACTORS_PATH", ann)
+
+    calls: list[str] = []
+
+    def flaky_grid(region: str) -> tuple[float, str, str]:
+        """Simulate a live API whose value moves between calls (EIA is hourly)."""
+        calls.append(region)
+        return (300.0 + 10.0 * len(calls), "eia_live", "GRID-EIA-PJM-HOURLY")
+
+    records: list[NormalizedRecord] = [
+        {
+            "date": "2026-06-14",
+            "model_slug": "openai/gpt-4o",
+            "total_tokens": 2_000_000_000_000,
+            "is_other": False,
+        },
+        {
+            "date": "2026-06-14",
+            "model_slug": "anthropic/claude-3.5-sonnet-20241022",
+            "total_tokens": 1_000_000_000_000,
+            "is_other": False,
+        },
+        {
+            "date": "2026-06-14",
+            "model_slug": "minimax/minimax-m2.5",
+            "total_tokens": 4_550_000_000_000,
+            "is_other": False,
+        },
+    ]
+
+    out = estimate(records, carbon_intensity_fn=flaky_grid)
+
+    # one lookup per distinct region, not one per model
+    assert sorted(calls) == ["cn-north", "us-east"], calls
+
+    by_region: dict[str, set[float]] = {}
+    for m in out:
+        by_region.setdefault(m["region"], set()).add(m["carbon_intensity_gco2_kwh"])
+    for region, values in by_region.items():
+        assert len(values) == 1, f"{region} used {len(values)} intensities in one run: {values}"
+
+    # both us-east models must agree — this is what write_snapshot can record
+    us = [m["carbon_intensity_gco2_kwh"] for m in out if m["region"] == "us-east"]
+    assert len(us) == 2 and us[0] == us[1], us
