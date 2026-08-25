@@ -43,14 +43,15 @@ OpenRouter rankings ─▶ pipeline (Python) ─▶ data/output/*.json (committe
 
 No live backend for v1. The frontend reads committed JSON; a daily GitHub
 Actions cron ([`.github/workflows/pipeline.yml`](.github/workflows/pipeline.yml))
-re-runs the pipeline, snapshots its inputs, runs all gates, and commits fresh
-JSON only if reproducibility (`make verify`) passes.
+re-runs the pipeline, snapshots its inputs, runs all gates, and opens a
+data-only PR. The dedicated auto-merge workflow queues a squash merge only
+after its scope check and required checks pass.
 
 ## Status
 
 Built strictly phase by phase ([`PLAN.md`](PLAN.md)); the authoritative phase
 ledger with commit hashes lives in [`specs/INDEX.md`](specs/INDEX.md).
-Current methodology version **0.7.0**; `main` is green (ruff · 149 pytest ·
+Current methodology version **0.8.0**; `main` is green (ruff · 149 pytest ·
 `make verify` byte-identical replay · web `tsc`+build · 20 vitest) and deployed.
 
 | Phase | Scope | State |

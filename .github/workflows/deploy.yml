@@ -24,6 +24,11 @@ concurrency:
 
 jobs:
   build:
+    # workflow_run also fires when pipeline-refresh fails; never redeploy the
+    # last published artifact after a failed refresh.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     defaults:
       run:

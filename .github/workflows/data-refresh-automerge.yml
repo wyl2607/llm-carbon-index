@@ -1,0 +1,145 @@
+name: data-refresh-automerge
+
+# Queue only the verified data-only PR produced by a successful
+# pipeline-refresh run. The scope check prevents this repository setting from
+# auto-merging an unrelated pull request.
+on:
+  workflow_run:
+    workflows: ["pipeline-refresh"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Open data-refresh PR number to queue"
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  queue:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      REPOSITORY: ${{ github.repository }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RUN_ID: ${{ github.event.workflow_run.id }}
+      PR_NUMBER_INPUT: ${{ inputs.pr_number }}
+    steps:
+      - name: Locate the verified refresh PR
+        id: locate
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -n "${PR_NUMBER_INPUT:-}" ]; then
+            PR_NUMBER="$PR_NUMBER_INPUT"
+          elif [ -n "${RUN_ID:-}" ] && [ "$RUN_ID" != "null" ]; then
+            PULLS=$(gh api "repos/$REPOSITORY/pulls?state=open&per_page=100")
+            PR_NUMBER=$(jq -r --arg run "$RUN_ID" '
+              map(
+                select(
+                  .user.login == "github-actions[bot]" and
+                  .base.ref == "main" and
+                  ((.head.ref // "") | startswith("data-refresh/")) and
+                  ((.body // "") | contains("/actions/runs/" + $run))
+                )
+              )
+              | sort_by(.number)
+              | last
+              | .number // empty
+            ' <<<"$PULLS")
+          else
+            echo "::error::A workflow_run id or manual pr_number is required."
+            exit 1
+          fi
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No open refresh PR was created by this pipeline run."
+            exit 0
+          fi
+
+          echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "Verified refresh PR candidate: #$PR_NUMBER"
+
+      - name: Validate PR identity and changed-file scope
+        env:
+          PR_NUMBER: ${{ steps.locate.outputs.number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "${PR_NUMBER:-}" ]; then
+            echo "No PR to validate."
+            exit 0
+          fi
+
+          PR_META=$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER")
+          jq -e --arg run "$RUN_ID" '
+            (.state == "open") and
+            (.base.ref == "main") and
+            (.user.login == "github-actions[bot]") and
+            (((.head.ref // "") | startswith("data-refresh/"))) and
+            (.draft == false) and
+            (.mergeable != false) and
+            (
+              ($run == "") or
+              ($run == "null") or
+              ((.body // "") | contains("/actions/runs/" + $run))
+            )
+          ' <<<"$PR_META" >/dev/null
+
+          FILES=$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename')
+          if [ -z "$FILES" ]; then
+            echo "::error::Refresh PR has no changed files."
+            exit 1
+          fi
+
+          while IFS= read -r path; do
+            case "$path" in
+              data/output/*|data/raw/snapshots/*)
+                ;;
+              *)
+                echo "::error::Refresh PR contains an unexpected path: $path"
+                exit 1
+                ;;
+            esac
+          done <<<"$FILES"
+
+          echo "PR #$PR_NUMBER passed identity and data-only scope checks."
+
+      - name: Require repository auto-merge setting
+        env:
+          PR_NUMBER: ${{ steps.locate.outputs.number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "${PR_NUMBER:-}" ]; then
+            echo "No PR to merge."
+            exit 0
+          fi
+
+          ALLOW_AUTO_MERGE=$(gh api "repos/$REPOSITORY" --jq '.allow_auto_merge')
+          if [ "$ALLOW_AUTO_MERGE" != "true" ]; then
+            echo "::error::Repository auto-merge is disabled. Enable Settings > General > Pull Requests > Allow auto-merge, then re-run this workflow."
+            exit 1
+          fi
+
+      - name: Queue squash auto-merge
+        if: steps.locate.outputs.number != ''
+        env:
+          PR_NUMBER: ${{ steps.locate.outputs.number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh pr merge "$PR_NUMBER" \
+            --repo "$REPOSITORY" \
+            --auto \
+            --squash \
+            --delete-branch
