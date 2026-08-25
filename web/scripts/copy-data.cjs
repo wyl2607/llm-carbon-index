@@ -53,3 +53,14 @@ if (fs.existsSync(REAL_SENS)) {
   fs.writeFileSync(DEST_SENS, JSON.stringify({}));
   console.log(`[copy-data] Generated empty sensitivity.json -> public/data/sensitivity.json`);
 }
+
+
+const REAL_MANIFEST = path.resolve(ROOT, '../data/output/manifest.json');
+const DEST_MANIFEST = path.join(PUBLIC_DATA, 'manifest.json');
+if (fs.existsSync(REAL_MANIFEST)) {
+  fs.copyFileSync(REAL_MANIFEST, DEST_MANIFEST);
+  console.log(`[copy-data] Copied real manifest.json -> public/data/manifest.json`);
+} else {
+  fs.writeFileSync(DEST_MANIFEST, JSON.stringify({ runs: [] }));
+  console.log(`[copy-data] Generated empty manifest.json -> public/data/manifest.json`);
+}

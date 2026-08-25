@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Outlet } from 'react-router';
 import { Leaf } from 'lucide-react';
-import type { LatestData, Model, SensitivityData } from './types';
+import type { LatestData, Model, OutputManifest, SensitivityData } from './types';
 import type { Lang } from './lib/i18n';
 import { useI18n } from './lib/i18n';
 import { Nav } from './components/Nav';
@@ -24,6 +24,7 @@ const isSampleData = (models: Model[]) =>
 function Layout() {
   const [data, setData] = useState<LatestData | null>(null);
   const [sensData, setSensData] = useState<SensitivityData | null>(null);
+  const [manifest, setManifest] = useState<OutputManifest | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -60,11 +61,13 @@ function Layout() {
     Promise.all([
       fetch(`${import.meta.env.BASE_URL}data/latest.json`).then(res => res.json()),
       fetch(`${import.meta.env.BASE_URL}data/timeseries.json`).then(res => res.json()),
-      fetch(`${import.meta.env.BASE_URL}data/sensitivity.json`).then(res => res.ok ? res.json() : null)
-    ]).then(([latestJson, , sensJson]) => {
+      fetch(`${import.meta.env.BASE_URL}data/sensitivity.json`).then(res => res.ok ? res.json() : null),
+      fetch(`${import.meta.env.BASE_URL}data/manifest.json`).then(res => res.ok ? res.json() : null)
+    ]).then(([latestJson, , sensJson, manifestJson]) => {
       if (!cancelled) {
         setData(latestJson);
         setSensData(sensJson);
+        setManifest(manifestJson);
         setError(null);
         setLoading(false);
       }
@@ -131,7 +134,7 @@ function Layout() {
   );
 
   const ctx: PageContext | null = (data && simulatedData) ? {
-    data, sensData, simulatedData, models, totals, baselineCo2,
+    data, sensData, manifest, simulatedData, models, totals, baselineCo2,
     lang, accountingMethod, greenShiftPercent, setGreenShiftPercent,
     isScenario, sample, setInspectModel,
   } : null;

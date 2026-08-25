@@ -98,6 +98,21 @@ export const translations = {
     tierGridLive: 'live grid',
     tierGridAnnual: 'annual grid',
 
+    // Data health / evidence transparency
+    dataHealthTitle: 'Data health',
+    dataHealthSubtitle: 'A transparent indicator built from freshness, provenance, modeled coverage and reproducibility evidence.',
+    dataHealthOverall: (score: string) => `Overall ${score}/100`,
+    dataHealthFreshness: 'Freshness',
+    dataHealthProvenance: 'Provenance',
+    dataHealthCoverage: 'Modeled coverage',
+    dataHealthReproducibility: 'Reproducibility',
+    dataHealthFreshnessDetail: (days: string) => `Data date age: ${days} days; freshness drops after 7 days.`,
+    dataHealthProvenanceDetail: (pct: string) => `${pct}% of visible traffic is mapped to the crosswalk.`,
+    dataHealthCoverageDetail: (pct: string) => `${pct}% of visible traffic is included in modeled estimates.`,
+    dataHealthReproDetail: (state: string) => `Manifest evidence: ${state}.`,
+    dataHealthManifested: 'matched manifest record',
+    dataHealthUnknown: 'unknown — evidence not available',
+
     // Scenario Lab
     scenarioTitle: 'Grid Carbon Intensity Scenario Analysis',
     scenarioSubtitle: 'Scenario analysis: Shifting inference workloads to verified low-carbon grids (≈50 gCO₂e/kWh). Exploring spatial decarbonization potential.',
@@ -443,6 +458,21 @@ export const translations = {
     tierGridLive: '实时电网',
     tierGridAnnual: '年均电网',
 
+    // 数据健康度 / 证据透明度
+    dataHealthTitle: '数据健康度',
+    dataHealthSubtitle: '由时效性、来源可追溯性、建模覆盖率和可复现证据组成的透明指标。',
+    dataHealthOverall: (score: string) => `综合 ${score}/100`,
+    dataHealthFreshness: '数据时效',
+    dataHealthProvenance: '来源追溯',
+    dataHealthCoverage: '建模覆盖率',
+    dataHealthReproducibility: '可复现证据',
+    dataHealthFreshnessDetail: (days: string) => `数据日期距今 ${days} 天；超过 7 天后时效分下降。`,
+    dataHealthProvenanceDetail: (pct: string) => `可见流量中有 ${pct}% 已映射到 crosswalk。`,
+    dataHealthCoverageDetail: (pct: string) => `可见流量中有 ${pct}% 已纳入建模估算。`,
+    dataHealthReproDetail: (state: string) => `Manifest 证据：${state}。`,
+    dataHealthManifested: '已匹配 manifest 记录',
+    dataHealthUnknown: '未知——暂无证据',
+
     scenarioTitle: '电网替代情景模拟器',
     scenarioSubtitle: '如果将推理工作负载迁移至最清洁电网（约 50 gCO₂/kWh），排放会减少多少？探索空间脱碳潜力。',
     sliderHint: '移动滑块探索情景影响。',
@@ -778,6 +808,21 @@ export const translations = {
     tierClassFallback: 'geschätzt',
     tierGridLive: 'Echtzeit-Netz',
     tierGridAnnual: 'Jahresdurchschnitt',
+
+    // Datenqualität / Evidenztransparenz
+    dataHealthTitle: 'Datenqualität',
+    dataHealthSubtitle: 'Ein transparenter Indikator aus Aktualität, Herkunft, Modellabdeckung und Reproduzierbarkeitsnachweis.',
+    dataHealthOverall: (score: string) => `Gesamt ${score}/100`,
+    dataHealthFreshness: 'Aktualität',
+    dataHealthProvenance: 'Herkunft',
+    dataHealthCoverage: 'Modellabdeckung',
+    dataHealthReproducibility: 'Reproduzierbarkeit',
+    dataHealthFreshnessDetail: (days: string) => `Datenalter: ${days} Tage; nach 7 Tagen sinkt die Aktualitätsbewertung.`,
+    dataHealthProvenanceDetail: (pct: string) => `${pct}% des sichtbaren Verkehrs sind dem Crosswalk zugeordnet.`,
+    dataHealthCoverageDetail: (pct: string) => `${pct}% des sichtbaren Verkehrs sind in den Modellen enthalten.`,
+    dataHealthReproDetail: (state: string) => `Manifest-Nachweis: ${state}.`,
+    dataHealthManifested: 'passender Manifest-Eintrag',
+    dataHealthUnknown: 'unbekannt — kein Nachweis verfügbar',
 
     scenarioTitle: 'Szenario: Netz-Dekarbonisierung',
     scenarioSubtitle: 'Was wäre, wenn die Inferenz in die saubersten regionalen Netze verlagert würde?',

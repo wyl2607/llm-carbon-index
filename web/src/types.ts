@@ -150,3 +150,18 @@ export interface SensitivityData {
   drivers: SensitivityDriver[];
   dominant: string;
 }
+
+
+export interface OutputManifestRun {
+  data_date: string;
+  generated_at?: string;
+  code_git_sha?: string;
+  methodology_version?: string;
+  tool_versions?: Record<string, string>;
+  inputs?: Record<string, unknown>;
+  output_sha256?: string;
+}
+
+export interface OutputManifest {
+  runs: OutputManifestRun[];
+}

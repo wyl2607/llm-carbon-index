@@ -1,6 +1,7 @@
 import { ScopeDisclaimerBanner } from '../components/ScopeDisclaimerBanner';
 import { PrecisionBanner } from '../components/PrecisionBanner';
 import { FairnessNote } from '../components/FairnessNote';
+import { DataHealthPanel } from '../components/DataHealthPanel';
 import { GroupToggle, type GroupBy } from '../components/GroupToggle';
 import { Co2BarChart } from '../components/Co2BarChart';
 import { ModelsTable } from '../components/ModelsTable';
@@ -22,7 +23,7 @@ import { Zap } from 'lucide-react';
  */
 export default function Overview() {
   const {
-    data, sensData, simulatedData, models, totals, baselineCo2,
+    data, sensData, manifest, simulatedData, models, totals, baselineCo2,
     lang, accountingMethod, greenShiftPercent, setGreenShiftPercent,
     isScenario, sample, setInspectModel,
   } = usePageData();
@@ -136,6 +137,8 @@ export default function Overview() {
           </div>
         )}
       </div>
+
+      <DataHealthPanel data={data} manifest={manifest} nowMs={nowMs} lang={lang} />
 
       {/* Scope / Transparency + estimation precision + fairness — professional, always visible */}
       <div className="mb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
