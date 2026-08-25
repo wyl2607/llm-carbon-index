@@ -1,5 +1,5 @@
 import { useOutletContext } from 'react-router';
-import type { LatestData, Model, Range, SensitivityData, Totals } from '../types';
+import type { LatestData, Model, OutputManifest, Range, SensitivityData, Totals } from '../types';
 import type { Lang } from './i18n';
 import type { AccountingMethod } from '../components/AccountingToggle';
 
@@ -12,6 +12,7 @@ export interface PageContext {
   /** Raw, baseline (non-scenario) data — use this for ranking/region/advice pages. */
   data: LatestData;
   sensData: SensitivityData | null;
+  manifest: OutputManifest | null;
   /** Baseline + active green-shift simulation applied — the Overview dashboard uses this. */
   simulatedData: LatestData;
   models: Model[];
