@@ -29,10 +29,19 @@ function makeData(dataDate: string, mapped = 0.5, modeled = 0.9): LatestData {
 describe('calculateDataHealth', () => {
   const now = new Date('2026-08-25T12:00:00Z');
 
+  // Buckets are <=3d -> 100, <=7d -> 80, <=14d -> 40, else 0. `now` is
+  // 2026-08-25T12:00Z and ages floor to whole days from the data date's
+  // midnight, so e.g. 2026-08-11 is 14.5d elapsed and scores as day 14.
+  // Both sides of every boundary are pinned: an off-by-one here is exactly
+  // how this test previously asserted that 2026-08-10 (15d) scores 40.
   it('scores freshness against the visible data date', () => {
     expect(calculateDataHealth(makeData('2026-08-23'), null, now).freshness).toBe(100);
+    expect(calculateDataHealth(makeData('2026-08-22'), null, now).freshness).toBe(100);
+    expect(calculateDataHealth(makeData('2026-08-21'), null, now).freshness).toBe(80);
     expect(calculateDataHealth(makeData('2026-08-18'), null, now).freshness).toBe(80);
-    expect(calculateDataHealth(makeData('2026-08-10'), null, now).freshness).toBe(40);
+    expect(calculateDataHealth(makeData('2026-08-17'), null, now).freshness).toBe(40);
+    expect(calculateDataHealth(makeData('2026-08-11'), null, now).freshness).toBe(40);
+    expect(calculateDataHealth(makeData('2026-08-10'), null, now).freshness).toBe(0);
     expect(calculateDataHealth(makeData('2026-08-01'), null, now).freshness).toBe(0);
   });
 

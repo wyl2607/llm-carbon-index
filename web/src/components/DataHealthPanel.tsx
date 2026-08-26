@@ -43,9 +43,9 @@ export function DataHealthPanel({ data, manifest, nowMs, lang }: DataHealthPanel
       detail: tt.dataHealthReproDetail(reproducibilityState),
     },
   ];
-  const overall = health.overall === null
-    ? tt.dataHealthUnknown
-    : tt.dataHealthOverall(String(health.overall));
+  const overall = tt.dataHealthOverall(
+    health.overall === null ? tt.dataHealthUnknown : String(health.overall),
+  );
 
   return (
     <section className="card p-6" aria-labelledby="data-health-title">
@@ -57,7 +57,7 @@ export function DataHealthPanel({ data, manifest, nowMs, lang }: DataHealthPanel
           </p>
         </div>
         <div className="shrink-0 rounded-xl border border-[var(--accent-border)] bg-[var(--accent-bg)] px-4 py-3 text-right">
-          <div className="text-[10px] uppercase tracking-widest text-[var(--accent)] font-bold">{tt.dataHealthOverall(health.overall === null ? tt.dataHealthUnknown : String(health.overall))}</div>
+          <div className="text-[10px] uppercase tracking-widest text-[var(--accent)] font-bold">{overall}</div>
           <div className="text-xs text-[var(--text-muted)] mt-1">{data.data_date}</div>
         </div>
       </div>
