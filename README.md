@@ -73,7 +73,7 @@ pure Python; the frontend is a static Vite + React app that reads committed JSON
 
 ```
 llm-carbon-index/
-├── PLAN.md · CLAUDE.md · README.md · LICENSE · SECURITY.md · CONTRIBUTING.md · CHANGELOG.md
+├── PLAN.md · CLAUDE.md · README.md · LICENSE · NOTICE.md · SECURITY.md · CONTRIBUTING.md · CHANGELOG.md
 ├── pyproject.toml · Makefile · .env.example      # deps, `make verify|test|lint`, env-var NAMES only
 ├── data/                                         # model data ONLY here (Hard Constraint #6)
 │   ├── crosswalk/model_crosswalk.yaml            #   OpenRouter slug → energy source + assumptions
@@ -121,3 +121,8 @@ See `docs/methodology.md` §11 for snapshot layout, `manifest.json` checksums, g
 - Rankings: `Source: OpenRouter (openrouter.ai/rankings), as of {date}`.
 - Grid intensity: EIA hourly (PJM for us-east when keyed) + Ember/IEA annual (fallback). Live paths exist; `grid_live_fraction = 0.0` in published goldens until a keyed run is committed (see `docs/methodology.md` §11a).
 - Energy: EcoLogits + Hugging Face AI Energy Score. See [`docs/methodology.md`](docs/methodology.md).
+
+## License
+
+MIT — see [`LICENSE`](LICENSE). The published figures are estimates with uncertainty
+ranges, not measurements; see [`NOTICE.md`](NOTICE.md).

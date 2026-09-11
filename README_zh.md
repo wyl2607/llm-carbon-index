@@ -58,7 +58,7 @@ v1 版本不设实时后端。前端直接读取已提交的 JSON 数据；每�
 
 ```
 llm-carbon-index/
-├── PLAN.md · CLAUDE.md · README.md · LICENSE · SECURITY.md · CONTRIBUTING.md · CHANGELOG.md
+├── PLAN.md · CLAUDE.md · README.md · LICENSE · NOTICE.md · SECURITY.md · CONTRIBUTING.md · CHANGELOG.md
 ├── pyproject.toml · Makefile · .env.example      # 依赖、`make verify|test|lint`、仅环境变量「名」
 ├── data/                                         # 模型数据仅此处（硬性约束 #6）
 │   ├── crosswalk/model_crosswalk.yaml            #   OpenRouter slug → 能耗来源 + 假设
@@ -106,3 +106,7 @@ make verify 2026-06-14  # 预期输出：PASS
 - **排名数据**: `来源: OpenRouter (openrouter.ai/rankings), 截至 {date}`。
 - **电网碳强度**: EIA 小时级（us-east/PJM，有 EIA_API_KEY 时）+ Ember/IEA 年度回退。实时路径存在；已发布黄金中 `grid_live_fraction = 0.0` 直到带 key 的运行提交（详见 `docs/methodology.md` 第 11a 节）。
 - **能耗数据**: EcoLogits + Hugging Face AI Energy Score。参见 [`docs/methodology.md`](docs/methodology.md)。
+
+## 许可证
+
+MIT — 见 [`LICENSE`](LICENSE)。发布的数字是带不确定性区间的**估算**，不是实测值；见 [`NOTICE.md`](NOTICE.md)。
