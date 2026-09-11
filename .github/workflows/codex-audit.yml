@@ -1,0 +1,49 @@
+name: Codex Daily Audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "18 6 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  read-only-audit:
+    name: Read-only maintenance audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      HAS_API_KEY: ${{ secrets.OPENAI_API_KEY != '' && 'true' || 'false' }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Run Codex read-only audit
+        if: ${{ env.HAS_API_KEY == 'true' }}
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .github/prompts/codex-daily-audit.md
+          output-file: codex-daily-audit.md
+          sandbox: read-only
+          safety-strategy: read-only
+
+      - name: Write skipped audit artifact
+        if: ${{ env.HAS_API_KEY != 'true' }}
+        run: |
+          cat > codex-daily-audit.md <<'AUDIT'
+          # Codex Daily Audit
+
+          Skipped because the `OPENAI_API_KEY` repository secret is not configured.
+          AUDIT
+
+      - name: Publish audit to job summary
+        run: cat codex-daily-audit.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload audit artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: codex-daily-audit
+          path: codex-daily-audit.md
+          if-no-files-found: error
