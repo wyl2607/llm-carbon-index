@@ -29,6 +29,16 @@ jobs:
         # repository secrets only in the Phase-5 data-refresh workflow.
         run: uv run pytest -q
 
+      # Golden replay had no pre-merge gate either. #115 re-transcribed a pinned
+      # snapshot that `pipeline.verify` was reading live rather than from the
+      # frozen per-date copy, which broke reproduction of all 76 published dates.
+      # Nothing caught it at review time: verify ran only in the nightly refresh,
+      # so the breakage surfaced the next morning as a dead cron (#127) and data
+      # that stopped updating (#129). Same replay the cron runs, moved before the
+      # merge that would break it.
+      - name: Golden replay (reproduce every published date from its snapshot)
+        run: uv run python -m pipeline.verify
+
   # The frontend had no pre-merge gate at all: `deploy` builds it, but deploy
   # only runs after the merge to main, so a type error or a failing vitest
   # reached main and broke publishing instead of failing the PR. That is how
