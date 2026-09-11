@@ -18,7 +18,7 @@ import pipeline.config as config
 from pipeline.estimate import estimate
 from pipeline.openrouter import normalize
 from pipeline.output import build_output
-from pipeline.snapshot import grid_replay, load_openrouter, snapshot_dir
+from pipeline.snapshot import capability_replay, grid_replay, load_openrouter, snapshot_dir
 
 # Float reproduction tolerance. The golden replay must be portable across the
 # machine that committed a golden and the CI runner: float summation order is
@@ -66,7 +66,15 @@ def reproduce(data_date: str) -> dict:
         (config.OUTPUT_HISTORY_DIR / f"{data_date}.json").read_text(encoding="utf-8")
     )
     # Reuse the committed generated_at so the only legitimate difference is eliminated.
-    return build_output(estimates, day_records, data_date, generated_at=committed["generated_at"])
+    # Capability comes from the frozen per-date copy when present, so a later
+    # re-transcription of the live snapshot cannot invalidate published history.
+    return build_output(
+        estimates,
+        day_records,
+        data_date,
+        generated_at=committed["generated_at"],
+        capability_path=capability_replay(data_date),
+    )
 
 
 def verify_date(data_date: str) -> bool:

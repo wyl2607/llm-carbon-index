@@ -86,7 +86,15 @@ def write_snapshot(
         _write_json(gp, rec)
         inputs[f"grid/{region}.json"] = gp
 
-    # 3. resolved versions (pins yaml provenance via repo SHA)
+    # 3. pinned capability snapshot (the AA Intelligence Index values this run used).
+    # Frozen per date because the file is re-transcribed when the leaderboard drifts;
+    # replaying an old date against a newer transcription would fail `make verify`.
+    cap_path = d / "capability.yaml"
+    cap_path.parent.mkdir(parents=True, exist_ok=True)
+    cap_path.write_text(config.CAPABILITY_PATH.read_text(encoding="utf-8"), encoding="utf-8")
+    inputs["capability.yaml"] = cap_path
+
+    # 4. resolved versions (pins yaml provenance via repo SHA)
     resolved_path = d / "resolved.json"
     _write_json(
         resolved_path,
@@ -100,6 +108,12 @@ def write_snapshot(
     inputs["resolved.json"] = resolved_path
 
     return inputs
+
+
+def capability_replay(data_date: str) -> Path | None:
+    """Return the frozen capability YAML for a snapshot date, or None if not frozen."""
+    p = snapshot_dir(data_date) / "capability.yaml"
+    return p if p.exists() else None
 
 
 def load_openrouter(data_date: str) -> dict:

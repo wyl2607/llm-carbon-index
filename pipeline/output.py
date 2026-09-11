@@ -82,15 +82,16 @@ def update_history_index(data_date: str, totals: dict) -> None:
 log = logging.getLogger(__name__)
 
 
-def _load_capability() -> tuple[dict, str | None, str | None]:
+def _load_capability(path: Path | None = None) -> tuple[dict, str | None, str | None]:
     """I/O boundary: load data/model_capability.yaml (Phase 6M frontier X axis).
 
     Returns (models_map, capability_index_version, capability_index_accessed). The
     version/accessed describe the pinned snapshot (from the first sources[] entry).
+    ``path`` overrides the live file with a frozen per-date copy (golden replay).
     Fail-safe: missing/unreadable -> ({}, None, None) so the rest of the pipeline
     proceeds with every model FALLBACK_CAPABILITY rather than aborting.
     """
-    p = config.CAPABILITY_PATH
+    p = path or config.CAPABILITY_PATH
     try:
         with open(p, encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
@@ -130,6 +131,7 @@ def build_output(
     records: list[NormalizedRecord],
     data_date: str,
     generated_at: str | None = None,
+    capability_path: Path | None = None,
 ) -> dict:
     """Assemble the top-level output document per DATA_SCHEMAS.md §1.
 
@@ -387,7 +389,7 @@ def build_output(
     # capability score (via the crosswalk capability_key), then annotate each model
     # with on_frontier / rightsizing_gap_pct / avoidable_co2_kg and roll up the fleet
     # headline. Region/grid/PUE are held constant (model-rightsizing lever only).
-    cap_models, cap_version, cap_accessed = _load_capability()
+    cap_models, cap_version, cap_accessed = _load_capability(capability_path)
     cap_keys = _load_capability_keys()
     frontier_input: list[dict] = []
     for m in estimates:
