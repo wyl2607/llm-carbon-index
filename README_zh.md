@@ -37,7 +37,7 @@ v1 版本不设实时后端。前端直接读取已提交的 JSON 数据；每�
 
 ## 状态
 
-严格按阶段构建（[`PLAN.md`](PLAN.md)）；带提交哈希的权威阶段台账见 [`specs/INDEX.md`](specs/INDEX.md)，完整版本溯源见 [CHANGELOG_zh.md](CHANGELOG_zh.md)。当前方法学版本 **0.7.0**；`main` 全绿（ruff · 149 项 pytest · `make verify` 字节级复现 · 前端 `tsc`+build · 20 项 vitest）并已部署。
+严格按阶段构建（[`PLAN.md`](PLAN.md)）；带提交哈希的权威阶段台账见 [`specs/INDEX.md`](specs/INDEX.md)，完整版本溯源见 [CHANGELOG_zh.md](CHANGELOG_zh.md)。当前方法学版本 **0.8.0**；`main` 全绿（ruff · 186 项 pytest · `make verify` 对全部 76 个已发布日期做字节级复现 · 前端 `tsc`+build · 57 项 vitest）并已部署。
 
 | 阶段 | 范围 | 状态 |
 |---|---|---|
