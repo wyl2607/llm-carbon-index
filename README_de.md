@@ -57,7 +57,7 @@ Modelldaten liegen **ausschließlich** in `data/*.yaml` (Harte Bedingung #6); di
 
 ```
 llm-carbon-index/
-├── PLAN.md · CLAUDE.md · README.md · LICENSE · SECURITY.md · CONTRIBUTING.md · CHANGELOG.md
+├── PLAN.md · CLAUDE.md · README.md · LICENSE · NOTICE.md · SECURITY.md · CONTRIBUTING.md · CHANGELOG.md
 ├── pyproject.toml · Makefile · .env.example      # Abhängigkeiten, `make verify|test|lint`, nur Env-Var-NAMEN
 ├── data/                                         # Modelldaten nur hier (Harte Bedingung #6)
 │   ├── crosswalk/model_crosswalk.yaml            #   OpenRouter-Slug → Energiequelle + Annahmen
@@ -103,3 +103,8 @@ make verify 2026-06-14  # Erwartete Ausgabe: PASS
 - **Ranking-Daten**: `Quelle: OpenRouter (openrouter.ai/rankings), Stand: {date}`.
 - **CO₂-Intensität des Stromnetzes**: Ember/IEA-Jahresdurchschnittsfaktoren (zeilenweise erfasst). Live-Electricity-Maps-Unterstützung existiert, ist aber für veröffentlichte, reproduzierbare Goldens **deaktiviert** (`grid_live_fraction = 0.0`); siehe `docs/methodology.md` §11a.
 - **Energieverbrauch**: EcoLogits + Hugging Face AI Energy Score. Siehe [`docs/methodology.md`](docs/methodology.md).
+
+## Lizenz
+
+MIT — siehe [`LICENSE`](LICENSE). Die veröffentlichten Zahlen sind Schätzungen mit
+Unsicherheitsbereichen, keine Messungen; siehe [`NOTICE.md`](NOTICE.md).

@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pipeline.config as config  # noqa: E402
 from pipeline.manifest import sha256_file  # noqa: E402
-from pipeline.snapshot import write_snapshot  # noqa: E402
+from pipeline.snapshot import capability_replay, write_snapshot  # noqa: E402
 
 DATE = "2026-06-14"
 SECRET_MARKERS = ("api_key", "apikey", "authorization", "bearer", "x-api-key", "secret")
@@ -70,3 +70,45 @@ def test_manifest_checksums_match_committed_bytes() -> None:
 
     output_path = config.OUTPUT_HISTORY_DIR / f"{DATE}.json"
     assert sha256_file(output_path) == run["output_sha256"], "manifest output digest stale"
+
+
+def test_snapshot_freezes_capability_and_replay_reads_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A re-transcribed live capability file must not invalidate published history."""
+    monkeypatch.setattr(config, "SNAPSHOTS_DIR", tmp_path / "snapshots")
+    live = tmp_path / "model_capability.yaml"
+    live.write_text("sources: []\nmodels:\n  gpt-4o:\n    capability_index: 44.0\n", encoding="utf-8")
+    monkeypatch.setattr(config, "CAPABILITY_PATH", live)
+
+    raw = {"data": [{"date": DATE, "model_permaslug": "openai/gpt-4o", "total_tokens": "100"}]}
+    estimates = [
+        {
+            "region": "us-east",
+            "carbon_intensity_gco2_kwh": 350.0,
+            "grid_source": "annual_factor",
+            "grid_source_id": "C-GRID-US-EAST-350",
+        }
+    ]
+    write_snapshot(DATE, raw, estimates, "0.5.0")
+
+    # The leaderboard drifts and the live snapshot is re-transcribed.
+    live.write_text("sources: []\nmodels:\n  gpt-4o:\n    capability_index: 45.0\n", encoding="utf-8")
+
+    frozen = capability_replay(DATE)
+    assert frozen is not None
+    assert "44.0" in frozen.read_text(encoding="utf-8")
+
+
+def test_capability_replay_returns_none_when_not_frozen(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(config, "SNAPSHOTS_DIR", tmp_path / "snapshots")
+    assert capability_replay(DATE) is None
+
+
+def test_committed_snapshots_all_carry_frozen_capability() -> None:
+    dates = sorted(p for p in config.SNAPSHOTS_DIR.iterdir() if p.is_dir())
+    assert dates, "committed snapshots missing"
+    missing = [p.name for p in dates if not (p / "capability.yaml").exists()]
+    assert not missing, f"snapshots without a frozen capability.yaml: {missing}"

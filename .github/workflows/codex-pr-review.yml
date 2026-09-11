@@ -1,0 +1,56 @@
+name: Codex PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    name: Read-only methodology review
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      HAS_API_KEY: ${{ secrets.OPENAI_API_KEY != '' && 'true' || 'false' }}
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Collect diff against base
+        run: |
+          git diff --stat "origin/${{ github.base_ref }}...HEAD" > pr-diff-stat.txt
+          git diff "origin/${{ github.base_ref }}...HEAD" > pr-diff.patch
+          wc -l pr-diff.patch
+
+      - name: Run Codex review
+        if: ${{ env.HAS_API_KEY == 'true' }}
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: .github/prompts/codex-pr-review.md
+          output-file: codex-pr-review.md
+          sandbox: read-only
+          safety-strategy: read-only
+
+      - name: Write skipped review artifact
+        if: ${{ env.HAS_API_KEY != 'true' }}
+        run: |
+          cat > codex-pr-review.md <<'REVIEW'
+          # Codex PR Review
+
+          Skipped because the `OPENAI_API_KEY` repository secret is not configured.
+          REVIEW
+
+      - name: Publish review to job summary
+        run: cat codex-pr-review.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload review artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: codex-pr-review
+          path: codex-pr-review.md
+          if-no-files-found: error
