@@ -51,8 +51,9 @@ after its scope check and required checks pass.
 
 Built strictly phase by phase ([`PLAN.md`](PLAN.md)); the authoritative phase
 ledger with commit hashes lives in [`specs/INDEX.md`](specs/INDEX.md).
-Current methodology version **0.8.0**; `main` is green (ruff · 149 pytest ·
-`make verify` byte-identical replay · web `tsc`+build · 20 vitest) and deployed.
+Current methodology version **0.8.0**; `main` is green (ruff · 186 pytest ·
+`make verify` byte-identical replay of all 76 published dates · web `tsc`+build ·
+57 vitest) and deployed.
 
 | Phase | Scope | State |
 |---|---|---|

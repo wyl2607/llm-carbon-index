@@ -36,7 +36,7 @@ Kein Live-Backend für v1. Das Frontend liest committetes JSON; ein täglicher G
 
 ## Status
 
-Streng phasenweise gebaut ([`PLAN.md`](PLAN.md)); das maßgebliche Phasen-Register mit Commit-Hashes liegt in [`specs/INDEX.md`](specs/INDEX.md), das vollständige versionierte Protokoll im [CHANGELOG_de.md](CHANGELOG_de.md). Aktuelle Methodik-Version **0.7.0**; `main` ist grün (ruff · 149 pytest · `make verify` byte-identische Reproduktion · Web `tsc`+build · 20 vitest) und deployt. Alle künftigen Updates erfordern die gleichzeitige Aktualisierung der englischen, chinesischen und deutschen Dokumentation.
+Streng phasenweise gebaut ([`PLAN.md`](PLAN.md)); das maßgebliche Phasen-Register mit Commit-Hashes liegt in [`specs/INDEX.md`](specs/INDEX.md), das vollständige versionierte Protokoll im [CHANGELOG_de.md](CHANGELOG_de.md). Aktuelle Methodik-Version **0.8.0**; `main` ist grün (ruff · 186 pytest · `make verify` byte-identische Reproduktion aller 76 veröffentlichten Tage · Web `tsc`+build · 57 vitest) und deployt. Alle künftigen Updates erfordern die gleichzeitige Aktualisierung der englischen, chinesischen und deutschen Dokumentation.
 
 | Phase | Umfang | Status |
 |---|---|---|
