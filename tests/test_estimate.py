@@ -541,6 +541,29 @@ parameter_class_fallback:
     assert m["wh_per_output_token"]["mid"] == 0.0014
 
 
+def test_crosswalk_entry_only_applies_from_valid_date(monkeypatch, tmp_path):
+    cw = _write_yaml(tmp_path, "cw.yaml", """
+- openrouter_slug: "vendor/model"
+  valid_from: "2026-09-13"
+  display_name: "Mapped model"
+  origin: "US"
+  energy_source: "parameter_class_fallback"
+  active_params_b: 8
+  assumed_region: "us-east"
+""")
+    monkeypatch.setattr("pipeline.estimate.CROSSWALK_PATH", cw)
+
+    records = [
+        {"date": date, "model_slug": "vendor/model", "total_tokens": 1000, "is_other": False}
+        for date in ("2026-09-12", "2026-09-13")
+    ]
+    before, after = estimate(records, carbon_intensity_fn=lambda _: (380.0, "test", "test"))
+
+    assert "UNMAPPED_SLUG" in before["flags"]
+    assert after["display_name"] == "Mapped model"
+    assert "UNMAPPED_SLUG" not in after["flags"]
+
+
 # =============================================================================
 # Direct unit tests for the extracted private YAML loaders
 # (placed here because they are currently used only by estimate;
