@@ -149,10 +149,16 @@ def estimate(
 
         slug: str = rec["model_slug"]
         total_tokens: int = int(rec["total_tokens"])
+        data_date = str(rec.get("date", ""))
+        dated_crosswalk = [
+            entry
+            for entry in crosswalk
+            if not entry.get("valid_from") or str(entry["valid_from"]) <= data_date
+        ]
 
         # crosswalk identity (origin / open_or_closed / region / energy_source tag)
         norm = normalize_slug(slug)
-        cw = next((e for e in crosswalk if e.get("openrouter_slug") == norm), None)
+        cw = next((e for e in dated_crosswalk if e.get("openrouter_slug") == norm), None)
         if cw:
             display_name: str = cw.get("display_name", slug)
             origin = cw.get("origin", "OTHER")
@@ -172,7 +178,7 @@ def estimate(
 
         # 2. wh per output token (with fallback labels + provenance source_id)
         wh_r, energy_src, eflags, energy_source_id = wh_per_output_token(
-            slug, crosswalk, intensity
+            slug, dated_crosswalk, intensity
         )
 
         # 3. kWh = decode(output) + prefill(input) [+ optional idle slice] (/1000 guard inside)

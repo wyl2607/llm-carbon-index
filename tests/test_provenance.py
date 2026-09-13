@@ -78,7 +78,7 @@ def test_every_seeded_source_id_resolves_no_dangling():
     assert sources, "registry must load"
     referenced: set[str] = set()
     for p in PROVENANCE_GATED_PATHS:
-        tree = yaml.safe_load(Path(p).read_text())
+        tree = yaml.safe_load(Path(p).read_text(encoding="utf-8"))
         referenced |= _collect_source_ids(tree)
     assert referenced, "expected at least one source_id in data"
     dangling = sorted(sid for sid in referenced if resolve(sid, sources) is None)

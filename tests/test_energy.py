@@ -198,8 +198,8 @@ def test_every_intensity_model_entry_has_resolvable_source_id():
     """
     intensity_path = Path(__file__).resolve().parents[1] / "data" / "energy" / "intensity.yaml"
     sources_path = Path(__file__).resolve().parents[1] / "data" / "provenance" / "sources.yaml"
-    intensity = yaml.safe_load(intensity_path.read_text())
-    sources = yaml.safe_load(sources_path.read_text())
+    intensity = yaml.safe_load(intensity_path.read_text(encoding="utf-8"))
+    sources = yaml.safe_load(sources_path.read_text(encoding="utf-8"))
     source_ids = {s["id"] for s in sources}
 
     models = intensity.get("models", [])
