@@ -26,7 +26,7 @@ LLM Carbon Index —— 估算 **OpenRouter 可见** LLM 推理的 CO₂ 足迹�
 |---|---|
 | 0 证明数学、1 接入、2 估算、3 输出+schema、4 前端、5 方法学+CI | ✅ 完成，提交哈希见 `specs/INDEX.md` |
 | 6A 绿电情景、6B 市场 vs 位置、6C 趋势+Jevons、6D 水 (WUE) | ✅ 完成（已在高级仪表盘中交付；哈希见 `specs/INDEX.md`） |
-| 6E 覆盖自动化（范围诚实度） | ✅ 完成 —— 后端 65463cf + 前端 414f06e；UI 注释在管道发出非零 unmapped 比例前休眠（当前所有热门模型均已映射） |
+| 6E 覆盖自动化（范围诚实度） | ✅ 完成 —— 未映射流量会被明确量化，当前高流量缺口通过带来源的 crosswalk 更新维护 |
 
 - 测试：`uv run pytest -q` → 51 个收集/绿色；`uv run ruff check .` 清洁。
 - `python -m pipeline.run --date latest` 产生 schema 有效的 `latest.json`。
@@ -38,7 +38,7 @@ LLM Carbon Index —— 估算 **OpenRouter 可见** LLM 推理的 CO₂ 足迹�
 1. ~~**Crosswalk vs 真实 slug（最高价值）。** 真实 OpenRouter `model_permaslug` 值携带日期后缀（例如 `minimax/minimax-m3-20260531`），因此未命中 Phase-2 crosswalk 种子 → 当前每个真实模型均解析为 `UNKNOWN_MODEL` + `FALLBACK_ENERGY_CLASS` + 来源 `OTHER`（诚实，但无洞察）。修复：规范化 permaslug→基础 slug（剥离日期后缀）和/或使用当前热门模型（在 `ASSUMPTIONS.md` 中带来源）扩展 `data/crosswalk/model_crosswalk.yaml` + `data/energy/intensity.yaml`。~~ **(✅ 已修复)**
 2. **实时电网数据。** 设置仓库 secret `ELECTRICITYMAPS_API_KEY` 以使用实时强度；无密钥时 `grid.py` 回退到年因子 (`FALLBACK_GRID_ANNUAL`)。
 3. **🔑 轮换 OpenRouter 密钥。** 它在开发期间以明文共享；在 openrouter.ai 上轮换并重新设置 secret：`gh secret set OPENROUTER_API_KEY --repo wyl2607/llm-carbon-index`。
-4. **Phase 6 —— 所有路线图项目 ✅ 完成。** 6A–6D（情景、市场 vs 位置、趋势/Jevons、水）+ **6E 覆盖自动化**（标记未映射的热门列表 slug、未映射流量 % + 维护待办、停止静默归桶未知；后端 65463cf、前端 414f06e、规范 `specs/phase-6e-coverage-automation.md`）。6E UI 注释在某个热门模型落在 `model_crosswalk.yaml` 之外前保持休眠（当前全部已映射 → unmapped 比例 = 0，正确）。
+4. **Phase 6 —— 所有路线图项目 ✅ 完成。** 6A–6D（情景、市场 vs 位置、趋势/Jevons、水）+ **6E 覆盖自动化**（标记未映射的热门列表 slug、未映射流量 % + 维护待办、停止静默归桶未知；后端 65463cf、前端 414f06e、规范 `specs/phase-6e-coverage-automation.md`）。只要热门模型尚未进入 `model_crosswalk.yaml`，6E UI 就会展示未映射流量；在取得可靠来源前不会静默归桶。
 5. **松散末端 —— 未合并工作（在下次发布前决定）：**（App.tsx 论文与 ESG 部分移除现已在 main 上提交 —— e56d2a2，按照保留它的决定。）
    - `feat/scenario-math`（工作树 `../llm-carbon-index-6a`，提交 2281962）将绿移 CO₂ 数学提取为已测试的纯函数 —— **领先 main，未合并。**
 
