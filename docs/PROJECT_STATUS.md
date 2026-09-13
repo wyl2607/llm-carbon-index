@@ -28,7 +28,7 @@ slice, not global emissions). Static pipeline → committed JSON → static fron
 |---|---|
 | 0 prove-math, 1 ingestion, 2 estimation, 3 output+schema, 4 frontend, 5 methodology+CI | ✅ done, see `specs/INDEX.md` for commit hashes |
 | 6A green-electricity scenarios, 6B market-vs-location, 6C trends+Jevons, 6D water (WUE) | ✅ done (shipped in the premium dashboard; hashes in `specs/INDEX.md`) |
-| 6E coverage automation (scope honesty) | ✅ done — backend 65463cf + frontend 414f06e; UI note dormant until pipeline emits a non-zero unmapped fraction (all current top models are mapped) |
+| 6E coverage automation (scope honesty) | ✅ done — unmapped traffic is measured explicitly and current high-volume gaps are maintained through sourced crosswalk updates |
 
 - Tests: `uv run pytest -q` → 51 collected/green; `uv run ruff check .` clean.
 - `python -m pipeline.run --date latest` produces a schema-valid `latest.json`.
@@ -53,8 +53,8 @@ slice, not global emissions). Static pipeline → committed JSON → static fron
    trends/Jevons, water) + **6E coverage automation** (flag unmapped top-list slugs,
    unmapped-traffic % + maintenance to-do, stop silently bucketing unknowns; backend
    65463cf, frontend 414f06e, spec `specs/phase-6e-coverage-automation.md`). The 6E UI
-   note stays dormant until a top model falls outside `model_crosswalk.yaml` (currently
-   all are mapped → unmapped fraction = 0, which is correct).
+   note appears whenever a top model falls outside `model_crosswalk.yaml`; current
+   unmapped traffic remains visible until each model has defensible source data.
 5. **Loose end — unmerged work (decide before next release):** (The App.tsx Thesis & ESG
    section removal is now committed on main — e56d2a2, per the decision to keep it.)
    - `feat/scenario-math` (worktree `../llm-carbon-index-6a`, commit 2281962) extracts
