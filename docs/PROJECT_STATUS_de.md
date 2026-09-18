@@ -26,7 +26,7 @@ LLM Carbon Index — schätzt den CO₂-Fußabdruck der **OpenRouter-sichtbaren*
 |---|---|
 | 0 prove-math, 1 ingestion, 2 estimation, 3 output+schema, 4 frontend, 5 methodology+CI | ✅ erledigt, siehe `specs/INDEX.md` für Commit-Hashes |
 | 6A green-electricity scenarios, 6B market-vs-location, 6C trends+Jevons, 6D water (WUE) | ✅ erledigt (in das Premium-Dashboard ausgeliefert; Hashes in `specs/INDEX.md`) |
-| 6E coverage automation (scope honesty) | ✅ erledigt — Backend 65463cf + Frontend 414f06e; UI-Hinweis ruht, bis die Pipeline einen non-zero unmapped-Anteil emittiert (alle aktuellen Top-Modelle sind gemappt) |
+| 6E coverage automation (scope honesty) | ✅ erledigt — nicht gemappter Traffic wird explizit gemessen; aktuelle Lücken werden durch belegte Crosswalk-Updates gepflegt |
 
 - Tests: `uv run pytest -q` → 51 collected/grün; `uv run ruff check .` clean.
 - `python -m pipeline.run --date latest` produziert ein schema-valides `latest.json`.
@@ -38,7 +38,7 @@ LLM Carbon Index — schätzt den CO₂-Fußabdruck der **OpenRouter-sichtbaren*
 1. ~~**Crosswalk vs. reale Slugs (höchster Wert).** Reale OpenRouter `model_permaslug`-Werte tragen Datums-Suffixe (z. B. `minimax/minimax-m3-20260531`), verfehlen daher die Phase-2-Crosswalk-Seeds → jedes reale Modell wird derzeit zu `UNKNOWN_MODEL` + `FALLBACK_ENERGY_CLASS` + origin `OTHER` aufgelöst (ehrlich, aber nicht aufschlussreich). Fix: permaslug→base-slug normalisieren (Datums-Suffix entfernen) und/oder `data/crosswalk/model_crosswalk.yaml` + `data/energy/intensity.yaml` mit den aktuellen Top-Modellen erweitern (mit Quellen in `ASSUMPTIONS.md`).~~ **(✅ Behoben)**
 2. **Live-Netzdaten.** Repo-Secret `ELECTRICITYMAPS_API_KEY` setzen, um Live-Intensität zu nutzen; ohne diesen fällt `grid.py` auf Jahresfaktoren zurück (`FALLBACK_GRID_ANNUAL`).
 3. **🔑 OpenRouter-Key rotieren.** Er wurde während der Entwicklung im Klartext geteilt; auf openrouter.ai rotieren und Secret neu setzen: `gh secret set OPENROUTER_API_KEY --repo wyl2607/llm-carbon-index`.
-4. **Phase 6 — alle Roadmap-Items ✅ erledigt.** 6A–6D (Szenarien, Market-vs-Location, Trends/Jevons, Wasser) + **6E Coverage-Automation** (unmapped Top-List-Slugs flaggen, unmapped-traffic % + Wartungs-To-Do, stilles Bucketing von Unknowns stoppen; Backend 65463cf, Frontend 414f06e, Spec `specs/phase-6e-coverage-automation.md`). Der 6E-UI-Hinweis bleibt dormant, bis ein Top-Modell außerhalb von `model_crosswalk.yaml` liegt (aktuell alle gemappt → unmapped fraction = 0, korrekt).
+4. **Phase 6 — alle Roadmap-Items ✅ erledigt.** 6A–6D (Szenarien, Market-vs-Location, Trends/Jevons, Wasser) + **6E Coverage-Automation** (unmapped Top-List-Slugs flaggen, unmapped-traffic % + Wartungs-To-Do, stilles Bucketing von Unknowns stoppen; Backend 65463cf, Frontend 414f06e, Spec `specs/phase-6e-coverage-automation.md`). Der 6E-UI-Hinweis zeigt nicht gemappten Traffic, bis für jedes Top-Modell belastbare Quelldaten vorliegen.
 5. **Lose Enden — nicht gemergte Arbeit (vor nächstem Release entscheiden):** (Die App.tsx Thesis & ESG-Sektionsentfernung ist jetzt auf main committed — e56d2a2, gemäß der Entscheidung, sie zu behalten.)
    - `feat/scenario-math` (Worktree `../llm-carbon-index-6a`, Commit 2281962) extrahiert die Green-Shift-CO₂-Mathematik in eine getestete reine Fn — **ahead of main, unmerged.**
 
