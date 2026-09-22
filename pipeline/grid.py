@@ -30,6 +30,14 @@ from pipeline.config import (
 )
 
 
+def _first_present(payload: dict, *keys: str):
+    """First non-None value; a live intensity of 0.0 is a reading, not a gap."""
+    for k in keys:
+        if payload.get(k) is not None:
+            return payload[k]
+    return None
+
+
 def _load_annual() -> list[dict]:
     """Load the annual_factors table (list of region dicts). [] on any failure."""
     try:
@@ -182,10 +190,11 @@ def carbon_intensity(region: str) -> tuple[float, str, str]:
                     payload = resp.json()
                     ci: float | None = None
                     if isinstance(payload, dict):
-                        ci = payload.get("carbonIntensity") or payload.get("carbon_intensity")
+                        ci = _first_present(payload, "carbonIntensity", "carbon_intensity")
                         if ci is None and isinstance(payload.get("data"), dict):
-                            d = payload["data"]
-                            ci = d.get("carbonIntensity") or d.get("carbon_intensity")
+                            ci = _first_present(
+                                payload["data"], "carbonIntensity", "carbon_intensity"
+                            )
                     if ci is not None:
                         return float(ci), "electricity_maps_live", "GRID-EM-LIVE"
                 except Exception:  # noqa: S110 - intentional: any live failure must fall back

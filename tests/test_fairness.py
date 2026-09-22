@@ -238,3 +238,17 @@ def test_indistinguishable_tiers_stable_membership_under_alt_like_perturbations(
 
     # Note: we reference alt_assumption_sets.yaml in intent (its variants can move mids/ranks
     # within wide uncertainty bands without moving models across non-overlap gaps).
+
+
+def test_indistinguishable_tiers_wide_range_does_not_bridge_disjoint_models():
+    """A wide range overlapping both ends must not merge two disjoint ranges into one tier.
+    The old rule (compare with the tier's lowest low) put all three together although
+    small.high 20 < big.low 100 (published 2026-09-21: 1 tier, 238 disjoint pairs).
+    """
+    big = {"slug": "big", "co2_kg": {"low": 100, "mid": 150, "high": 200}}
+    wide = {"slug": "wide", "co2_kg": {"low": 1, "mid": 80, "high": 190}}
+    small = {"slug": "small", "co2_kg": {"low": 2, "mid": 10, "high": 20}}
+    tiers = indistinguishable_tiers([big, wide, small])
+    for tier in tiers:
+        assert max(m["co2_kg"]["low"] for m in tier) <= min(m["co2_kg"]["high"] for m in tier)
+    assert [[m["slug"] for m in t] for t in tiers] == [["big", "wide"], ["small"]]

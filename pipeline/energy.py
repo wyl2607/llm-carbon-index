@@ -207,7 +207,7 @@ def energy_kwh(
 
     P6 regime multiplier (OPTIONAL): dynamic regime/batching/prompt-length factor
     from data/assumptions/regime_factors.yaml (R-* sourced). Multiplies the
-    (decode+prefill) dynamic kWh (before or after idle; order commutative for Range).
+    (decode+prefill) dynamic kWh only; idle is added afterwards and is not scaled.
     Makes prefill_alpha + fixed Wh/token into a user-tunable regime. When None or
     omitted, multiplies by 1.0 (no change to prior callers). Range * Range used.
     See ASSUMPTIONS.md#R-REGIME and regime_factors.yaml for short/med/long × low/high.
@@ -220,9 +220,9 @@ def energy_kwh(
     else:
         total_wh = decode
     kwh = total_wh / 1000.0
+    if regime_multiplier is not None:
+        kwh = kwh * regime_multiplier  # Range * Range for regime (P6)
     if idle_kwh_per_day is not None and share_of_day > 0:
         idle_contrib = idle_kwh_per_day * share_of_day  # Range * scalar -> Range
         kwh = kwh + idle_contrib  # Range + Range supported
-    if regime_multiplier is not None:
-        kwh = kwh * regime_multiplier  # Range * Range for regime (P6)
     return kwh
