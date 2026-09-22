@@ -5,6 +5,13 @@
 All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.9.1] - 2026-09-22 (Sourced coverage for four high-traffic models)
+### Changed
+- Crosswalk rows effective 2026-09-13 map `tencent/hy3` (295B total / 21B active → `E-CLASS-GAP`, CN annual grid), `z-ai/glm-5.2` and `z-ai/glm-5.3` (753B total, active params undisclosed → same conservative largest band as the old unknown fallback, but CN annual grid instead of the default US-East live factor), and `google/gemini-3.8-flash` (params undisclosed → same largest band, closed Google PUE). Each row cites a new provenance source.
+- These four slugs were `UNMAPPED_SLUG`. On 2026-09-21 headline CO₂ mid **+2.6 %** (1.79e7 → 1.84e7 kg), low +2.0 %, high +3.9 %; mapped traffic fraction 0.707 → 0.786. Tier sizes 2 / 34 / 14 → 2 / 33 / 15.
+- `validation.json` regenerated against that day. LIT-JEGHAM stays pass. LIT-GEMINI stays `flag`; closed-model PUE on Gemini 3.8 Flash (1.25 → 1.1) narrows that anchor's CO₂ band.
+- 9 goldens (2026-09-13 through 2026-09-21) regenerated; the other 79 carry the version bump only.
+
 ## [0.9.0] - 2026-09-22 (Energy band for 15-30B active)
 ### Changed
 - **New `E-CLASS-GAP` fallback band for 15 < active params ≤ 30B** (0.0005 / 0.00245 / 0.012 Wh per output token), bracketed by the SMALL and LARGE classes; bands now carry `min_active_params_b`. Previously 16B/18B-active models fell into E-CLASS-LARGE, which is sourced for 30–100B (#149).
