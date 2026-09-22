@@ -46,6 +46,9 @@ PUE 作为 **范围 `{low 1.1, mid 1.25, high 1.56}`** 应用，而非固定标�
 ### E-CLASS-SMALL (Phase 2 seed)
 - **E-CLASS-SMALL** — 活跃参数 ≲15B 的模型，每输出 token 0.0005–0.0012–0.0025 Wh。*来源：* 参考 AI Energy Score v2 小模型测量值 + EcoLogits 对 7-13B 类的范围；为基准到生产的方差、分词器差异和测量不确定性加宽约 ±2x。*不确定性：* 高（类别段而非按模型）。*使用位置：* intensity.yaml 参数类别回退首段；未知模型或 crosswalk 中显式 "parameter_class_fallback" 的回退路径。*最后审核：* 2026-06-15。
 
+### E-CLASS-GAP（方法学 0.9.0）
+- **E-CLASS-GAP** — 活跃参数 15B 以上、≤30B 的模型，每输出 token 0.0005–0.00245–0.012 Wh。*来源：* 该区间没有直接测量；由相邻两档夹逼——下界取 E-CLASS-SMALL，上界取 E-CLASS-LARGE，中值取两档中值的几何平均。0.9.0 之前档位没有下界，16B/18B 活跃参数的模型被放进标注为 30–100B 的 E-CLASS-LARGE（#149）。*不确定性：* 非常高。*最后审核：* 2026-09-22。
+
 ### E-CLASS-LARGE (Phase 2 seed)
 - **E-CLASS-LARGE** — 活跃参数高达 ~100B 的模型，每输出 token 0.002–0.005–0.012 Wh。*来源：* 参考 AI Energy Score v2 + EcoLogits 30-100B 类测量；为闭源模型不透明性（无公开参数）加宽上限。*不确定性：* 非常高。*使用位置：* intensity.yaml 大段；UNKNOWN_MODEL 的默认保守选择。*最后审核：* 2026-06-15。
 

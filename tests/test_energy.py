@@ -29,7 +29,7 @@ import pytest
 # (matches pattern used by Phase 0 tests/test_prove_math.py).
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from pipeline.energy import energy_kwh, idle_for_slug, wh_per_output_token
+from pipeline.energy import _choose_fallback_band, energy_kwh, idle_for_slug, wh_per_output_token
 from pipeline.ranges import Range
 
 # --- small table fixtures (no fs, pure) ---
@@ -394,3 +394,19 @@ def test_energy_kwh_regime_scales_dynamic_kwh_but_not_idle():
     regime = Range(1.35, 1.65, 2.10)
     k = energy_kwh(base_wh, 1000, 0, None, idle, 0.2, regime)
     assert k.mid == pytest.approx(0.002 * 1.65 + 8500 * 0.2)
+
+
+def test_fallback_band_has_a_lower_bound_so_15_to_30b_active_is_not_priced_as_30_100b():
+    """#149: 16B/18B active took E-CLASS-LARGE (sourced for 30-100B), ~45% of headline CO2."""
+    bands = yaml.safe_load(
+        (Path(__file__).resolve().parents[1] / "data/energy/intensity.yaml").read_text()
+    )["parameter_class_fallback"]
+    picked = {a: _choose_fallback_band(bands, a)["source_id"] for a in (15, 16, 18, 30, 31)}
+    assert picked == {
+        15: "E-CLASS-SMALL",
+        16: "E-CLASS-GAP",
+        18: "E-CLASS-GAP",
+        30: "E-CLASS-GAP",
+        31: "E-CLASS-LARGE",
+    }
+    assert _choose_fallback_band(bands, None)["source_id"] == "E-CLASS-LARGE"
