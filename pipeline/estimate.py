@@ -55,16 +55,16 @@ def _load_yaml_list(path: Path) -> list[dict]:
 
 
 def _load_yaml_dict(path: Path) -> dict:
-    """Same pattern for YAML files expected to be a top-level dict (intensity, factors)."""
-    data: dict = {}
-    try:
-        with open(path, encoding="utf-8") as f:
-            loaded = yaml.safe_load(f)
-            if isinstance(loaded, dict):
-                data = loaded
-    except Exception:
-        data = {}
-    return data
+    """Load a YAML file that must be a top-level dict (intensity, factors).
+
+    Fails the run instead of returning {}: an unreadable methodology file must not
+    publish numbers computed from defaults nobody sourced.
+    """
+    with open(path, encoding="utf-8") as f:
+        loaded = yaml.safe_load(f)
+    if not isinstance(loaded, dict):
+        raise ValueError(f"{path} must be a YAML mapping, got {type(loaded).__name__}")
+    return loaded
 
 
 def estimate(
@@ -120,18 +120,14 @@ def estimate(
     # Loaded here at the I/O boundary; pure math funcs receive Ranges/scalars.
     factors: dict = _load_yaml_dict(METHODOLOGY_FACTORS_PATH)
 
-    def _range(d: dict | None, lo: float, mi: float, hi: float) -> Range:
-        d = d or {}
-        return Range(
-            float(d.get("low", lo)), float(d.get("mid", mi)), float(d.get("high", hi))
-        )
+    def _range(d: dict) -> Range:
+        return Range(float(d["low"]), float(d["mid"]), float(d["high"]))
 
-    pue_range = _range(factors.get("pue"), 1.1, 1.25, 1.56)
-    prefill_alpha = _range(factors.get("prefill_alpha"), 0.1, 0.2, 0.3)
-    embodied_ratio = _range(factors.get("embodied_ratio"), 0.28, 0.39, 0.54)
-    water_cfg = factors.get("water") or {}
-    onsite_wue = _range(water_cfg.get("onsite_wue"), 0.3, 0.9, 1.8)
-    offsite_ewif = _range(water_cfg.get("offsite_ewif"), 2.0, 3.14, 4.35)
+    pue_range = _range(factors["pue"])
+    prefill_alpha = _range(factors["prefill_alpha"])
+    embodied_ratio = _range(factors["embodied_ratio"])
+    onsite_wue = _range(factors["water"]["onsite_wue"])
+    offsite_ewif = _range(factors["water"]["offsite_ewif"])
     # Market-based residual floor (C-MARKET-RESIDUAL): annual REC/PPA matching is
     # NOT 24/7 carbon-free, so market-based CO2 must never collapse to a false 0.
     # Sourced form is a dict {source_id, value, source}; a bare scalar is also accepted.

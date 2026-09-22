@@ -17,6 +17,7 @@ import yaml
 
 import pipeline.config as config
 from pipeline import METHODOLOGY_VERSION
+from pipeline.estimate import _load_yaml_dict
 from pipeline.fairness import indistinguishable_tiers, rank_stability
 from pipeline.frontier import annotate_models, compute_fleet_rightsizing
 from pipeline.precision import energy_tier, grid_tier, precision_fractions
@@ -153,12 +154,23 @@ def build_output(
         "Estimated CO2 footprint of LLM-inference traffic visible through OpenRouter. "
         "NOT global data-center emissions. All figures are estimates with uncertainty."
     )
+    # Rendered from the same file estimate() computes with, so the published
+    # assumptions cannot drift from the numbers they describe.
+    factors = _load_yaml_dict(config.METHODOLOGY_FACTORS_PATH)
+
+    def _band(d: dict, sep: str = " / ") -> str:
+        return sep.join(str(d[k]) for k in ("low", "mid", "high"))
+
+    water = factors["water"]
     assumptions = {
         "input_output_ratio": "80:20",
-        "pue_band": "1.1 / 1.25 / 1.56",
-        "prefill_alpha": "0.1 / 0.2 / 0.3",
-        "embodied_ratio_of_operational": "0.28 / 0.39 / 0.54",
-        "water_l_per_kwh": "onsite 0.3/0.9/1.8 + offsite EWIF 2.0/3.14/4.35",
+        "pue_band": _band(factors["pue"]),
+        "prefill_alpha": _band(factors["prefill_alpha"]),
+        "embodied_ratio_of_operational": _band(factors["embodied_ratio"]),
+        "water_l_per_kwh": (
+            f"onsite {_band(water['onsite_wue'], '/')}"
+            f" + offsite EWIF {_band(water['offsite_ewif'], '/')}"
+        ),
     }
 
     # Totals from ALL records for the day (incl. the other aggregate)

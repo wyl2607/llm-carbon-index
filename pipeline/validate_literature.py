@@ -177,7 +177,7 @@ def _derive_wh_per_query_band(
 ) -> Range:
     """Scale output-token band to per-query using literature query definition."""
     if query_output_tokens <= 0:
-        query_output_tokens = 500.0
+        raise ValueError(f"query_output_tokens must be > 0, got {query_output_tokens}")
     return wh_range * float(query_output_tokens)
 
 
@@ -220,7 +220,8 @@ def validate_literature(doc: dict | None = None, *, out_path: Path = VALIDATION_
             src = a.get("source_id")
             verified = bool(a.get("verified", True))
             metric = a.get("metric", "wh_per_query")
-            qtok = float(a.get("query_output_tokens") or 500.0)
+            # No token count means the anchor cannot be scaled; skip it (see except).
+            qtok = float(a["query_output_tokens"])
             val = a.get("value") or {}
             lit_mid = float(val.get("mid", 0.0))
 
@@ -271,11 +272,10 @@ def validate_literature(doc: dict | None = None, *, out_path: Path = VALIDATION_
                     co2_lit = None
                     co2_band = None
 
-            # containment check (on wh mid)
-            if band.low <= lit_mid <= band.high:
-                status = "pass"
-            else:
-                status = "flag"
+            # containment check: the Wh mid, and the CO2 mid when the anchor states one
+            wh_ok = band.low <= lit_mid <= band.high
+            co2_ok = co2_band is None or co2_band.low <= co2_lit <= co2_band.high
+            status = "pass" if wh_ok and co2_ok else "flag"
 
             if not verified:
                 status = "report_only"

@@ -41,6 +41,11 @@ jobs:
           EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
         run: uv run python -m pipeline.run --date latest
 
+      # Re-check today's output against the literature anchors. Without this step
+      # data/output/validation.json stayed frozen at 2026-06-16 while the models moved.
+      - name: Literature validation
+        run: uv run python -m pipeline.validate_literature > /dev/null
+
       # B2: gate the auto-refresh before it can reach the public site. Any failure
       # here fails the job (no commit, no push) instead of publishing bad data.
       - name: Lint

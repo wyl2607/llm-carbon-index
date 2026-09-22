@@ -5,6 +5,13 @@
 All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.8.1] - 2026-09-22 (Audit fixes)
+### Fixed
+- **Indistinguishable tiers** now require every pair in a tier to overlap (`max(low) <= min(high)`). The old rule let one wide range bridge disjoint ones: the published series showed a single tier of 50 models; 2026-09-21 is now 8 / 40 / 2. All 88 goldens regenerated for `totals.tiers` + `methodology_version` only — every published number is unchanged.
+- The regime multiplier scales dynamic energy only, not idle draw. A live Electricity Maps intensity of 0 g/kWh is used, not replaced by the annual factor. (Neither was on the published path.)
+- The methodology factors file fails the run when it cannot be loaded; the code-side defaults are gone, and the published `assumptions` block is rendered from that file.
+- Literature validation: a verified anchor must fall inside the CO₂ band as well as the Wh band, an anchor without `query_output_tokens` is skipped instead of scaled by 500, and the daily pipeline now regenerates `validation.json` (it had been frozen since 2026-06-16). LIT-GEMINI and LIT-JEGHAM now report `flag` — see #149.
+
 ## [0.8.0] - 2026-06-18 (Efficiency frontier & rightsizing)
 ### Added
 - **Efficiency frontier & rightsizing**: new `pipeline/frontier.py` (`compute_frontier`, `annotate_models`, `compute_fleet_rightsizing`) ranks models on a capability × energy-intensity plane and estimates the *avoidable* fraction of operational CO₂ under a capability-matched substitution (region/grid/PUE held constant). Per-model fields `energy_wh_per_mtok`, `capability_index`, `capability_source_id`, `on_frontier`, `frontier_reference_slug`, `rightsizing_gap_pct`, `avoidable_co2_kg` + a top-level `fleet_rightsizing` headline block; new flags `ON_FRONTIER` / `FALLBACK_CAPABILITY` / `LOW_CONFIDENCE_GAP` / `NO_FRONTIER_REFERENCE`.
