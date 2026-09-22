@@ -288,7 +288,9 @@ def test_market_residual_floor_prevents_false_zero(monkeypatch, tmp_path):
   source: "test"
 """,
     )
-    factors = _write_yaml(tmp_path, "factors.yaml", "market_residual_floor: 0.10\n")
+    factors = _write_yaml(
+        tmp_path, "factors.yaml", cfg.METHODOLOGY_FACTORS_PATH.read_text(encoding="utf-8")
+    )
 
     monkeypatch.setattr("pipeline.estimate.CROSSWALK_PATH", cw)
     monkeypatch.setattr("pipeline.estimate.INTENSITY_PATH", inten)
@@ -598,9 +600,11 @@ def test_load_yaml_list_missing_file(tmp_path):
     assert _load_yaml_list(p) == []
 
 
-def test_load_yaml_dict_missing_file(tmp_path):
+def test_load_yaml_dict_missing_file_fails_the_run(tmp_path):
+    """Methodology inputs fail closed: no silent fall-back to code defaults."""
     p = tmp_path / "no_dict.yaml"
-    assert _load_yaml_dict(p) == {}
+    with pytest.raises(FileNotFoundError):
+        _load_yaml_dict(p)
 
 
 def test_load_yaml_list_bad_yaml_format(tmp_path):
@@ -610,10 +614,11 @@ def test_load_yaml_list_bad_yaml_format(tmp_path):
     assert _load_yaml_list(p) == []
 
 
-def test_load_yaml_dict_bad_yaml_format(tmp_path):
+def test_load_yaml_dict_bad_yaml_format_fails_the_run(tmp_path):
     p = tmp_path / "bad_dict.yaml"
     p.write_text("foo: : bar", encoding="utf-8")
-    assert _load_yaml_dict(p) == {}
+    with pytest.raises(yaml.YAMLError):
+        _load_yaml_dict(p)
 
 
 def test_load_yaml_list_wrong_top_level_type(tmp_path):
@@ -623,11 +628,11 @@ def test_load_yaml_list_wrong_top_level_type(tmp_path):
     assert _load_yaml_list(p) == []
 
 
-def test_load_yaml_dict_wrong_top_level_type(tmp_path):
-    """YAML is a list but dict expected -> empty."""
+def test_load_yaml_dict_wrong_top_level_type_fails_the_run(tmp_path):
     p = tmp_path / "list_not_dict.yaml"
     p.write_text("- 1\n- 2\n", encoding="utf-8")
-    assert _load_yaml_dict(p) == {}
+    with pytest.raises(ValueError):
+        _load_yaml_dict(p)
 
 
 def test_grid_intensity_resolved_once_per_region(monkeypatch, tmp_path):

@@ -17,13 +17,16 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from pipeline.provenance import load_sources, resolve
+from pipeline.ranges import Range
 from pipeline.validate_literature import (
     LITERATURE_ANCHORS_PATH,
+    _derive_wh_per_query_band,
     validate_literature,
 )
 
@@ -155,3 +158,19 @@ def test_file_read_failure_for_one_anchor_does_not_abort(tmp_path: Path):
     # either some records (from class fallback) or empty list; never raises
     assert "literature_anchors" in res
     assert isinstance(res["literature_anchors"], list)
+
+
+def test_a_verified_anchor_outside_its_co2_band_is_flagged_not_passed(tmp_path: Path):
+    """LIT-GEMINI's Wh sits in band but its 0.03 g CO2 does not; it used to report pass."""
+    res = validate_literature(_load_latest_doc(), out_path=tmp_path / "validation.json")
+    for r in res["literature_anchors"]:
+        co2 = (r["anchor"].get("co2_g_per_query") or {}).get("mid")
+        if r["verified"] and co2 is not None and not (
+            r["co2_band"]["low"] <= co2 <= r["co2_band"]["high"]
+        ):
+            assert r["status"] == "flag", r["id"]
+
+
+def test_query_band_rejects_a_missing_token_count():
+    with pytest.raises(ValueError):
+        _derive_wh_per_query_band(Range(1, 1, 1), 0)
