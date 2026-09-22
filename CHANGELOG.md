@@ -5,6 +5,11 @@
 All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.9.2] - 2026-09-22 (Provenance refresh)
+### Changed
+- AI Energy Score sources (`E-*`) re-checked: `accessed` dates and locators updated in `data/provenance/sources.yaml`, *Last reviewed* in `docs/ASSUMPTIONS.md` (#139).
+- No number changes. Published outputs embed `sources[]`, so all 88 goldens were rewritten for `sources[]` + `methodology_version` only.
+
 ## [0.9.1] - 2026-09-22 (Sourced coverage for four high-traffic models)
 ### Changed
 - Crosswalk rows effective 2026-09-13 map `tencent/hy3` (295B total / 21B active → `E-CLASS-GAP`, CN annual grid), `z-ai/glm-5.2` and `z-ai/glm-5.3` (753B total, active params undisclosed → same conservative largest band as the old unknown fallback, but CN annual grid instead of the default US-East live factor), and `google/gemini-3.8-flash` (params undisclosed → same largest band, closed Google PUE). Each row cites a new provenance source.
