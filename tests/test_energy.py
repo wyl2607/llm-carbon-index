@@ -385,3 +385,12 @@ def test_energy_kwh_regime_multiplier_p6():
     # without would be (2 + 0.2*0.5*2? wait calc) but check scaled
     k_base = energy_kwh(base_wh, 1000, 500, alpha)
     assert kr.mid == pytest.approx(k_base.mid * 1.65)
+
+
+def test_energy_kwh_regime_scales_dynamic_kwh_but_not_idle():
+    """Idle is always-on draw; the batching/prompt regime must not multiply it."""
+    base_wh = Range(0.001, 0.002, 0.004)
+    idle = Range(3000, 8500, 18000)
+    regime = Range(1.35, 1.65, 2.10)
+    k = energy_kwh(base_wh, 1000, 0, None, idle, 0.2, regime)
+    assert k.mid == pytest.approx(0.002 * 1.65 + 8500 * 0.2)

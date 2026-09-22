@@ -88,6 +88,36 @@ def test_em_live_path_hits_v4_base_url(monkeypatch):
     assert calls[0]["headers"]["auth-token"] == "em-test-key"
 
 
+def test_electricity_maps_live_zero_is_a_reading_not_a_gap(monkeypatch):
+    """`0.0 or None` is None: a fully clean live grid used to fall back to the annual factor."""
+    import pipeline.grid as gmod
+    from pipeline.grid import carbon_intensity
+
+    class FakeResp:
+        ok = True
+
+        def json(self):
+            return {"carbonIntensity": 0.0}
+
+    monkeypatch.setattr(gmod, "eia_api_key", lambda: None)
+    monkeypatch.setattr(gmod, "electricitymaps_api_key", lambda: "em-test-key")
+    monkeypatch.setattr(gmod.requests, "get", lambda *a, **k: FakeResp())
+    monkeypatch.setattr(
+        gmod,
+        "_load_annual",
+        lambda: [
+            {
+                "region": "europe-west",
+                "gco2_per_kwh": 230,
+                "electricitymaps_zone": "IE",
+                "source_id": "C-GRID-EU",
+            }
+        ],
+    )
+
+    assert carbon_intensity("europe-west") == (0.0, "electricity_maps_live", "GRID-EM-LIVE")
+
+
 # --- EIA tests (mocked; real key exercised only in CI/cron with secret) ---
 
 def test_eia_path_used_when_key_and_us_east(monkeypatch):

@@ -254,8 +254,8 @@ def origin_invariance(model: dict) -> bool:
 
 def indistinguishable_tiers(models: list[dict], key: str = "co2_kg") -> list[list[dict]]:
     """Group models into tiers where any two in the same tier have overlapping {low,high} ranges
-    on the given key (default co2_kg). New tier starts only when a model's entire range sits
-    strictly below (numerically cleaner than) the current tier group's lowest low.
+    on the given key (default co2_kg). Intervals overlap pairwise exactly when the largest low
+    is <= the smallest high, so a new tier starts as soon as adding a model would break that.
 
     The input models are not mutated. Returns list of lists of the original model dicts.
     Tier order in the returned structure follows the grouping: first sublist contains the
@@ -269,13 +269,15 @@ def indistinguishable_tiers(models: list[dict], key: str = "co2_kg") -> list[lis
     ms = sorted(models, key=lambda m: m[key]["mid"], reverse=True)
     tiers: list[list[dict]] = []
     cur: list[dict] = [ms[0]]
+    max_low, min_high = ms[0][key]["low"], ms[0][key]["high"]
     for m in ms[1:]:
-        # new tier only if m's whole range sits below the current tier's worst (lowest) low
-        cur_lows = (x[key]["low"] for x in cur)
-        if m[key]["high"] < min(cur_lows):
+        low, high = m[key]["low"], m[key]["high"]
+        if max(max_low, low) <= min(min_high, high):
+            cur.append(m)
+            max_low, min_high = max(max_low, low), min(min_high, high)
+        else:
             tiers.append(cur)
             cur = [m]
-        else:
-            cur.append(m)
+            max_low, min_high = low, high
     tiers.append(cur)
     return tiers
