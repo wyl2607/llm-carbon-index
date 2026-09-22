@@ -147,9 +147,10 @@ def idle_for_slug(
 def _choose_fallback_band(bands: list[dict], active_params_b: float | None = None) -> dict:
     """Select band keyed on active params (P5 MoE).
 
-    - If active_params_b supplied (>0): pick smallest max_active_params_b band that still
-      covers it (i.e. first sufficient class for the *active* size; total params ignored
-      for MoE). This is the key change: 230B-total/10B-active lands in SMALL not LARGE.
+    - If active_params_b supplied (>0): pick the tightest band with
+      min_active_params_b < active <= max_active_params_b (min defaults to 0; total params
+      ignored for MoE). 230B-total/10B-active lands in SMALL, 18B-active in the 15-30B gap
+      band rather than the 30-100B LARGE class.
     - Else (unknown model, no cw size info): pick most conservative (largest max_active)
       band.
 
@@ -166,7 +167,9 @@ def _choose_fallback_band(bands: list[dict], active_params_b: float | None = Non
     if active_params_b is not None and active_params_b > 0:
         candidates = [
             b for b in bands
-            if (b.get("max_active_params_b") or 0) >= active_params_b
+            if (b.get("min_active_params_b") or 0)
+            < active_params_b
+            <= (b.get("max_active_params_b") or 0)
         ]
         if candidates:
             # tightest sufficient band (by max_active)

@@ -46,6 +46,9 @@ Diese speisen `data/energy/intensity.yaml`. Jeder Modell-/Klassen-Eintrag muss z
 ### E-CLASS-SMALL (Phase 2 seed)
 - **E-CLASS-SMALL** — 0.0005–0.0012–0.0025 Wh pro Output-Token für Modelle mit aktiven Params ≲15B. *Quelle:* informiert durch AI Energy Score v2 Small-Modell-Messungen + EcoLogits-Bereiche für 7-13B-Klasse; ±~2x für Benchmark-zu-Prod-Varianz, Tokenizer-Diffs und Messunsicherheit verbreitert. *Unsicherheit:* hoch (Klassenband, nicht pro Modell). *Wo verwendet:* intensity.yaml parameter_class_fallback erstes Band; Fallback-Pfad für unbekannte Modelle oder explizites "parameter_class_fallback" im Crosswalk. *Zuletzt geprüft:* 2026-06-15.
 
+### E-CLASS-GAP (Methodik 0.9.0)
+- **E-CLASS-GAP** — 0.0005–0.00245–0.012 Wh pro Output-Token für Modelle mit 15B < aktiven Params ≤ 30B. *Quelle:* keine direkte Messung; das Band wird von den Nachbarklassen eingegrenzt — Untergrenze aus E-CLASS-SMALL, Obergrenze aus E-CLASS-LARGE, Mitte = geometrisches Mittel der beiden Mittelwerte. Vor 0.9.0 fehlte eine Untergrenze, sodass 16B/18B-aktive Modelle in E-CLASS-LARGE (30–100B) landeten (#149). *Unsicherheit:* sehr hoch. *Zuletzt geprüft:* 2026-09-22.
+
 ### E-CLASS-LARGE (Phase 2 seed)
 - **E-CLASS-LARGE** — 0.002–0.005–0.012 Wh pro Output-Token für Modelle mit aktiven Params bis ~100B. *Quelle:* informiert durch AI Energy Score v2 + EcoLogits 30-100B-Klassenmessungen; obere Grenze für Closed-Modell-Opazität verbreitert (keine öffentlichen Params). *Unsicherheit:* sehr hoch. *Wo verwendet:* intensity.yaml large band; default konservative Wahl für UNKNOWN_MODEL. *Zuletzt geprüft:* 2026-06-15.
 

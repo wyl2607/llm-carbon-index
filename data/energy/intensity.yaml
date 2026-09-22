@@ -79,7 +79,17 @@ parameter_class_fallback:
     source: "ASSUMPTIONS.md#E-CLASS-SMALL (informed by AI Energy Score v2 + EcoLogits small-model measurements; widened for variance)"
     source_id: "E-CLASS-SMALL"
 
-  - max_active_params_b: 100
+  # No sourced measurement exists for 15-30B active; the two neighbouring classes
+  # bracket it, so the band spans SMALL.low .. LARGE.high with the geometric mean of
+  # their mids (sqrt(0.0012 * 0.005)). Before this band, 16B/18B active took LARGE.
+  - min_active_params_b: 15
+    max_active_params_b: 30
+    wh_per_output_token: { low: 0.0005, mid: 0.00245, high: 0.012 }
+    source: "ASSUMPTIONS.md#E-CLASS-GAP (bracketed by E-CLASS-SMALL and E-CLASS-LARGE; no direct 15-30B measurement)"
+    source_id: "E-CLASS-GAP"
+
+  - min_active_params_b: 30
+    max_active_params_b: 100
     wh_per_output_token: { low: 0.002, mid: 0.005, high: 0.012 }
     source: "ASSUMPTIONS.md#E-CLASS-LARGE (informed by AI Energy Score / EcoLogits 30-100B class; upper bound accounts for closed-model opacity)"
     source_id: "E-CLASS-LARGE"

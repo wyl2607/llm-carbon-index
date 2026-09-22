@@ -5,6 +5,12 @@
 All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.9.0] - 2026-09-22 (Energy band for 15-30B active)
+### Changed
+- **New `E-CLASS-GAP` fallback band for 15 < active params ≤ 30B** (0.0005 / 0.00245 / 0.012 Wh per output token), bracketed by the SMALL and LARGE classes; bands now carry `min_active_params_b`. Previously 16B/18B-active models fell into E-CLASS-LARGE, which is sourced for 30–100B (#149).
+- Effect on 2026-09-21: headline CO₂ mid **−22.8 %** (2.32e7 → 1.79e7 kg), low −33 %, high unchanged. LIT-JEGHAM moves from flag to pass.
+- 17 goldens containing a 15–30B model regenerated; the other 71 carry the version bump only.
+
 ## [0.8.1] - 2026-09-22 (Audit fixes)
 ### Fixed
 - **Indistinguishable tiers** now require every pair in a tier to overlap (`max(low) <= min(high)`). The old rule let one wide range bridge disjoint ones: the published series showed a single tier of 50 models; 2026-09-21 is now 8 / 40 / 2. All 88 goldens regenerated for `totals.tiers` + `methodology_version` only — every published number is unchanged.
