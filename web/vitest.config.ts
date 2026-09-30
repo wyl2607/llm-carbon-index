@@ -1,5 +1,6 @@
 import { defineConfig, mergeConfig } from 'vitest/config';
-import viteConfig from './vite.config';
+// Vite configLoader: 'native' requires explicit file extension in import
+import viteConfig from './vite.config.ts';
 
 /// <reference types="vitest" />
 
