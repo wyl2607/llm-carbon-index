@@ -65,12 +65,14 @@ INTENSITY_MINI = {
     ],
     "parameter_class_fallback": [
         {
+            "min_active_params_b": 0,
             "max_active_params_b": 15,
             "wh_per_output_token": {"low": 0.0005, "mid": 0.0012, "high": 0.0025},
             "source": "ASSUMPTIONS.md#E-CLASS-SMALL",
             "source_id": "E-CLASS-SMALL",
         },
         {
+            "min_active_params_b": 30,
             "max_active_params_b": 100,
             "wh_per_output_token": {"low": 0.002, "mid": 0.005, "high": 0.012},
             "source": "ASSUMPTIONS.md#E-CLASS-LARGE",
@@ -410,3 +412,69 @@ def test_fallback_band_has_a_lower_bound_so_15_to_30b_active_is_not_priced_as_30
         31: "E-CLASS-LARGE",
     }
     assert _choose_fallback_band(bands, None)["source_id"] == "E-CLASS-LARGE"
+
+
+@pytest.mark.parametrize("active_params", [16, 18, 29, 30])
+@pytest.mark.parametrize("declared_source", ["parameter_class_fallback", "ai_energy_score"])
+def test_actual_gap_spans_neighbour_bands_and_is_flagged(active_params, declared_source):
+    """A missing gap row must not send intermediate active params to LARGE."""
+    cw = [{
+        "openrouter_slug": "test/gap",
+        "active_params_b": active_params,
+        "params_b": 200,
+        "energy_source": declared_source,
+    }]
+    wh, src, flags, sid = wh_per_output_token("test/gap", cw, INTENSITY_MINI)
+    assert wh.low == 0.0005
+    assert wh.mid == pytest.approx((0.0012 * 0.005) ** 0.5)
+    assert wh.high == 0.012
+    assert src == "parameter_class_fallback"
+    assert sid == "E-CLASS-GAP"
+    assert flags == ["FALLBACK_ENERGY_CLASS", "FALLBACK_ENERGY_BAND_GAP"]
+
+
+def test_gap_is_derived_from_neighbours_without_fixed_parameter_thresholds():
+    bands = [
+        {
+            "min_active_params_b": 0,
+            "max_active_params_b": 10,
+            "wh_per_output_token": {"low": 1, "mid": 2, "high": 3},
+            "source_id": "small",
+        },
+        {
+            "min_active_params_b": 40,
+            "max_active_params_b": 80,
+            "wh_per_output_token": {"low": 4, "mid": 8, "high": 12},
+            "source_id": "large",
+        },
+    ]
+    gap = _choose_fallback_band(list(reversed(bands)), 20)
+    assert gap["wh_per_output_token"] == {"low": 1, "mid": 4, "high": 12}
+    assert gap["min_active_params_b"] == 10
+    assert gap["max_active_params_b"] == 40
+    assert gap["source_id"] == "E-CLASS-GAP"
+
+
+@pytest.mark.parametrize("declared_source", ["parameter_class_fallback", "ai_energy_score"])
+def test_documented_gap_preserves_seeded_range_and_is_flagged(declared_source):
+    intensity = yaml.safe_load(
+        (Path(__file__).resolve().parents[1] / "data/energy/intensity.yaml").read_text()
+    )
+    cw = [{
+        "openrouter_slug": "test/gap",
+        "active_params_b": 18,
+        "energy_source": declared_source,
+    }]
+    wh, src, flags, sid = wh_per_output_token("test/gap", cw, intensity)
+    assert (wh.low, wh.mid, wh.high) == (0.0005, 0.00245, 0.012)
+    assert sid == "E-CLASS-GAP"
+    assert src == "parameter_class_fallback"
+    assert "FALLBACK_ENERGY_BAND_GAP" in flags
+
+
+@pytest.mark.parametrize("active_params", [15, 31, 100, 200, None])
+def test_known_classes_and_unknown_sizes_do_not_receive_gap_flag(active_params):
+    cw = [{"openrouter_slug": "test/class", "active_params_b": active_params}]
+    _, _, flags, sid = wh_per_output_token("test/class", cw, INTENSITY_MINI)
+    assert "FALLBACK_ENERGY_BAND_GAP" not in flags
+    assert sid == ("E-CLASS-SMALL" if active_params == 15 else "E-CLASS-LARGE")

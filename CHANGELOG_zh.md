@@ -5,6 +5,11 @@
 
 本项目的所有显著变更均记录于此文件。格式参考 [Keep a Changelog](https://keepachangelog.com/)。
 
+## [0.10.0] - 2026-09-30 (能耗区间 Gap 与未映射模型电网 Fallback)
+### 变更
+- **新增 `E-CLASS-GAP` 15-30B 激活参数能耗区间**（0.0005 / 0.00245 / 0.012 Wh/输出 Token），介于 SMALL 和 LARGE 之间；原有的能耗阶梯现附带 `min_active_params_b`。在此之前，16B/18B 激活参数的模型会落入适用于 30–100B 的 E-CLASS-LARGE 区间 (#149)。
+- **未映射模型（Unmapped slugs）改用宽泛的年度电网因子**（`C-GRID-UNMAPPED-ANNUAL`），区间涵盖所有已知地区，而不再默认使用美东实时电网（US-East live）。未映射模型将被附加 `ASSUMED_REGION` 和 `CLOSED_MODEL_ASSUMED` 标签，并且其流量将被排除在 `grid_live_fraction` 的计算之外 (#149)。
+
 ## [0.7.0] - 2026-06-16 (vNext：准确性与覆盖度)
 ### 新增
 - **measured 能耗 + idle（6J）**：pipeline 现优先消费 AI Energy Score / EcoLogits 实测强度（高于 fallback），并加可选 `E-IDLE` always-on 项。`energy_measured_fraction` 从 0.0 升至 ≈0.29（50 个模型中 3 个、按 token 加权）。
