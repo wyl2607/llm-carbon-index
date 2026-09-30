@@ -5,6 +5,11 @@
 All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.10.0] - 2026-09-30 (Energy band gap & unmapped grid fallback)
+### Changed
+- **New `E-CLASS-GAP` fallback band for 15 < active params ≤ 30B** (0.0005 / 0.00245 / 0.012 Wh per output token), bracketed by the SMALL and LARGE classes; bands now carry `min_active_params_b`. Previously 16B/18B-active models fell into E-CLASS-LARGE, which is sourced for 30–100B (#149).
+- **Unmapped slugs use a wide annual grid factor** (`C-GRID-UNMAPPED-ANNUAL`) spanning all named regions instead of defaulting to US-East live. Unmapped models receive `ASSUMED_REGION` and `CLOSED_MODEL_ASSUMED` flags, and their traffic is excluded from `grid_live_fraction` (#149).
+
 ## [0.9.2] - 2026-09-22 (Provenance refresh)
 ### Changed
 - AI Energy Score sources (`E-*`) re-checked: `accessed` dates and locators updated in `data/provenance/sources.yaml`, *Last reviewed* in `docs/ASSUMPTIONS.md` (#139).
