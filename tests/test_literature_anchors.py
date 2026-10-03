@@ -22,6 +22,7 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from pipeline import validate_literature as literature
 from pipeline.provenance import load_sources, resolve
 from pipeline.ranges import Range
 from pipeline.validate_literature import (
@@ -174,3 +175,67 @@ def test_a_verified_anchor_outside_its_co2_band_is_flagged_not_passed(tmp_path: 
 def test_query_band_rejects_a_missing_token_count():
     with pytest.raises(ValueError):
         _derive_wh_per_query_band(Range(1, 1, 1), 0)
+
+
+@pytest.fixture
+def synthetic_literature(monkeypatch):
+    anchors = [{
+        "id": "LIT-TEST",
+        "source_id": "LIT-TEST",
+        "verified": True,
+        "query_output_tokens": 100,
+        "value": {"mid": 2},
+        "co2_g_per_query": {"mid": 1},
+    }]
+    monkeypatch.setattr(
+        literature, "_load_yaml_list_robust",
+        lambda path: anchors if path == LITERATURE_ANCHORS_PATH else [],
+    )
+    doc = {"models": [{
+        "slug": "vendor/model",
+        "wh_per_output_token": {"low": 0.01, "mid": 0.02, "high": 0.03},
+        "pue": 1,
+        "carbon_intensity_gco2_kwh": 500,
+    }]}
+    return anchors, doc
+
+
+@pytest.mark.parametrize(("wh", "co2", "status"), [
+    (2, 1, "pass"),
+    (1, 0.5, "pass"),
+    (3, 1.5, "pass"),
+    (2, 0.49, "flag"),
+    (2, 1.51, "flag"),
+    (0.99, 1, "flag"),
+    (3.01, 1, "flag"),
+    (0.99, 0.49, "flag"),
+])
+def test_verified_anchor_requires_both_bands(synthetic_literature, tmp_path, wh, co2, status):
+    anchors, doc = synthetic_literature
+    anchors[0]["value"]["mid"] = wh
+    anchors[0]["co2_g_per_query"]["mid"] = co2
+    record, = validate_literature(doc, out_path=tmp_path / "validation.json")["literature_anchors"]
+    assert record["band"] == {"low": 1, "mid": 2, "high": 3}
+    assert record["co2_band"] == {"low": 0.5, "mid": 1, "high": 1.5}
+    assert record["status"] == status
+
+
+@pytest.mark.parametrize("token_count", [None, 0, -1, "invalid", "nan", "inf"])
+def test_invalid_token_count_is_explicitly_skipped(synthetic_literature, tmp_path, token_count):
+    anchors, doc = synthetic_literature
+    # A valid following anchor must still be evaluated.
+    anchors.append({**anchors[0], "id": "LIT-NEXT"})
+    if token_count is None:
+        del anchors[0]["query_output_tokens"]
+    else:
+        anchors[0]["query_output_tokens"] = token_count
+    out = tmp_path / "validation.json"
+    records = validate_literature(doc, out_path=out)["literature_anchors"]
+    assert len(records) == 2
+    assert records[0]["id"] == "LIT-TEST"
+    assert records[0]["status"] == "skip"
+    assert "query_output_tokens" in records[0]["reason"]
+    assert records[0]["band"] is None
+    assert records[0]["used"]["query_output_tokens"] == token_count
+    assert records[1]["status"] == "pass"
+    assert json.loads(out.read_text())["literature_anchors"] == records
