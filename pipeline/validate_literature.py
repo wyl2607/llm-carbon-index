@@ -5,8 +5,9 @@ published literature anchors. Emits data/output/validation.json for consumption
 by tests and future reporting.
 
 - Every anchor has source_id (LIT-*) resolved in test.
-- verified:true anchors perform band containment (low <= lit_mid <= high); out-of-band
-  is recorded as status="flag" (finding to surface, not test failure).
+- verified:true anchors require containment in Wh and, when supplied, CO₂ bands;
+  out-of-band is recorded as status="flag" (finding to surface, not test failure).
+- Missing or nonpositive query_output_tokens produce status="skip" with a reason.
 - verified:false (LIT-OPENAI) is report-only: status="report_only", excluded from asserts.
 - All file reads are robust: any single failure skips only the affected anchor or
   falls back; never aborts the whole validation.
@@ -21,6 +22,7 @@ Side effect: writes data/output/validation.json (alongside other outputs).
 from __future__ import annotations
 
 import json
+import math
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -199,8 +201,8 @@ def _derive_co2_g_per_query_band(
 def validate_literature(doc: dict | None = None, *, out_path: Path = VALIDATION_PATH) -> dict:
     """Core entrypoint. Returns validation report dict; writes out_path as side effect.
 
-    If reading anchors/crosswalk/doc/intensity fails for a given anchor, that anchor
-    is skipped (status omitted for it) and processing continues.
+    Missing or invalid token counts are reported as status="skip" with a reason.
+    Other per-anchor read failures omit that anchor and processing continues.
 
     out_path defaults to the committed data/output/validation.json; tests inject a
     tmp_path so they never overwrite the committed artifact.
@@ -220,8 +222,34 @@ def validate_literature(doc: dict | None = None, *, out_path: Path = VALIDATION_
             src = a.get("source_id")
             verified = bool(a.get("verified", True))
             metric = a.get("metric", "wh_per_query")
-            # No token count means the anchor cannot be scaled; skip it (see except).
-            qtok = float(a["query_output_tokens"])
+            # An undefined workload cannot be compared: never invent a token count.
+            raw_qtok = a.get("query_output_tokens")
+            try:
+                qtok = float(raw_qtok)
+            except (TypeError, ValueError):
+                qtok = None
+            if qtok is None or not math.isfinite(qtok) or qtok <= 0:
+                reason = (
+                    "query_output_tokens is missing"
+                    if raw_qtok is None
+                    else f"query_output_tokens must be finite and > 0, got {raw_qtok!r}"
+                )
+                results.append({
+                    "id": aid,
+                    "anchor": {
+                        "metric": metric,
+                        "value": a.get("value") or {},
+                        "co2_g_per_query": a.get("co2_g_per_query"),
+                    },
+                    "band": None,
+                    "status": "skip",
+                    "reason": reason,
+                    "source_id": src,
+                    "verified": verified,
+                    "used": {"query_output_tokens": raw_qtok},
+                    "note": a.get("note"),
+                })
+                continue
             val = a.get("value") or {}
             lit_mid = float(val.get("mid", 0.0))
 

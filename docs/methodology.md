@@ -270,9 +270,10 @@ For each anchor the harness:
 2. When no exact high-parameter dense model is present in the index, it falls back to the corresponding `parameter_class_fallback` band from `intensity.yaml` (large-class for BLOOM-scale workloads). This guarantees a usable band even as the model catalogue evolves.
 3. Scales the selected `wh_per_output_token` Range by the anchor's documented `query_output_tokens` (representative output-side tokens for that literature workload definition) to produce a project `band` in Wh/query.
 4. Where the anchor supplies a grid/PUE-sensitive `co2_g_per_query`, a parallel CO₂ band is derived using the matched model's (or default) `pue` and `carbon_intensity_gco2_kwh`.
-5. Containment is tested as `band.low <= anchor_mid <= band.high`. A flag (out-of-band) is recorded as an explicit finding, never silently accepted.
+5. Containment requires `band.low <= anchor_mid <= band.high` for Wh and, when the anchor supplies CO₂, for the CO₂ band as well. A flag (out-of-band) is recorded as an explicit finding, never silently accepted.
 
 The emitted `data/output/validation.json` contains one record per anchor with `{id, anchor, band, co2_band?, status, source_id, verified, used, note}`.
+An anchor with missing, nonpositive, or invalid `query_output_tokens` has `status: "skip"`, an explicit `reason`, and `band: null`; no substitute token count is used.
 
 ### Why the harness matters
 Literature numbers differ for well-understood reasons:
