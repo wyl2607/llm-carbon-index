@@ -23,7 +23,7 @@ from pipeline.config import (
     VENDOR_CLAIMS_PATH,
 )
 from pipeline.energy import energy_kwh, idle_for_slug, wh_per_output_token
-from pipeline.grid import carbon_intensity
+from pipeline.grid import carbon_intensity, unmapped_annual_intensity
 from pipeline.ranges import Range
 from pipeline.slugs import normalize_slug
 from pipeline.tokens import input_tokens, output_tokens
@@ -137,6 +137,7 @@ def estimate(
     market_residual_floor = float(_mrf)
 
     results: list[ModelEstimate] = []
+    unmapped_grid: tuple[Range, str] | None = None
 
     for rec in records:
         if rec.get("is_other"):
@@ -164,8 +165,10 @@ def estimate(
         else:
             display_name = slug
             origin = "OTHER"
-            open_or_closed = "open"
-            region = "us-east"
+            # Existing schema has only open/closed. Treat unknowns as assumed
+            # closed (flagged below), without guessing a vendor from the slug.
+            open_or_closed = "closed"
+            region = "default"
             assumed_provider = None
 
         # 1. tokens (A2): output drives decode, input drives prefill (E-PREFILL)
@@ -187,8 +190,15 @@ def estimate(
         )
 
         # 4. grid (live or annual labelled + provenance source_id; replayable in verify)
-        #    L2: live only if key+zone at call time; published runs use annual exclusively.
-        gco2, grid_src, grid_source_id = grid_for(region)
+        # Unmapped locations never borrow a live reading for an assumed region.
+        grid_range: Range | None = None
+        if cw is None:
+            if unmapped_grid is None:
+                unmapped_grid = unmapped_annual_intensity()
+            grid_range, grid_source_id = unmapped_grid
+            gco2, grid_src = grid_range.mid, "annual_factor"
+        else:
+            gco2, grid_src, grid_source_id = grid_for(region)
 
         # 5. PUE as a band (A4 revised). A known provider PUE centres the band's mid;
         #    low/high come from the Uptime-informed global band.
@@ -199,7 +209,7 @@ def estimate(
         pue = pue_mid  # representative scalar emitted for display/scenario
 
         # 6. Operational CO2 (location-based), PUE band widens the spread
-        co2_r = co2_kg(energy_r, gco2, model_pue_range)
+        co2_r = co2_kg(energy_r, grid_range or gco2, model_pue_range)
 
         # 6b. Embodied (amortised manufacturing) CO2 + full-lifecycle total (C-EMBODIED)
         co2_embodied_r = embodied_co2_kg(co2_r, embodied_ratio)
@@ -230,6 +240,7 @@ def estimate(
             # Phase 6E: top-list slug absent from model_crosswalk.yaml. Flag it so it is
             # never silently bucketed as "modeled"; output.py quantifies the unmapped %.
             flags.append("UNMAPPED_SLUG")
+            flags.append("ASSUMED_REGION")
         if grid_src == "annual_factor":
             flags.append("FALLBACK_GRID_ANNUAL")
         if open_or_closed == "closed":
@@ -271,6 +282,8 @@ def estimate(
             "water_liters": water_r.to_dict(),
             "flags": uniq_flags,
         }
+        if grid_range is not None:
+            est["carbon_intensity_gco2_kwh_range"] = grid_range.to_dict()
         results.append(est)
 
     return results
