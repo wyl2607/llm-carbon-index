@@ -309,16 +309,20 @@ Artificial Analysis's intelligence-vs-price frontier. Implementation: `pipeline/
 (`compute_frontier` / `annotate_models` / `compute_fleet_rightsizing`), wired into `build_output`.
 
 **The two axes.**
-- **X — capability**: the Artificial Analysis Intelligence Index v4.1 (0–100 composite), a pinned, cited
-  snapshot in `data/model_capability.yaml` (source `Q-AAII-V41`, accessed 2026-06-19; the index drifts
-  weekly → snapshot, not a live pull). Each value is transcribed from the public leaderboard at the
-  model's **maximum reasoning effort** (the configuration AA ranks on); none is estimated. Scores are
+- **X — capability**: the Artificial Analysis Intelligence Index v4.3.2 (0–100 composite), a pinned, cited
+  snapshot in `data/model_capability.yaml` (source `Q-AAII-V41`, accessed 2026-10-24; the index drifts
+  weekly → snapshot, not a live pull). Each value is transcribed from the public leaderboard or
+  linked model page at the model's **maximum reasoning effort** (the configuration AA ranks on); none is estimated. Scores are
   mapped to each OpenRouter slug via the `capability_key` field in `data/model_crosswalk.yaml`. Models
   with no published score get `capability_index: null` + flag `FALLBACK_CAPABILITY` and are excluded
   from frontier definition. LMArena Elo may be stored as an optional cross-check but is **not** the axis.
 - **Y — energy intensity**: `energy_wh_per_mtok = wh_per_output_token × 1e6`, carried as a
   `{low, mid, high}` band. The frontier is a property of the *model*, not of how much it is used, so
   traffic enters only in the fleet roll-up. The frontend plots this on a log scale.
+
+The October refresh changes the observed AA version from v4.1.1 to v4.3.2; score
+changes across these pins must not be read as model capability regression. See
+[transcription evidence and comparability caveat](aa-snapshot-2026-10-24.md).
 
 **Frontier definition (Pareto).** In the plane (capability ↑ better, intensity ↓ better) model **M**
 is on the frontier iff no other *eligible* model **N** satisfies
