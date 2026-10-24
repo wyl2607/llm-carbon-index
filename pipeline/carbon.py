@@ -16,7 +16,9 @@ from pipeline.embodied import physical_embodied_co2_kg as _physical_embodied_imp
 from pipeline.ranges import Range
 
 
-def co2_kg(energy: Range, gco2_per_kwh: float, pue: Union[float, Range]) -> Range:
+def co2_kg(
+    energy: Range, gco2_per_kwh: Union[float, Range], pue: Union[float, Range]
+) -> Range:
     """Compute operational CO2 (kg) as energy_kWh * PUE * gCO2/kWh / 1000.
 
     The final /1000 converts (kWh * g/kWh) -> kg.
@@ -24,7 +26,7 @@ def co2_kg(energy: Range, gco2_per_kwh: float, pue: Union[float, Range]) -> Rang
 
     `pue` may be a scalar OR a Range (ASSUMPTIONS.md#A4 revised to a band): when a
     Range, `energy * pue` multiplies endpoint-wise, conservatively widening the
-    band. `gco2_per_kwh` is a scalar (from grid.py).
+    band. `gco2_per_kwh` can also be a Range for an assumed serving region.
     """
     # Apply PUE to the (IT) energy to get facility energy, then grid factor.
     # energy (kWh) * pue * gco2 (g/kWh) / 1000 = kg CO2eq

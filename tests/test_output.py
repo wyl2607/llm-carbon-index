@@ -424,7 +424,7 @@ def test_golden_file_stable_output_excluding_generated_at(monkeypatch, tmp_path)
     )
 
     # Basic presence and values
-    assert doc["methodology_version"] == "0.9.2"
+    assert doc["methodology_version"] == "0.10.0"
     assert doc["generated_at"] == "2026-06-15T00:00:00Z"
     assert doc["data_date"] == GOLDEN_DATE
     assert doc["source_citation"] == (
