@@ -11,6 +11,7 @@ from pathlib import Path
 
 import jsonschema
 import pytest
+import yaml
 
 # Make local pipeline package importable (matches other test files).
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -19,6 +20,48 @@ import pipeline.config as cfg
 from pipeline.estimate import estimate
 from pipeline.output import build_output, validate, write_esg_export, write_outputs
 from pipeline.types import NormalizedRecord
+
+
+@pytest.mark.parametrize(("content", "error"), [
+    (None, FileNotFoundError),
+    ("pue: [", yaml.YAMLError),
+    ("- 1\n- 2\n", ValueError),
+    ("", ValueError),
+    ("{}", KeyError),
+])
+def test_methodology_failure_aborts_estimation_and_output(tmp_path, monkeypatch, content, error):
+    factors_path = tmp_path / "factors.yaml"
+    if content is not None:
+        factors_path.write_text(content, encoding="utf-8")
+    monkeypatch.setattr("pipeline.estimate.METHODOLOGY_FACTORS_PATH", factors_path)
+    monkeypatch.setattr(cfg, "METHODOLOGY_FACTORS_PATH", factors_path)
+    with pytest.raises(error):
+        estimate([])
+    with pytest.raises(error):
+        build_output([], [], "2026-10-01")
+
+
+def test_published_assumptions_follow_methodology_yaml(tmp_path, monkeypatch):
+    baseline = build_output([], [], "2026-10-01")["assumptions"]
+    factors = yaml.safe_load(cfg.METHODOLOGY_FACTORS_PATH.read_text(encoding="utf-8"))
+    factors["pue"].update(low=1.2, mid=1.3, high=1.6)
+    factors["prefill_alpha"].update(low=0.05, mid=0.15, high=0.25)
+    factors["embodied_ratio"].update(low=0.2, mid=0.3, high=0.4)
+    factors["water"]["onsite_wue"].update(low=0.4, mid=1.0, high=1.9)
+    factors["water"]["offsite_ewif"].update(low=2.1, mid=3.2, high=4.4)
+    factors_path = tmp_path / "factors.yaml"
+    factors_path.write_text(yaml.safe_dump(factors), encoding="utf-8")
+    monkeypatch.setattr(cfg, "METHODOLOGY_FACTORS_PATH", factors_path)
+    doc = build_output([], [], "2026-10-01")
+    assert doc["assumptions"] == {
+        "input_output_ratio": "80:20",
+        "pue_band": "1.2 / 1.3 / 1.6",
+        "prefill_alpha": "0.05 / 0.15 / 0.25",
+        "embodied_ratio_of_operational": "0.2 / 0.3 / 0.4",
+        "water_l_per_kwh": "onsite 0.4/1.0/1.9 + offsite EWIF 2.1/3.2/4.4",
+    }
+    assert doc["assumptions"].keys() == baseline.keys()
+    validate(doc)
 
 # --- temp data matching test_estimate style (subset, internally consistent) ---
 
