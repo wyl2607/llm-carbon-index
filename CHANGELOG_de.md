@@ -4,6 +4,11 @@
 
 Alle bemerkenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
+## [0.10.0] - 2026-09-30 (Energiebandlücke & nicht zugeordneter Netz-Fallback)
+### Geändert
+- **Neues `E-CLASS-GAP` Fallback-Band für 15 < aktive Parameter ≤ 30B** (0.0005 / 0.00245 / 0.012 Wh pro Ausgabe-Token), eingeklammert von den Klassen SMALL und LARGE; Bänder enthalten jetzt `min_active_params_b`. Zuvor fielen Modelle mit 16B/18B aktiven Parametern in E-CLASS-LARGE, das für 30–100B bestimmt ist (#149).
+- **Nicht zugeordnete Slugs verwenden einen breiten jährlichen Netzfaktor** (`C-GRID-UNMAPPED-ANNUAL`), der alle benannten Regionen umfasst, anstatt standardmäßig das Live-Netz für US-Ost zu verwenden. Nicht zugeordnete Modelle erhalten die Flags `ASSUMED_REGION` und `CLOSED_MODEL_ASSUMED`, und ihr Datenverkehr wird von `grid_live_fraction` ausgeschlossen (#149).
+
 ## [0.6.2] - 2026-06-16 (Phase 7 - Deutsch)
 ### Hinzugefügt
 - Dreisprachige Unterstützung (EN, ZH, DE) mit Deutsch als Standard im Dashboard.

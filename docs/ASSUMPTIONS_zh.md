@@ -106,6 +106,7 @@ P6 引入可调工况乘子（取代固定 Wh/token 假设），以捕捉批大�
 - **C-GRID-CN-NORTH-537** (Phase 2 seed) — "cn-north" 的 537 gCO₂eq/kWh。*来源：* Ember 2023 China（全国年均）。*不确定性：* 高（中国煤炭份额依省份/年份变化）；中国电网通常比美欧高碳。*使用位置：* annual_factors.yaml；A1 种子中所有 CN 来源模型。*最后审核：* 2026-06-15。
 - **C-GRID-EU-27-242** (Phase 2 seed) — "eu-27" 的 242 gCO₂eq/kWh。*来源：* Ember 2023 EU-27 年均。*不确定性：* 年均聚合；实际服务区（DE/FR/NL）可能低得多。*使用位置：* annual_factors.yaml 作为可能回退。*最后审核：* 2026-06-15。
 - **C-GRID-DEFAULT-400** (Phase 2 seed) — 保守复合 400 gCO₂eq/kWh。*来源：* 受 Ember 全球 2023 混合（种子中的美/欧/中因子）的数量级复合启发（非单一官方统计）。*不确定性：* 非常高；仅在 annual_factors 表中缺少区域键时使用。*使用位置：* annual_factors.yaml "default" 条目；grid.py 最后手段路径。*最后审核：* 2026-06-15。
+- **C-GRID-UNMAPPED-ANNUAL** (methodology 0.10.0) — 未知服务位置的年度区域区间。*数值：* low = 所有已知区域的最小值，high = 最大值，mid = default。*原因：* 未知/假设位置不能借用默认区域的实时电网读数，因为其真实区域未知。*使用位置：* grid.py unmapped_annual_intensity 回退。*最后审核：* 2026-09-30。
 - **C-GRID-\*** — 额外区域（例如 Ember / IEA 用于欧盟/亚洲）随 `annual_factors.yaml` 增长而添加。优先 Electricity Maps 实时数据；这些是文档化的回退。
 
 ### C-EMBODIED — 嵌入式（制造）碳  *(新增 v0.2)*

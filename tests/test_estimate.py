@@ -214,6 +214,12 @@ def test_unknown_model_fallback_no_crash(monkeypatch, tmp_path):
     # Phase 6E: absent from the crosswalk → flagged UNMAPPED_SLUG with a neutral identity,
     # never silently given a real provider/origin.
     assert "UNMAPPED_SLUG" in m["flags"]
+    assert "ASSUMED_REGION" in m["flags"]
+    assert "CLOSED_MODEL_ASSUMED" in m["flags"]
+    assert "FALLBACK_GRID_ANNUAL" in m["flags"]
+    assert m["open_or_closed"] == "closed"
+    assert m["grid_source"] == "annual_factor"
+    assert "carbon_intensity_gco2_kwh_range" in m
     assert m["origin"] == "OTHER"
 
 

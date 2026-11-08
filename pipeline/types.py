@@ -11,18 +11,20 @@ every such quantity is a `RangeDict` with low <= mid <= high.
 
 from __future__ import annotations
 
-from typing import Literal, TypedDict
+from typing import Literal, NotRequired, TypedDict
 
 Origin = Literal["CN", "US", "EU", "OTHER"]
 OpenOrClosed = Literal["open", "closed"]
 EnergySource = Literal["ai_energy_score", "ecologits", "parameter_class_fallback"]
-GridSource = Literal["electricity_maps_live", "annual_factor"]
+GridSource = Literal["electricity_maps_live", "eia_live", "annual_factor"]
 # flags vocabulary (DATA_SCHEMAS §Conventions). ILLUSTRATIVE_SAMPLE is dev-only.
 Flag = Literal[
     "UNKNOWN_MODEL",
     "UNMAPPED_SLUG",
     "FALLBACK_ENERGY_CLASS",
+    "FALLBACK_ENERGY_BAND_GAP",
     "FALLBACK_GRID_ANNUAL",
+    "ASSUMED_REGION",
     "CLOSED_MODEL_ASSUMED",
 ]
 
@@ -63,6 +65,7 @@ class ModelEstimate(TypedDict):
     energy_source_id: str
     region: str
     carbon_intensity_gco2_kwh: float
+    carbon_intensity_gco2_kwh_range: NotRequired[RangeDict]
     grid_source: GridSource
     grid_source_id: str
     pue: float
