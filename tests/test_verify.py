@@ -67,6 +67,23 @@ def test_verify_pass_on_untouched_golden(golden_env: str, capsys: pytest.Capture
     assert f"PASS {golden_env}" in capsys.readouterr().out
 
 
+def test_main_prints_coverage_summary_without_changing_exit_code(
+    golden_env: str, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    hist_path = config.OUTPUT_HISTORY_DIR / f"{golden_env}.json"
+    doc = json.loads(hist_path.read_text(encoding="utf-8"))
+    doc["totals"]["unmapped_slugs"] = [{"slug": "example/model", "total_tokens": 1}]
+    doc["totals"]["unmapped_traffic_fraction"] = 0.125
+    hist_path.write_text(json.dumps(doc, indent=2), encoding="utf-8")
+    monkeypatch.setattr(verify_mod, "reproduce", lambda _: doc)
+
+    assert verify_mod.main([golden_env]) == 0
+    assert (
+        "Coverage summary: 1 date(s) with UNMAPPED_SLUG warnings; max unmapped traffic: 12.5%."
+        in capsys.readouterr().out
+    )
+
+
 def test_verify_fails_with_diff_when_a_number_is_tampered(
     golden_env: str, capsys: pytest.CaptureFixture
 ) -> None:
