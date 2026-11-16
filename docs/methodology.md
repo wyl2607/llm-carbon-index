@@ -243,6 +243,15 @@ Jegham et al. (2025) benchmarked energy, water and carbon across more than thirt
 
 The works above supply the empirical grounding and modeling precedent for the equations, ranges and provenance rules used here. Important gaps remain unclosed: dynamic batching and instantaneous utilization regimes, MoE routing overhead, and a standardized, provider-auditable methodology for embodied-carbon factors. These limitations are acknowledged as explicit future-work items. The dashboard produces estimates with uncertainty ranges; it makes no claim to direct measurement precision.
 
+The table below positions this project against the three openly documented tools closest to it. Cells are limited to what each project's own documentation states; a property the documentation does not state is marked 未核实.
+
+| Project | What it estimates | Energy basis | How this project differs |
+| --- | --- | --- | --- |
+| **This project** (LLM Carbon Index) | CO₂ of OpenRouter-visible LLM inference, per model per day; operational headline plus full-lifecycle total | Token counts from OpenRouter rankings × Wh per output token from measured anchors or parameter-class fallback, plus a prefill term; PUE band → grid intensity; amortised embodied term added in v0.2 | — |
+| **ML CO2 Impact** [10] | Carbon emitted by an ML/compute experiment specified as hardware type, hours used, cloud provider and region [10] | Power × runtime × grid carbon intensity; the calculator states that it does **not** apply data-center PUE, and it defaults to yearly/static grid averages [10] | Inputs are token volumes for live inference traffic, not GPU-hours for one experiment; reports `{min, max}` ranges rather than a single raw/offset pair; includes an amortised embodied term (ML CO2 Impact's embodied treatment is 未核实); uses live Electricity Maps/EIA grid data when keys are present instead of only static averages |
+| **AI Energy Score** [4][11] | Relative GPU energy efficiency of AI models on standardized tasks, in Wh per 1,000 queries, summarized as a 1–5 star tier [11] | Benchmarked on NVIDIA H100 with CodeCarbon; the score uses GPU energy only, with CPU/RAM and PUE listed as separate terms to add [11] | Estimates CO₂ for live OpenRouter traffic per model/day rather than benchmarking a model in isolation; reports uncertainty ranges instead of a star tier; includes an amortised embodied term (the score covers GPU energy only); applies a grid carbon factor, which the score itself does not estimate |
+| **EcoLogits** [5][12] | Environmental impacts of a generative-AI inference request — energy, carbon and water, usage plus embodied [12] | Parametric GPU-energy model fitted to the ML.ENERGY Leaderboard (active parameters, batch size), plus server energy and PUE; country-level average electricity-mix factors; embodied impacts via BoaviztAPI [12] | Also per request, but this project aggregates OpenRouter-visible traffic per model/day across providers; uses EcoLogits-class assumptions as closed-model anchors; applies its own PUE band, live/annual grid fallback and embodied ratio. Both report ranges; the aggregation and grid treatment differ, and EcoLogits grid factors are country averages rather than real-time [12] |
+
 ## 13. References
 
 [1] Strubell, Ganesh, McCallum (2019). Energy and Policy Considerations for Deep Learning in NLP. https://arxiv.org/abs/1906.02243
@@ -254,6 +263,9 @@ The works above supply the empirical grounding and modeling precedent for the eq
 [7] Jegham et al. (2025). How Hungry is AI? Benchmarking Energy, Water, and Carbon Footprint of LLM Inference. https://arxiv.org/abs/2505.09598
 [8] Li et al. (2023). Making AI Less "Thirsty": Water Footprint of LLMs. https://arxiv.org/abs/2304.03271
 [9] Google (2025). AI and Energy: A Technical Note on Inference Energy. https://arxiv.org/abs/2508.15734
+[10] Lacoste, Luccioni, Schmidt, Dandres (2019). Quantifying the Carbon Emissions of Machine Learning — ML CO2 Impact. https://mlco2.github.io/impact/
+[11] Hugging Face AI Energy Score documentation. https://huggingface.github.io/AIEnergyScore/
+[12] EcoLogits methodology: Environmental Impacts of LLM Inference. https://ecologits.ai/latest/methodology/llm_inference/
 
 ## 14. Literature cross-validation & citations (Phase 6P)
 
