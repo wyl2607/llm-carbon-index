@@ -5,6 +5,13 @@ description = "Model metadata join keys (capability_key + slug values) are table
 regexes = [
   '''(?i)capability_key''',
 ]
+# Path exemptions. Every file under data/ and docs/, plus any path whose final
+# component starts with CHANGELOG, is skipped by gitleaks. These trees hold bulk
+# metadata and long documentation tables whose non-secret identifiers otherwise
+# trigger false positives. Known risk: a real credential accidentally committed
+# under one of these paths would not be reported. The rules above and below are
+# deliberately unchanged; tightening them is a separate, user-approved decision.
+# Run the pre-commit self-check in SECURITY.md before committing anything there.
 paths = [
   '''(?i)(^|/)data/''',
   '''(?i)(^|/)docs/''',

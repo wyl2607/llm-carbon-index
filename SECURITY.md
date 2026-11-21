@@ -10,6 +10,21 @@ repository secrets.
 If you discover a committed secret, treat it as compromised: rotate the key
 immediately, then open a private report (below) so we can purge it from history.
 
+## Before you commit
+
+`.gitleaks.toml` allowlists every path under `data/` and `docs/`, plus any path
+whose final component starts with `CHANGELOG`. That keeps bulk metadata and
+documentation tables from tripping the scanner, but it also means gitleaks will
+**not** report a real secret committed under those paths. Self-check before
+committing changes there:
+
+```bash
+git grep -nE "(sk-|api_key|ELECTRICITYMAPS|EIA_API)" -- . ':!*.md'
+```
+
+Review every match by hand; this is a heuristic, not a replacement for the
+`gitleaks` CI job.
+
 ## Reporting a vulnerability
 
 Please report security issues privately rather than in a public issue:
