@@ -39,6 +39,15 @@ def test_grid_tier_mapping():
     assert grid_tier(_model("a", 1, "ecologits", "electricity_maps_live")) == "live"
     assert grid_tier(_model("b", 1, "ecologits", "annual_factor")) == "annual_fallback"
 
+    # Unmapped / assumed locations cannot count as live
+    m = _model("c", 1, "ecologits", "electricity_maps_live")
+    m["flags"] = ["UNMAPPED_SLUG"]
+    assert grid_tier(m) == "annual_fallback"
+
+    m2 = _model("d", 1, "ecologits", "eia_live")
+    m2["flags"] = ["ASSUMED_REGION"]
+    assert grid_tier(m2) == "annual_fallback"
+
 
 def test_mixed_fixture_is_token_weighted():
     """Hand-built day with mixed sources yields the expected token-weighted fractions.

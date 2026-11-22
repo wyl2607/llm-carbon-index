@@ -28,6 +28,25 @@ from pipeline.config import (
     eia_api_key,
     electricitymaps_api_key,
 )
+from pipeline.ranges import Range
+
+
+def unmapped_annual_intensity() -> tuple[Range, str]:
+    """Annual regional envelope for an undisclosed serving location, without live I/O.
+
+    C-GRID-UNMAPPED-ANNUAL (ASSUMPTIONS.md): endpoints are the min/max of all
+    named regions in annual_factors.yaml; mid is its sourced composite default.
+    Missing methodology data fails the run rather than inventing a location.
+    """
+    annual = _load_annual()
+    regional = [float(e["gco2_per_kwh"]) for e in annual if e["region"] != "default"]
+    default = next((e for e in annual if e["region"] == "default"), None)
+    if not regional or default is None:
+        raise ValueError("Unmapped grid envelope requires named annual regions and a default")
+    return (
+        Range(min(regional), float(default["gco2_per_kwh"]), max(regional)),
+        "C-GRID-UNMAPPED-ANNUAL",
+    )
 
 
 def _first_present(payload: dict, *keys: str):

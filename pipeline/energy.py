@@ -6,6 +6,8 @@ No I/O here; callers (estimate) supply parsed data.
 
 from __future__ import annotations
 
+from math import sqrt
+
 from pipeline.ranges import Range
 from pipeline.slugs import normalize_slug
 from pipeline.types import EnergySource
@@ -33,8 +35,9 @@ def wh_per_output_token(
     Measured rows always priority (Wave 1).
 
     Returned energy_source is always a valid EnergySource literal. source_id is the
-    provenance key (Phase 6G). Flags contain UNKNOWN_MODEL / FALLBACK_ENERGY_CLASS only
-    on the fallback path (no silent 0). Model-specific numbers live only in intensity.yaml.
+    provenance key (Phase 6G). Fallback flags include FALLBACK_ENERGY_BAND_GAP when
+    neighbouring sourced classes bracket an unmeasured size. Model-specific numbers
+    live only in intensity.yaml.
     """
     flags: list[str] = []
     norm = normalize_slug(slug)
@@ -84,6 +87,8 @@ def wh_per_output_token(
             if active_b is None:
                 active_b = cw_entry.get("params_b")
         band = _choose_fallback_band(bands, active_params_b=active_b)
+        if band.get("source_id") == "E-CLASS-GAP":
+            flags.append("FALLBACK_ENERGY_BAND_GAP")
         whd = band["wh_per_output_token"]
         return (
             Range(whd["low"], whd["mid"], whd["high"]),
@@ -102,6 +107,8 @@ def wh_per_output_token(
         if active_b is None:
             active_b = cw_entry.get("params_b")
     band = _choose_fallback_band(bands, active_params_b=active_b)
+    if band.get("source_id") == "E-CLASS-GAP":
+        flags.append("FALLBACK_ENERGY_BAND_GAP")
     whd = band["wh_per_output_token"]
     return (
         Range(whd["low"], whd["mid"], whd["high"]),
@@ -151,6 +158,9 @@ def _choose_fallback_band(bands: list[dict], active_params_b: float | None = Non
       min_active_params_b < active <= max_active_params_b (min defaults to 0; total params
       ignored for MoE). 230B-total/10B-active lands in SMALL, 18B-active in the 15-30B gap
       band rather than the 30-100B LARGE class.
+    - If no declared band covers a size between two bands: span the smaller
+      band's low and larger band's high, with the geometric mean of their mids
+      (ASSUMPTIONS.md#E-CLASS-GAP). Explicit gap rows keep their documented mid.
     - Else (unknown model, no cw size info): pick most conservative (largest max_active)
       band.
 
@@ -174,6 +184,29 @@ def _choose_fallback_band(bands: list[dict], active_params_b: float | None = Non
         if candidates:
             # tightest sufficient band (by max_active)
             return min(candidates, key=lambda b: (b.get("max_active_params_b") or 0))
+        smaller = [b for b in bands if (b.get("max_active_params_b") or 0) < active_params_b]
+        larger = [b for b in bands if (b.get("min_active_params_b") or 0) >= active_params_b]
+        if smaller and larger:
+            lower = max(smaller, key=lambda b: b.get("max_active_params_b") or 0)
+            upper = min(larger, key=lambda b: b.get("min_active_params_b") or 0)
+            low_wh = lower["wh_per_output_token"]
+            high_wh = upper["wh_per_output_token"]
+            # E-CLASS-GAP documents this endpoint envelope + geometric midpoint;
+            # derive from adjacent sourced rows instead of inventing a new coefficient.
+            return {
+                "min_active_params_b": lower["max_active_params_b"],
+                "max_active_params_b": upper["min_active_params_b"],
+                "wh_per_output_token": {
+                    "low": low_wh["low"],
+                    "mid": sqrt(low_wh["mid"] * high_wh["mid"]),
+                    "high": high_wh["high"],
+                },
+                "source": (
+                    "ASSUMPTIONS.md#E-CLASS-GAP (bracketed by "
+                    f"{lower.get('source_id')} and {upper.get('source_id')})"
+                ),
+                "source_id": "E-CLASS-GAP",
+            }
         # model larger than any seeded band: fall back to largest (conservative)
     # unknown or no-size: conservative largest
     return max(bands, key=lambda b: b.get("max_active_params_b") or 0)

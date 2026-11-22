@@ -43,8 +43,11 @@ def energy_tier(model: ModelEstimate) -> str:
 def grid_tier(model: ModelEstimate) -> str:
     """Map a model's grid_source to its precision tier.
 
-    Returns "live" for any live source (electricity_maps_live or eia_live), else "annual_fallback".
+    Unmapped/assumed locations cannot count as live, even with a legacy live label.
+    Otherwise returns "live" for electricity_maps_live or eia_live.
     """
+    if {"UNMAPPED_SLUG", "ASSUMED_REGION"}.intersection(model.get("flags", [])):
+        return "annual_fallback"
     return "live" if model.get("grid_source") in _LIVE_GRID_SOURCES else "annual_fallback"
 
 
