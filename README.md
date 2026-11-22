@@ -51,9 +51,10 @@ after its scope check and required checks pass.
 
 Built strictly phase by phase ([`PLAN.md`](PLAN.md)); the authoritative phase
 ledger with commit hashes lives in [`specs/INDEX.md`](specs/INDEX.md).
-Current methodology version **0.8.0**; `main` is green (ruff · 186 pytest ·
-`make verify` byte-identical replay of all 76 published dates · web `tsc`+build ·
-57 vitest) and deployed.
+Current methodology version **0.9.2**; `main` is green (ruff · pytest ·
+`make verify` byte-identical replay of every published date · web `tsc`+build ·
+vitest) and deployed. Daily `chore(data)` commits are frequent; skip them with
+`git log --invert-grep --grep='chore(data)'`.
 
 | Phase | Scope | State |
 |---|---|---|
@@ -64,7 +65,7 @@ Current methodology version **0.8.0**; `main` is green (ruff · 186 pytest ·
 | 5 | Methodology doc + CI + deploy | ✅ done |
 | 6A–6E | Green scenarios · market-vs-location · history/Jevons · water (WUE) · coverage automation | ✅ done |
 | 6F–6I | Estimation-tier honesty · provenance ledger (no-unsourced-number gate) · reproducibility harness (`make verify`) · fairness + boundary | ✅ done |
-| 6J–6K | Measured per-token energy + idle term (`energy_measured_fraction` 0 → 0.29) · OAT sensitivity analysis | ✅ done |
+| 6J–6K | Measured per-token energy + idle term (current `energy_measured_fraction` is reported in `data/output/latest.json`) · OAT sensitivity analysis | ✅ done |
 | 6L–6R | Retrofuturist re-skin · ranking → tiering · physical embodied estimator · literature cross-validation · MoE active-param energy · dynamic regime/batching · ESG/CSRD Scope-2 export | ✅ done |
 
 ## Repository layout
@@ -95,7 +96,7 @@ llm-carbon-index/
 │   ├── provenance.py · snapshot.py · manifest.py · verify.py   # provenance + reproducibility (6G/6H)
 │   ├── validate_literature.py · output.py · run.py            # cross-validation, assembly, daily entrypoint
 │   └── README.md                                              # module map
-├── tests/                                        # 149 tests — full CO₂ chain + unit-conversion guards
+├── tests/                                        # full CO₂ chain + unit-conversion guards
 ├── web/                                          # Vite + React static dashboard (reads data/output/*.json)
 │   └── src/{components,lib,theme}                 # 6L retrofuturist theme; trilingual i18n (en/zh/de)
 ├── docs/                                         # methodology · DATA_SCHEMAS · ASSUMPTIONS · BOUNDARY · FAIRNESS (each ×3 langs)
@@ -120,7 +121,7 @@ See `docs/methodology.md` §11 for snapshot layout, `manifest.json` checksums, g
 ## Attribution
 
 - Rankings: `Source: OpenRouter (openrouter.ai/rankings), as of {date}`.
-- Grid intensity: EIA hourly (PJM for us-east when keyed) + Ember/IEA annual (fallback). Live paths exist; `grid_live_fraction = 0.0` in published goldens until a keyed run is committed (see `docs/methodology.md` §11a).
+- Grid intensity: EIA hourly (PJM for us-east when keyed) + Ember/IEA annual (fallback). Live grid accounts for `grid_live_fraction` (see `data/output/latest.json`); the remainder uses annual fallbacks (see `docs/methodology.md` §11a).
 - Energy: EcoLogits + Hugging Face AI Energy Score. See [`docs/methodology.md`](docs/methodology.md).
 
 ## License
