@@ -77,7 +77,7 @@ def reproduce(data_date: str) -> dict:
     )
 
 
-def verify_date(data_date: str) -> bool:
+def verify_date(data_date: str, coverage_percentages: list[float] | None = None) -> bool:
     """Return True if the reproduced doc matches the committed history (minus generated_at)."""
     hist_path = config.OUTPUT_HISTORY_DIR / f"{data_date}.json"
     if not snapshot_dir(data_date).exists():
@@ -89,6 +89,9 @@ def verify_date(data_date: str) -> bool:
 
     committed = json.loads(hist_path.read_text(encoding="utf-8"))
     reproduced = reproduce(data_date)
+    totals = reproduced.get("totals", {})
+    if coverage_percentages is not None and totals.get("unmapped_slugs"):
+        coverage_percentages.append(float(totals.get("unmapped_traffic_fraction", 0.0)) * 100.0)
 
     # L4 guard: methodology_version in goldens MUST match current METHODOLOGY_VERSION.
     # Schema/methodology-affecting changes require bumping + regenerating the golden
@@ -135,10 +138,21 @@ def main(argv: list[str] | None = None) -> int:
     dates = args or _all_dates()
     if not dates:
         print("verify: no dates to check (no history snapshots).")
+        print(
+            "Coverage summary: 0 date(s) with UNMAPPED_SLUG warnings; "
+            "max unmapped traffic: 0.0%."
+        )
         return 0
     ok = True
+    coverage_percentages: list[float] = []
     for d in dates:
-        ok = verify_date(d) and ok
+        ok = verify_date(d, coverage_percentages) and ok
+    max_unmapped = max(coverage_percentages, default=0.0)
+    print(
+        "Coverage summary: "
+        f"{len(coverage_percentages)} date(s) with UNMAPPED_SLUG warnings; "
+        f"max unmapped traffic: {max_unmapped:.1f}%."
+    )
     return 0 if ok else 1
 
 
