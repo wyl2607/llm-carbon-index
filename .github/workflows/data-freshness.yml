@@ -9,6 +9,13 @@
 # users actually receive.
 name: data-freshness
 
+# Guard the mapping work tracked in #113. Crosswalk additions raised
+# mapped_traffic_fraction from 0.504757 to 0.809176 on 2026-09-30 (see
+# docs/evidence/crosswalk-113-2026-09-30.md). Falling back below this floor
+# means more of the published total rests on the unmapped-traffic fallback.
+env:
+  MIN_MAPPED: "0.5"
+
 on:
   schedule:
     # 08:00 UTC — ~1.5h after pipeline-refresh (30 6 * * *), so a healthy run has
@@ -134,6 +141,57 @@ jobs:
             "\`\`\`" \
             "${{ steps.static.outputs.static_out }}" \
             "\`\`\`" \
+            "" \
+            "**Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}")
+          EXISTING=$(gh issue list --state open --limit 5 --json title,number \
+            --jq '.[] | select(.title == "'"$TITLE"'") | .number' | head -1)
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Assert mapped coverage
+        id: coverage
+        if: always()
+        run: |
+          set -euo pipefail
+
+          # Threshold lives in the top-level env block. This check is independent
+          # of the stale-data checks above so a coverage regression still reports
+          # even when freshness already failed.
+          MAPPED=$(python3 -c "import json;print(json.load(open('data/output/latest.json'))['totals']['mapped_traffic_fraction'])")
+          DATA_DATE=$(python3 -c "import json;print(json.load(open('data/output/latest.json'))['data_date'])")
+          FAIL=$(python3 -c \
+            "import sys;print(0 if float(sys.argv[1]) >= float(sys.argv[2]) else 1)" \
+            "$MAPPED" "$MIN_MAPPED")
+          echo "mapped_traffic_fraction=$MAPPED (minimum $MIN_MAPPED, data_date $DATA_DATE)"
+          {
+            echo "mapped=$MAPPED"
+            echo "min_mapped=$MIN_MAPPED"
+            echo "data_date=$DATA_DATE"
+            echo "coverage_failed=$FAIL"
+          } >> "$GITHUB_OUTPUT"
+          exit "$FAIL"
+
+      - name: Report low mapped coverage (open or update issue)
+        if: failure() && steps.coverage.outputs.coverage_failed == '1'
+        run: |
+          set -euo pipefail
+          TITLE="Mapped traffic coverage low"
+          BODY=$(printf '%s\n' \
+            "The share of measured traffic that resolves to a crosswalk entry has fallen below the gate." \
+            "" \
+            "- **mapped_traffic_fraction:** ${{ steps.coverage.outputs.mapped }} (minimum ${{ steps.coverage.outputs.min_mapped }})" \
+            "- **latest.json data_date:** ${{ steps.coverage.outputs.data_date }}" \
+            "" \
+            "This guards the mapping work in #113: unmapped traffic is estimated" \
+            "from an annual all-region envelope instead of a mapped model, so a" \
+            "lower mapped fraction means more of the published total rests on" \
+            "that fallback. Add sourced crosswalk entries rather than lowering" \
+            "\`MIN_MAPPED\`." \
             "" \
             "**Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}")
           EXISTING=$(gh issue list --state open --limit 5 --json title,number \
