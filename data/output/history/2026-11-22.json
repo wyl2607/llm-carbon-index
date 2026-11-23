@@ -1,0 +1,4218 @@
+{
+  "methodology_version": "0.10.0",
+  "generated_at": "2026-11-23T18:33:30.971945Z",
+  "data_date": "2026-11-22",
+  "source_citation": "Source: OpenRouter (openrouter.ai/rankings), as of 2026-11-22",
+  "scope_note": "Estimated CO2 footprint of LLM-inference traffic visible through OpenRouter. NOT global data-center emissions. All figures are estimates with uncertainty.",
+  "assumptions": {
+    "input_output_ratio": "80:20",
+    "pue_band": "1.1 / 1.25 / 1.56",
+    "prefill_alpha": "0.1 / 0.2 / 0.3",
+    "embodied_ratio_of_operational": "0.28 / 0.39 / 0.54",
+    "water_l_per_kwh": "onsite 0.3/0.9/1.8 + offsite EWIF 2.0/3.14/4.35"
+  },
+  "sources": [
+    {
+      "id": "C-GRID-EUROPE-WEST-230",
+      "title": "Ember Yearly Electricity Data",
+      "publisher": "Ember",
+      "url": "https://ember-energy.org",
+      "version": "2024",
+      "accessed": "2026-06-15"
+    },
+    {
+      "id": "C-GRID-MEE-2022",
+      "title": "2022年电力二氧化碳排放因子公告 (2024年第33号)",
+      "publisher": "生态环境部 + 国家统计局 (MEE + NBS, China)",
+      "url": "https://www.mee.gov.cn/xxgk2018/xxgk/xxgk01/202412/t20241226_1099413.html",
+      "version": "2022 (published 2024-12-20)",
+      "accessed": "2026-06-18"
+    },
+    {
+      "id": "C-GRID-UNMAPPED-ANNUAL",
+      "title": "Annual regional envelope for unmapped inference locations",
+      "publisher": "LLM Carbon Index (derived from EPA, Ember and MEE+NBS factors)",
+      "url": "https://github.com/wyl2607/llm-carbon-index/blob/main/data/grid/annual_factors.yaml",
+      "version": "0.10.0",
+      "accessed": "2026-09-30"
+    },
+    {
+      "id": "E-CLASS-GAP",
+      "title": "Bracketing band between E-CLASS-SMALL and E-CLASS-LARGE (15-30B active)",
+      "publisher": "LLM Carbon Index (derived)",
+      "url": "https://github.com/wyl2607/llm-carbon-index/issues/149",
+      "version": "0.9.0",
+      "accessed": "2026-09-22"
+    },
+    {
+      "id": "E-CLASS-LARGE",
+      "title": "AI Energy Score v2 + EcoLogits (30-100B synthesis)",
+      "publisher": "Hugging Face / GenAI Impact",
+      "url": "https://huggingface.co/spaces/AIEnergyScore",
+      "version": "v2",
+      "accessed": "2026-09-22"
+    },
+    {
+      "id": "E-CLASS-SMALL",
+      "title": "AI Energy Score v2 + EcoLogits (small-model synthesis)",
+      "publisher": "Hugging Face / GenAI Impact",
+      "url": "https://huggingface.co/spaces/AIEnergyScore",
+      "version": "v2",
+      "accessed": "2026-09-22"
+    },
+    {
+      "id": "E-DEEPSEEK-V4-FLASH",
+      "title": "AI Energy Score v2",
+      "publisher": "Hugging Face / Salesforce / CMU",
+      "url": "https://huggingface.co/spaces/AIEnergyScore",
+      "version": "v2",
+      "accessed": "2026-09-22"
+    },
+    {
+      "id": "E-DEEPSEEK-V4-PRO",
+      "title": "AI Energy Score v2",
+      "publisher": "Hugging Face / Salesforce / CMU",
+      "url": "https://huggingface.co/spaces/AIEnergyScore",
+      "version": "v2",
+      "accessed": "2026-09-22"
+    },
+    {
+      "id": "E-MINIMAX-M3",
+      "title": "AI Energy Score v2",
+      "publisher": "Hugging Face / Salesforce / CMU",
+      "url": "https://huggingface.co/spaces/AIEnergyScore",
+      "version": "v2",
+      "accessed": "2026-09-22"
+    },
+    {
+      "id": "GRID-EIA-PJM-HOURLY",
+      "title": "EIA Electricity Hourly Grid Monitor (RTO fuel-type data)",
+      "publisher": "U.S. Energy Information Administration",
+      "url": "https://api.eia.gov",
+      "version": "v2",
+      "accessed": "2026-06-18"
+    }
+  ],
+  "models": [
+    {
+      "slug": "deepseek/deepseek-v4.1-flash-20261017",
+      "display_name": "DeepSeek V4.1 Flash",
+      "origin": "CN",
+      "open_or_closed": "open",
+      "total_tokens": 8915886515240,
+      "est_output_tokens": 1783177303048,
+      "wh_per_output_token": {
+        "low": 0.0005,
+        "mid": 0.00245,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 1248224.1121336,
+        "mid": 7863811.90644168,
+        "high": 47075880.8004672
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-GAP",
+      "region": "cn-north",
+      "carbon_intensity_gco2_kwh": 678.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-MEE-2022",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 930925.5428292389,
+        "mid": 6664580.590709324,
+        "high": 49791217.60503815
+      },
+      "co2_kg_embodied": {
+        "low": 260659.15199218693,
+        "mid": 2599186.4303766363,
+        "high": 26887257.506720603
+      },
+      "co2_kg_total": {
+        "low": 1191584.694821426,
+        "mid": 9263767.02108596,
+        "high": 76678475.11175875
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 930925.5428292389,
+        "mid": 6664580.590709324,
+        "high": 49791217.60503815
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 3588644.3223841,
+        "mid": 39712250.127530485,
+        "high": 361895833.6535916
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "FALLBACK_ENERGY_BAND_GAP",
+        "FALLBACK_GRID_ANNUAL",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 500.0,
+        "mid": 2450.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "tencent/hy4-flash-20261116",
+      "display_name": "tencent/hy4-flash-20261116",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 6525998610115,
+      "est_output_tokens": 1305199722023,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 3654559.2216644003,
+        "mid": 11746797.498207001,
+        "high": 34457272.661407195
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 912543.4376496008,
+        "mid": 5873398.7491035005,
+        "high": 36444768.14851717
+      },
+      "co2_kg_embodied": {
+        "low": 255512.16254188825,
+        "mid": 2290625.5121503654,
+        "high": 19680174.800199274
+      },
+      "co2_kg_total": {
+        "low": 1168055.600191489,
+        "mid": 8164024.261253865,
+        "high": 56124942.94871645
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 912543.4376496008,
+        "mid": 5873398.7491035005,
+        "high": 36444768.14851717
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 10506857.76228515,
+        "mid": 59321327.365945354,
+        "high": 264890283.58456782
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "deepseek/deepseek-v4.1-flash-20260910",
+      "display_name": "DeepSeek V4.1 Flash",
+      "origin": "CN",
+      "open_or_closed": "open",
+      "total_tokens": 1922115043225,
+      "est_output_tokens": 384423008645,
+      "wh_per_output_token": {
+        "low": 0.0005,
+        "mid": 0.00245,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 269096.10605149996,
+        "mid": 1695305.4681244497,
+        "high": 10148767.428228
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-GAP",
+      "region": "cn-north",
+      "carbon_intensity_gco2_kwh": 678.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-MEE-2022",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 200691.87589320866,
+        "mid": 1436771.384235471,
+        "high": 10734148.333488192
+      },
+      "co2_kg_embodied": {
+        "low": 56193.72525009843,
+        "mid": 560340.8398518338,
+        "high": 5796440.100083624
+      },
+      "co2_kg_total": {
+        "low": 256885.6011433071,
+        "mid": 1997112.224087305,
+        "high": 16530588.433571815
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 200691.87589320866,
+        "mid": 1436771.384235471,
+        "high": 10734148.333488192
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 773651.3048980623,
+        "mid": 8561292.61402847,
+        "high": 78018649.60450274
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "FALLBACK_ENERGY_BAND_GAP",
+        "FALLBACK_GRID_ANNUAL",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 500.0,
+        "mid": 2450.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "z-ai/glm-5.3-flash-20260826",
+      "display_name": "Z.ai GLM-5.3 Flash",
+      "origin": "CN",
+      "open_or_closed": "open",
+      "total_tokens": 1780042519850,
+      "est_output_tokens": 356008503970,
+      "wh_per_output_token": {
+        "low": 0.0005,
+        "mid": 0.00245,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 249205.952779,
+        "mid": 1569997.5025077,
+        "high": 9398624.504808001
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-GAP",
+      "region": "cn-north",
+      "carbon_intensity_gco2_kwh": 678.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-MEE-2022",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 185857.7995825782,
+        "mid": 1330572.8833752756,
+        "high": 9940737.166245326
+      },
+      "co2_kg_embodied": {
+        "low": 52040.18388312191,
+        "mid": 518923.42451635754,
+        "high": 5367998.069772476
+      },
+      "co2_kg_total": {
+        "low": 237897.98346570012,
+        "mid": 1849496.3078916331,
+        "high": 15308735.236017803
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 185857.7995825782,
+        "mid": 1330572.8833752756,
+        "high": 9940737.166245326
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 716467.114239625,
+        "mid": 7928487.387663884,
+        "high": 72251925.8807115
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "FALLBACK_ENERGY_BAND_GAP",
+        "FALLBACK_GRID_ANNUAL",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 500.0,
+        "mid": 2450.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "openai/gpt-6-luna-20260922",
+      "display_name": "GPT-6 Luna",
+      "origin": "US",
+      "open_or_closed": "closed",
+      "total_tokens": 721340927349,
+      "est_output_tokens": 144268185470,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 403950.9193158,
+        "mid": 1298413.669229,
+        "high": 3808680.0964043997
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "us-east",
+      "carbon_intensity_gco2_kwh": 318.86310150839364,
+      "grid_source": "eia_live",
+      "grid_source_id": "GRID-EIA-PJM-HOURLY",
+      "pue": 1.16,
+      "co2_kg": {
+        "low": 141685.54728922318,
+        "mid": 480258.80314905284,
+        "high": 1894538.1751807597
+      },
+      "co2_kg_embodied": {
+        "low": 39671.9532409825,
+        "mid": 187300.93322813063,
+        "high": 1023050.6145976103
+      },
+      "co2_kg_total": {
+        "low": 181357.50053020567,
+        "mid": 667559.7363771835,
+        "high": 2917588.78977837
+      },
+      "renewable_match_pct": 100.0,
+      "co2_kg_market": {
+        "low": 14168.554728922318,
+        "mid": 48025.880314905284,
+        "high": 189453.817518076
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 1077741.0527345543,
+        "mid": 6084885.819474786,
+        "high": 27171123.807748985
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "CLOSED_MODEL_ASSUMED",
+        "MARKET_RESIDUAL_FLOOR",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "nvidia/nemotron-3-ultra-550b-a55b-20260604:free",
+      "display_name": "NVIDIA Nemotron 3 Ultra 550B",
+      "origin": "US",
+      "open_or_closed": "open",
+      "total_tokens": 659705471939,
+      "est_output_tokens": 131941094388,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 369435.0642862,
+        "mid": 1187469.8494910002,
+        "high": 3483244.8918396
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "us-east",
+      "carbon_intensity_gco2_kwh": 318.86310150839364,
+      "grid_source": "eia_live",
+      "grid_source_id": "GRID-EIA-PJM-HOURLY",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 129579.13144467559,
+        "mid": 473300.3989455071,
+        "high": 1732658.1004593808
+      },
+      "co2_kg_embodied": {
+        "low": 36282.15680450917,
+        "mid": 184587.1555887478,
+        "high": 935635.3742480656
+      },
+      "co2_kg_total": {
+        "low": 165861.28824918476,
+        "mid": 657887.554534255,
+        "high": 2668293.4747074465
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 129579.13144467559,
+        "mid": 473300.3989455071,
+        "high": 1732658.1004593808
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 1062125.8098228248,
+        "mid": 5996722.739929551,
+        "high": 26777445.106016926
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "minimax/minimax-m3.1-flash-20261019",
+      "display_name": "minimax/minimax-m3.1-flash-20261019",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 629467831488,
+      "est_output_tokens": 125893566298,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 352501.985634,
+        "mid": 1133042.09668,
+        "high": 3323590.15026
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 88019.7458128098,
+        "mid": 566521.04834,
+        "high": 3515294.8301269966
+      },
+      "co2_kg_embodied": {
+        "low": 24645.528827586746,
+        "mid": 220943.2088526,
+        "high": 1898259.2082685784
+      },
+      "co2_kg_total": {
+        "low": 112665.27464039654,
+        "mid": 787464.2571925999,
+        "high": 5413554.038395575
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 88019.7458128098,
+        "mid": 566521.04834,
+        "high": 3515294.8301269966
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 1013443.2086977499,
+        "mid": 5721862.588234,
+        "high": 25550099.280123748
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "anthropic/claude-opus-5.5-20260921",
+      "display_name": "Claude Opus 5.5",
+      "origin": "US",
+      "open_or_closed": "closed",
+      "total_tokens": 599432922938,
+      "est_output_tokens": 119886584588,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 335682.436846,
+        "mid": 1078979.26129,
+        "high": 3165005.833116
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "us-east",
+      "carbon_intensity_gco2_kwh": 318.86310150839364,
+      "grid_source": "eia_live",
+      "grid_source_id": "GRID-EIA-PJM-HOURLY",
+      "pue": 1.15,
+      "co2_kg": {
+        "low": 117740.41722807217,
+        "mid": 395653.67477588955,
+        "high": 1574357.578933659
+      },
+      "co2_kg_embodied": {
+        "low": 32967.31682386021,
+        "mid": 154304.93316259692,
+        "high": 850153.092624176
+      },
+      "co2_kg_total": {
+        "low": 150707.73405193238,
+        "mid": 549958.6079384865,
+        "high": 2424510.671557835
+      },
+      "renewable_match_pct": 100.0,
+      "co2_kg_market": {
+        "low": 11774.041722807218,
+        "mid": 39565.36747758896,
+        "high": 157435.75789336592
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 887880.04545767,
+        "mid": 5012937.64795334,
+        "high": 22384503.754712906
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "CLOSED_MODEL_ASSUMED",
+        "MARKET_RESIDUAL_FLOOR",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "moonshotai/kimi-k3.1-pro-20261023",
+      "display_name": "moonshotai/kimi-k3.1-pro-20261023",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 552090719315,
+      "est_output_tokens": 110418143863,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 309170.8028164001,
+        "mid": 993763.2947670001,
+        "high": 2915038.9979832
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 77199.9494632551,
+        "mid": 496881.6473835001,
+        "high": 3083178.447386871
+      },
+      "co2_kg_embodied": {
+        "low": 21615.985849711433,
+        "mid": 193783.84247956506,
+        "high": 1664916.3615889105
+      },
+      "co2_kg_total": {
+        "low": 98815.93531296654,
+        "mid": 690665.4898630652,
+        "high": 4748094.808975781
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 77199.9494632551,
+        "mid": 496881.6473835001,
+        "high": 3083178.447386871
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 888866.0580971502,
+        "mid": 5018504.63857335,
+        "high": 22409362.29699585
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "baidu/ernie-5.5-flash-preview-20261110:free",
+      "display_name": "baidu/ernie-5.5-flash-preview-20261110:free",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 498697933373,
+      "est_output_tokens": 99739586675,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 279270.8426896,
+        "mid": 897656.280073,
+        "high": 2633125.0882128
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 69733.92941959314,
+        "mid": 448828.1400365,
+        "high": 2785003.7433009148
+      },
+      "co2_kg_embodied": {
+        "low": 19525.50023748608,
+        "mid": 175042.97461423502,
+        "high": 1503902.0213824941
+      },
+      "co2_kg_total": {
+        "low": 89259.42965707922,
+        "mid": 623871.114650735,
+        "high": 4288905.764683409
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 69733.92941959314,
+        "mid": 448828.1400365,
+        "high": 2785003.7433009148
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 802903.6727326,
+        "mid": 4533164.21436865,
+        "high": 20242149.115635898
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "meta/muse-spark-1.3-contributor-20260902",
+      "display_name": "meta/muse-spark-1.3-contributor-20260902",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 463367170132,
+      "est_output_tokens": 92673434026,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 259485.61527320003,
+        "mid": 834060.906236,
+        "high": 2446578.6582936
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 64793.55813371805,
+        "mid": 417030.45311799995,
+        "high": 2587697.3153039753
+      },
+      "co2_kg_embodied": {
+        "low": 18142.196277441057,
+        "mid": 162641.87671602,
+        "high": 1397356.5502641466
+      },
+      "co2_kg_total": {
+        "low": 82935.75441115911,
+        "mid": 579672.32983402,
+        "high": 3985053.865568122
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 64793.55813371805,
+        "mid": 417030.45311799995,
+        "high": 2587697.3153039753
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 746021.14391045,
+        "mid": 4212007.5764918,
+        "high": 18808073.43563205
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "z-ai/glm-5.3-20260816",
+      "display_name": "Z.ai GLM-5.3",
+      "origin": "CN",
+      "open_or_closed": "open",
+      "total_tokens": 441591814200,
+      "est_output_tokens": 88318362840,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 247291.415952,
+        "mid": 794865.26556,
+        "high": 2331604.778976
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "cn-north",
+      "carbon_intensity_gco2_kwh": 678.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-MEE-2022",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 184429.9380170016,
+        "mid": 673648.3125621,
+        "high": 2466091.7426273357
+      },
+      "co2_kg_embodied": {
+        "low": 51640.38264476046,
+        "mid": 262722.841899219,
+        "high": 1331689.5410187615
+      },
+      "co2_kg_total": {
+        "low": 236070.32066176206,
+        "mid": 936371.1544613191,
+        "high": 3797781.2836460974
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 184429.9380170016,
+        "mid": 673648.3125621,
+        "high": 2466091.7426273357
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 710962.820862,
+        "mid": 4014069.591078,
+        "high": 17924211.738378
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "FALLBACK_GRID_ANNUAL",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "tencent/hy4-20261104",
+      "display_name": "tencent/hy4-20261104",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 436910308228,
+      "est_output_tokens": 87382061646,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 244669.77260839997,
+        "mid": 786438.554812,
+        "high": 2306886.4274472
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 61094.042220317475,
+        "mid": 393219.277406,
+        "high": 2439947.6365823545
+      },
+      "co2_kg_embodied": {
+        "low": 17106.331821688895,
+        "mid": 153355.51818834,
+        "high": 1317571.7237544716
+      },
+      "co2_kg_total": {
+        "low": 78200.37404200637,
+        "mid": 546574.79559434,
+        "high": 3757519.360336826
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 61094.042220317475,
+        "mid": 393219.277406,
+        "high": 2439947.6365823545
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 703425.5962491498,
+        "mid": 3971514.7018006,
+        "high": 17734189.41100035
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "nvidia/nemotron-3.5-super-vl-20261015:free",
+      "display_name": "nvidia/nemotron-3.5-super-vl-20261015:free",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 434600846046,
+      "est_output_tokens": 86920169209,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 243376.47378540004,
+        "mid": 782281.522882,
+        "high": 2294692.4671212
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 60771.10550421439,
+        "mid": 391140.761441,
+        "high": 2427050.328624751
+      },
+      "co2_kg_embodied": {
+        "low": 17015.90954118003,
+        "mid": 152544.89696199,
+        "high": 1310607.1774573657
+      },
+      "co2_kg_total": {
+        "low": 77787.01504539442,
+        "mid": 543685.65840299,
+        "high": 3737657.5060821166
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 60771.10550421439,
+        "mid": 391140.761441,
+        "high": 2427050.328624751
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 699707.362133025,
+        "mid": 3950521.6905541,
+        "high": 17640448.340994224
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "google/gemini-4-carbon-20261110",
+      "display_name": "google/gemini-4-carbon-20261110",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 416845171546,
+      "est_output_tokens": 83369034309,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 233433.2960654,
+        "mid": 750321.3087820001,
+        "high": 2200942.5057612
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 58288.294027530384,
+        "mid": 375160.65439100005,
+        "high": 2327892.869493506
+      },
+      "co2_kg_embodied": {
+        "low": 16320.722327708509,
+        "mid": 146312.65521249003,
+        "high": 1257062.1495264934
+      },
+      "co2_kg_total": {
+        "low": 74609.0163552389,
+        "mid": 521473.30960349005,
+        "high": 3584955.0190199995
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 58288.294027530384,
+        "mid": 375160.65439100005,
+        "high": 2327892.869493506
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 671120.7261880249,
+        "mid": 3789122.6093491004,
+        "high": 16919745.513039224
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "xiaomi/mimo-v2.6-flash-20260921",
+      "display_name": "xiaomi/mimo-v2.6-flash-20260921",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 372573460159,
+      "est_output_tokens": 74514692032,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 208641.13768940003,
+        "mid": 670632.2282870001,
+        "high": 1967187.8696412002
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 52097.69208104319,
+        "mid": 335316.11414350005,
+        "high": 2080655.2659621048
+      },
+      "co2_kg_embodied": {
+        "low": 14587.353782692095,
+        "mid": 130773.28451596502,
+        "high": 1123553.8436195366
+      },
+      "co2_kg_total": {
+        "low": 66685.04586373529,
+        "mid": 466089.3986594651,
+        "high": 3204209.1095816414
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 52097.69208104319,
+        "mid": 335316.11414350005,
+        "high": 2080655.2659621048
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 599843.270857025,
+        "mid": 3386692.7528493507,
+        "high": 15122756.747866724
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "anthropic/claude-haiku-5.5-20261007",
+      "display_name": "anthropic/claude-haiku-5.5-20261007",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 334168140967,
+      "est_output_tokens": 66833628193,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 187134.1589408,
+        "mid": 601502.6537390001,
+        "high": 1764407.7843024002
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 46727.39948751776,
+        "mid": 300751.32686950004,
+        "high": 1866178.8253009627
+      },
+      "co2_kg_embodied": {
+        "low": 13083.671856504974,
+        "mid": 117293.01747910502,
+        "high": 1007736.5656625199
+      },
+      "co2_kg_total": {
+        "low": 59811.071344022734,
+        "mid": 418044.3443486051,
+        "high": 2873915.3909634827
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 46727.39948751776,
+        "mid": 300751.32686950004,
+        "high": 1866178.8253009627
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 538010.7069547999,
+        "mid": 3037588.4013819504,
+        "high": 13563884.8418247
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "typesafe/jev-1.13-20260917",
+      "display_name": "typesafe/jev-1.13-20260917",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 319967623427,
+      "est_output_tokens": 63993524685,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 179181.8691184,
+        "mid": 575941.722167,
+        "high": 1689429.0516912001
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 44741.71271886449,
+        "mid": 287970.8610835,
+        "high": 1786875.3193927489
+      },
+      "co2_kg_embodied": {
+        "low": 12527.679561282057,
+        "mid": 112308.63582256502,
+        "high": 964912.6724720844
+      },
+      "co2_kg_total": {
+        "low": 57269.392280146545,
+        "mid": 400279.49690606503,
+        "high": 2751787.991864833
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 44741.71271886449,
+        "mid": 287970.8610835,
+        "high": 1786875.3193927489
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 515147.8737154,
+        "mid": 2908505.6969433506,
+        "high": 12987485.8348761
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "deepseek/deepseek-v4-flash-20260731",
+      "display_name": "DeepSeek V4 Flash",
+      "origin": "CN",
+      "open_or_closed": "open",
+      "total_tokens": 297318945788,
+      "est_output_tokens": 59463789158,
+      "wh_per_output_token": {
+        "low": 0.0015,
+        "mid": 0.0035,
+        "high": 0.008
+      },
+      "energy_kwh": {
+        "low": 124873.9572315,
+        "mid": 374621.87169400003,
+        "high": 1046562.6891759998
+      },
+      "energy_source": "ai_energy_score",
+      "energy_source_id": "E-DEEPSEEK-V4-FLASH",
+      "region": "cn-north",
+      "carbon_intensity_gco2_kwh": 678.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-MEE-2022",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 93130.9973032527,
+        "mid": 317492.036260665,
+        "high": 1106928.4250876715
+      },
+      "co2_kg_embodied": {
+        "low": 26076.67924491076,
+        "mid": 123821.89414165934,
+        "high": 597741.3495473426
+      },
+      "co2_kg_total": {
+        "low": 119207.67654816346,
+        "mid": 441313.9304023243,
+        "high": 1704669.7746350141
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 93130.9973032527,
+        "mid": 317492.036260665,
+        "high": 1106928.4250876715
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 359012.62704056245,
+        "mid": 1891840.4520547,
+        "high": 8045450.673040499
+      },
+      "flags": [
+        "FALLBACK_GRID_ANNUAL"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 1500.0,
+        "mid": 3500.0,
+        "high": 8000.0
+      },
+      "capability_index": 24.0,
+      "capability_source_id": "Q-AAII-V41",
+      "on_frontier": false,
+      "frontier_reference_slug": "minimax/minimax-m3-20260531",
+      "rightsizing_gap_pct": {
+        "low": 0.0,
+        "mid": 0.5714285714285714,
+        "high": 0.9
+      },
+      "avoidable_co2_kg": {
+        "low": 0.0,
+        "mid": 181424.02072037998,
+        "high": 996235.5825789043
+      }
+    },
+    {
+      "slug": "deepseek/deepseek-v4-flash-20260423",
+      "display_name": "DeepSeek V4 Flash",
+      "origin": "CN",
+      "open_or_closed": "open",
+      "total_tokens": 267190341484,
+      "est_output_tokens": 53438068297,
+      "wh_per_output_token": {
+        "low": 0.0015,
+        "mid": 0.0035,
+        "high": 0.008
+      },
+      "energy_kwh": {
+        "low": 112219.94342355001,
+        "mid": 336659.83027040004,
+        "high": 940510.0020247999
+      },
+      "energy_source": "ai_energy_score",
+      "energy_source_id": "E-DEEPSEEK-V4-FLASH",
+      "region": "cn-north",
+      "carbon_intensity_gco2_kwh": 678.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-MEE-2022",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 83693.6338052836,
+        "mid": 285319.20615416404,
+        "high": 994758.6189415904
+      },
+      "co2_kg_embodied": {
+        "low": 23434.21746547941,
+        "mid": 111274.49040012398,
+        "high": 537169.6542284589
+      },
+      "co2_kg_total": {
+        "low": 107127.85127076301,
+        "mid": 396593.69655428804,
+        "high": 1531928.2731700493
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 83693.6338052836,
+        "mid": 285319.20615416404,
+        "high": 994758.6189415904
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 322632.3373427063,
+        "mid": 1700132.1428655202,
+        "high": 7230170.640565649
+      },
+      "flags": [
+        "FALLBACK_GRID_ANNUAL"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 1500.0,
+        "mid": 3500.0,
+        "high": 8000.0
+      },
+      "capability_index": 24.0,
+      "capability_source_id": "Q-AAII-V41",
+      "on_frontier": false,
+      "frontier_reference_slug": "minimax/minimax-m3-20260531",
+      "rightsizing_gap_pct": {
+        "low": 0.0,
+        "mid": 0.5714285714285714,
+        "high": 0.9
+      },
+      "avoidable_co2_kg": {
+        "low": 0.0,
+        "mid": 163039.54637380803,
+        "high": 895282.7570474314
+      }
+    },
+    {
+      "slug": "anthropic/claude-sonnet-5.5-20260928",
+      "display_name": "Claude Sonnet 5.5",
+      "origin": "US",
+      "open_or_closed": "closed",
+      "total_tokens": 262170931727,
+      "est_output_tokens": 52434186345,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 146815.7217664,
+        "mid": 471907.67710699997,
+        "high": 1384262.5195152
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "us-east",
+      "carbon_intensity_gco2_kwh": 318.86310150839364,
+      "grid_source": "eia_live",
+      "grid_source_id": "GRID-EIA-PJM-HOURLY",
+      "pue": 1.15,
+      "co2_kg": {
+        "low": 51495.528031890455,
+        "mid": 173045.03738015352,
+        "high": 688568.7748281263
+      },
+      "co2_kg_embodied": {
+        "low": 14418.747848929328,
+        "mid": 67487.56457825987,
+        "high": 371827.13840718823
+      },
+      "co2_kg_total": {
+        "low": 65914.27588081978,
+        "mid": 240532.60195841338,
+        "high": 1060395.9132353147
+      },
+      "renewable_match_pct": 100.0,
+      "co2_kg_market": {
+        "low": 5149.552803189046,
+        "mid": 17304.50373801535,
+        "high": 68856.87748281263
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 388327.584072128,
+        "mid": 2192483.067839122,
+        "high": 9790196.66927125
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "CLOSED_MODEL_ASSUMED",
+        "MARKET_RESIDUAL_FLOOR",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "typesafe/jev-1.14-20261014",
+      "display_name": "typesafe/jev-1.14-20261014",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 258434226618,
+      "est_output_tokens": 51686845324,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 144723.1669068,
+        "mid": 465181.60791400005,
+        "high": 1364532.7165464
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 36137.37477662796,
+        "mid": 232590.80395700003,
+        "high": 1443238.9636367962
+      },
+      "co2_kg_embodied": {
+        "low": 10118.46493745583,
+        "mid": 90710.41354323001,
+        "high": 779349.04036387
+      },
+      "co2_kg_total": {
+        "low": 46255.83971408379,
+        "mid": 323301.21750023006,
+        "high": 2222588.004000666
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 36137.37477662796,
+        "mid": 232590.80395700003,
+        "high": 1443238.9636367962
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 416079.10485705,
+        "mid": 2349167.1199657,
+        "high": 10489845.258450449
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "openai/gpt-6.1-sol-20260929",
+      "display_name": "openai/gpt-6.1-sol-20260929",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 246414107082,
+      "est_output_tokens": 49282821416,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 137991.89996520002,
+        "mid": 443545.392746,
+        "high": 1301066.4853895998
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 34456.57742131045,
+        "mid": 221772.69637299998,
+        "high": 1376112.0002668719
+      },
+      "co2_kg_embodied": {
+        "low": 9647.841677966928,
+        "mid": 86491.35158547,
+        "high": 743100.4801441109
+      },
+      "co2_kg_total": {
+        "low": 44104.41909927738,
+        "mid": 308264.04795846995,
+        "high": 2119212.480410983
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 34456.57742131045,
+        "mid": 221772.69637299998,
+        "high": 1376112.0002668719
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 396726.71239995,
+        "mid": 2239904.2333673,
+        "high": 10001948.606432548
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "stepfun/step-5-preview-20261008",
+      "display_name": "stepfun/step-5-preview-20261008",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 190923635726,
+      "est_output_tokens": 38184727145,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 106917.23600620002,
+        "mid": 343662.544306,
+        "high": 1008076.7966316
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 26697.233830748148,
+        "mid": 171831.272153,
+        "high": 1066222.666261311
+      },
+      "co2_kg_embodied": {
+        "low": 7475.2254726094825,
+        "mid": 67014.19613967,
+        "high": 575760.239781108
+      },
+      "co2_kg_total": {
+        "low": 34172.45930335763,
+        "mid": 238845.46829267,
+        "high": 1641982.906042419
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 26697.233830748148,
+        "mid": 171831.272153,
+        "high": 1066222.666261311
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 307387.0535178251,
+        "mid": 1735495.8487453,
+        "high": 7749590.374105424
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "google/gemini-3.8-flash-20260902",
+      "display_name": "Gemini 3.8 Flash",
+      "origin": "US",
+      "open_or_closed": "closed",
+      "total_tokens": 175851243589,
+      "est_output_tokens": 35170248718,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 98476.6964102,
+        "mid": 316532.238461,
+        "high": 928494.5661516
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "us-east",
+      "carbon_intensity_gco2_kwh": 318.86310150839364,
+      "grid_source": "eia_live",
+      "grid_source_id": "GRID-EIA-PJM-HOURLY",
+      "pue": 1.1,
+      "co2_kg": {
+        "low": 34540.643328022554,
+        "mid": 111023.49641137579,
+        "high": 461857.7450709917
+      },
+      "co2_kg_embodied": {
+        "low": 9671.380131846316,
+        "mid": 43299.16360043656,
+        "high": 249403.18233833552
+      },
+      "co2_kg_total": {
+        "low": 44212.02345986887,
+        "mid": 154322.66001181235,
+        "high": 711260.9274093272
+      },
+      "renewable_match_pct": 100.0,
+      "co2_kg_market": {
+        "low": 3454.0643328022556,
+        "mid": 11102.34964113758,
+        "high": 46185.77450709917
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 249146.04191780603,
+        "mid": 1406669.267720684,
+        "high": 6281265.740015574
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "CLOSED_MODEL_ASSUMED",
+        "MARKET_RESIDUAL_FLOOR",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "nvidia/nemotron-3.5-lightning-20260807:free",
+      "display_name": "nvidia/nemotron-3.5-lightning-20260807:free",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 173675121531,
+      "est_output_tokens": 34735024306,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 97258.06805700001,
+        "mid": 312615.218755,
+        "high": 917004.6416819999
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 24285.3395938329,
+        "mid": 156307.6093775,
+        "high": 969897.4694142176
+      },
+      "co2_kg_embodied": {
+        "low": 6799.895086273213,
+        "mid": 60959.967657224995,
+        "high": 523744.6334836776
+      },
+      "co2_kg_total": {
+        "low": 31085.234680106114,
+        "mid": 217267.577034725,
+        "high": 1493642.1028978953
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 24285.3395938329,
+        "mid": 156307.6093775,
+        "high": 969897.4694142176
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 279616.945663875,
+        "mid": 1578706.85471275,
+        "high": 7049473.182930374
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "openai/gpt-5.6-luna-20260709",
+      "display_name": "GPT-5.6 Luna",
+      "origin": "US",
+      "open_or_closed": "closed",
+      "total_tokens": 146454747097,
+      "est_output_tokens": 29290949419,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 82014.6583736,
+        "mid": 263618.544773,
+        "high": 773281.0646688
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "us-east",
+      "carbon_intensity_gco2_kwh": 318.86310150839364,
+      "grid_source": "eia_live",
+      "grid_source_id": "GRID-EIA-PJM-HOURLY",
+      "pue": 1.16,
+      "co2_kg": {
+        "low": 28766.593171973193,
+        "mid": 97507.5430896798,
+        "high": 384650.4458440898
+      },
+      "co2_kg_embodied": {
+        "low": 8054.6460881524945,
+        "mid": 38027.941804975126,
+        "high": 207711.2407558085
+      },
+      "co2_kg_total": {
+        "low": 36821.23926012569,
+        "mid": 135535.48489465495,
+        "high": 592361.6865998983
+      },
+      "renewable_match_pct": 100.0,
+      "co2_kg_market": {
+        "low": 2876.6593171973195,
+        "mid": 9750.75430896798,
+        "high": 38465.04458440898
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 218815.10854076475,
+        "mid": 1235421.9482241871,
+        "high": 5516587.115347219
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "CLOSED_MODEL_ASSUMED",
+        "MARKET_RESIDUAL_FLOOR",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "thinkingmachines/inkling-2-mini-20261120",
+      "display_name": "thinkingmachines/inkling-2-mini-20261120",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 143929058769,
+      "est_output_tokens": 28785811754,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 80600.272911,
+        "mid": 259072.30578500003,
+        "high": 759945.430302
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 20125.8881458767,
+        "mid": 129536.15289250003,
+        "high": 803779.0827218195
+      },
+      "co2_kg_embodied": {
+        "low": 5635.248680845476,
+        "mid": 50519.09962807501,
+        "high": 434040.70466978254
+      },
+      "co2_kg_total": {
+        "low": 25761.136826722177,
+        "mid": 180055.25252057504,
+        "high": 1237819.787391602
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 20125.8881458767,
+        "mid": 129536.15289250003,
+        "high": 803779.0827218195
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 231725.78461912496,
+        "mid": 1308315.1442142501,
+        "high": 5842080.495446625
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "qwen/qwen3.8-flash-20260826",
+      "display_name": "qwen/qwen3.8-flash-20260826",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 137658642404,
+      "est_output_tokens": 27531728481,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 77088.8397466,
+        "mid": 247785.556328,
+        "high": 726837.6318948
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 19249.083284726024,
+        "mid": 123892.77816399999,
+        "high": 768761.6265024921
+      },
+      "co2_kg_embodied": {
+        "low": 5389.743319723288,
+        "mid": 48318.18348396,
+        "high": 415131.2783113458
+      },
+      "co2_kg_total": {
+        "low": 24638.826604449314,
+        "mid": 172210.96164795998,
+        "high": 1183892.904813838
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 19249.083284726024,
+        "mid": 123892.77816399999,
+        "high": 768761.6265024921
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 221630.414271475,
+        "mid": 1251317.0594563999,
+        "high": 5587564.295191274
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "upstage/solar-mini4-20260922",
+      "display_name": "upstage/solar-mini4-20260922",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 132878198597,
+      "est_output_tokens": 26575639719,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 74411.79121360001,
+        "mid": 239180.75747299998,
+        "high": 701596.8885888
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 18580.624266035924,
+        "mid": 119590.37873649997,
+        "high": 742064.9971226021
+      },
+      "co2_kg_embodied": {
+        "low": 5202.5747944900595,
+        "mid": 46640.247707234994,
+        "high": 400715.09844620514
+      },
+      "co2_kg_total": {
+        "low": 23783.199060525985,
+        "mid": 166230.62644373497,
+        "high": 1142780.0955688073
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 18580.624266035924,
+        "mid": 119590.37873649997,
+        "high": 742064.9971226021
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 213933.89973910002,
+        "mid": 1207862.8252386497,
+        "high": 5393526.0810263995
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "openai/gpt-6.2-sol-20261117",
+      "display_name": "openai/gpt-6.2-sol-20261117",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 129988104319,
+      "est_output_tokens": 25997620864,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 72793.338419,
+        "mid": 233978.587775,
+        "high": 686337.190806
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 18176.496603224303,
+        "mid": 116989.2938875,
+        "high": 725925.1199716902
+      },
+      "co2_kg_embodied": {
+        "low": 5089.419048902805,
+        "mid": 45625.824616125,
+        "high": 391999.56478471274
+      },
+      "co2_kg_total": {
+        "low": 23265.915652127107,
+        "mid": 162615.11850362498,
+        "high": 1117924.6847564029
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 18176.496603224303,
+        "mid": 116989.2938875,
+        "high": 725925.1199716902
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 209280.84795462503,
+        "mid": 1181591.86826375,
+        "high": 5276217.154321125
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "moonshotai/kimi-k3-20260715",
+      "display_name": "Moonshot Kimi K3",
+      "origin": "CN",
+      "open_or_closed": "open",
+      "total_tokens": 116117837661,
+      "est_output_tokens": 23223567532,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 65025.9890898,
+        "mid": 209012.107789,
+        "high": 613102.1828484
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "cn-north",
+      "carbon_intensity_gco2_kwh": 678.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-MEE-2022",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 48496.382663172844,
+        "mid": 177137.76135117753,
+        "high": 648465.9167550957
+      },
+      "co2_kg_embodied": {
+        "low": 13578.987145688398,
+        "mid": 69083.72692695924,
+        "high": 350171.59504775173
+      },
+      "co2_kg_total": {
+        "low": 62075.369808861244,
+        "mid": 246221.48827813676,
+        "high": 998637.5118028475
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 48496.382663172844,
+        "mid": 177137.76135117753,
+        "high": 648465.9167550957
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 186949.71863317498,
+        "mid": 1055511.1443344501,
+        "high": 4713223.030647075
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "FALLBACK_GRID_ANNUAL",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "qwen/qwen3.6-35b-a3b-20260415",
+      "display_name": "qwen/qwen3.6-35b-a3b-20260415",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 114383761728,
+      "est_output_tokens": 22876752346,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 64054.9065684,
+        "mid": 205890.771112,
+        "high": 603946.2619272001
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 15994.510170129484,
+        "mid": 102945.385556,
+        "high": 638781.882315161
+      },
+      "co2_kg_embodied": {
+        "low": 4478.462847636256,
+        "mid": 40148.70036684,
+        "high": 344942.21645018697
+      },
+      "co2_kg_total": {
+        "low": 20472.97301776574,
+        "mid": 143094.08592284,
+        "high": 983724.0987653481
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 15994.510170129484,
+        "mid": 102945.385556,
+        "high": 638781.882315161
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 184157.85638414999,
+        "mid": 1039748.3941155999,
+        "high": 4642836.88856535
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "google/gemini-4-neon-20261118",
+      "display_name": "google/gemini-4-neon-20261118",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 113684478856,
+      "est_output_tokens": 22736895771,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 63663.30815900001,
+        "mid": 204632.06193999999,
+        "high": 600254.048358
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 15896.728047302302,
+        "mid": 102316.03096999998,
+        "high": 634876.7018672894
+      },
+      "co2_kg_embodied": {
+        "low": 4451.083853244645,
+        "mid": 39903.25207829999,
+        "high": 342833.41900833626
+      },
+      "co2_kg_total": {
+        "low": 20347.81190054695,
+        "mid": 142219.28304829996,
+        "high": 977710.1208756256
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 15896.728047302302,
+        "mid": 102316.03096999998,
+        "high": 634876.7018672894
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 183032.01095712502,
+        "mid": 1033391.9127969999,
+        "high": 4614452.996752124
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "google/gemma-4-26b-a4b-it-20260403",
+      "display_name": "Gemma 4 26B",
+      "origin": "US",
+      "open_or_closed": "open",
+      "total_tokens": 113453497547,
+      "est_output_tokens": 22690699509,
+      "wh_per_output_token": {
+        "low": 0.0005,
+        "mid": 0.0012,
+        "high": 0.0025
+      },
+      "energy_kwh": {
+        "low": 15883.4896564,
+        "mid": 49011.910939919995,
+        "high": 124798.847301
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-SMALL",
+      "region": "us-east",
+      "carbon_intensity_gco2_kwh": 318.86310150839364,
+      "grid_source": "eia_live",
+      "grid_source_id": "GRID-EIA-PJM-HOURLY",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 5571.124652077813,
+        "mid": 19535.112416445074,
+        "high": 62078.24612350808
+      },
+      "co2_kg_embodied": {
+        "low": 1559.9149025817878,
+        "mid": 7618.693842413579,
+        "high": 33522.25290669436
+      },
+      "co2_kg_total": {
+        "low": 7131.039554659601,
+        "mid": 27153.806258858654,
+        "high": 95600.49903020244
+      },
+      "renewable_match_pct": 100.0,
+      "co2_kg_market": {
+        "low": 557.1124652077814,
+        "mid": 1953.5112416445074,
+        "high": 6207.824612350808
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 45665.03276215,
+        "mid": 247510.15024659596,
+        "high": 959391.1386264375
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "MARKET_RESIDUAL_FLOOR",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 500.0,
+        "mid": 1200.0,
+        "high": 2500.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "z-ai/glm-5.2-20260616",
+      "display_name": "Z.ai GLM-5.2",
+      "origin": "CN",
+      "open_or_closed": "open",
+      "total_tokens": 109711669847,
+      "est_output_tokens": 21942333969,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 61438.5351136,
+        "mid": 197481.00572299998,
+        "high": 579277.6167888
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "cn-north",
+      "carbon_intensity_gco2_kwh": 678.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-MEE-2022",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 45820.85948772288,
+        "mid": 167365.15235024248,
+        "high": 612690.349725178
+      },
+      "co2_kg_embodied": {
+        "low": 12829.840656562408,
+        "mid": 65272.40941659457,
+        "high": 330852.7888515961
+      },
+      "co2_kg_total": {
+        "low": 58650.70014428529,
+        "mid": 232637.56176683705,
+        "high": 943543.1385767742
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 45820.85948772288,
+        "mid": 167365.15235024248,
+        "high": 612690.349725178
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 176635.78845159998,
+        "mid": 997279.0789011499,
+        "high": 4453196.679063899
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "FALLBACK_GRID_ANNUAL",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "qwen/qwen3.8-27b-20260814",
+      "display_name": "qwen/qwen3.8-27b-20260814",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 105946770522,
+      "est_output_tokens": 21189354104,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 59330.19149160001,
+        "mid": 190704.186938,
+        "high": 559398.9483528
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 14814.748815452524,
+        "mid": 95352.093469,
+        "high": 591665.0796937896
+      },
+      "co2_kg_embodied": {
+        "low": 4148.129668326707,
+        "mid": 37187.31645291,
+        "high": 319499.1430346464
+      },
+      "co2_kg_total": {
+        "low": 18962.87848377923,
+        "mid": 132539.40992191,
+        "high": 911164.222728436
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 14814.748815452524,
+        "mid": 95352.093469,
+        "high": 591665.0796937896
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 170574.30053835,
+        "mid": 963056.1440369,
+        "high": 4300379.415462149
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "meta/muse-ember-20261109",
+      "display_name": "meta/muse-ember-20261109",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 95802544393,
+      "est_output_tokens": 19160508879,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 53649.4248608,
+        "mid": 172444.579909,
+        "high": 505837.43439839996
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 13396.26138774176,
+        "mid": 86222.2899545,
+        "high": 535014.1376144997
+      },
+      "co2_kg_embodied": {
+        "low": 3750.9531885676934,
+        "mid": 33626.693082255,
+        "high": 288907.6343118298
+      },
+      "co2_kg_total": {
+        "low": 17147.214576309452,
+        "mid": 119848.983036755,
+        "high": 823921.7719263295
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 13396.26138774176,
+        "mid": 86222.2899545,
+        "high": 535014.1376144997
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 154242.0964748,
+        "mid": 870845.1285404499,
+        "high": 3888625.2769376994
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "particle-ai/particle-1-20261027:free",
+      "display_name": "particle-ai/particle-1-20261027:free",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 91438674626,
+      "est_output_tokens": 18287734925,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 51205.6577902,
+        "mid": 164589.614326,
+        "high": 482796.2020236
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 12786.05275021294,
+        "mid": 82294.807163,
+        "high": 510643.8869563213
+      },
+      "co2_kg_embodied": {
+        "low": 3580.094770059624,
+        "mid": 32094.974793570003,
+        "high": 275747.69895641354
+      },
+      "co2_kg_total": {
+        "low": 16366.147520272565,
+        "mid": 114389.78195657,
+        "high": 786391.5859127349
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 12786.05275021294,
+        "mid": 82294.807163,
+        "high": 510643.8869563213
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 147216.266146825,
+        "mid": 831177.5523463,
+        "high": 3711495.803056425
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "google/gemini-4-argon-20261013",
+      "display_name": "google/gemini-4-argon-20261013",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 88872265976,
+      "est_output_tokens": 17774453195,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 49768.468946199995,
+        "mid": 159970.078756,
+        "high": 469245.5643516
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 12427.18669586614,
+        "mid": 79985.039378,
+        "high": 496311.6485034003
+      },
+      "co2_kg_embodied": {
+        "low": 3479.6122748425196,
+        "mid": 31194.165357420003,
+        "high": 268008.2901918362
+      },
+      "co2_kg_total": {
+        "low": 15906.79897070866,
+        "mid": 111179.20473542,
+        "high": 764319.9386952366
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 12427.18669586614,
+        "mid": 79985.039378,
+        "high": 496311.6485034003
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 143084.34822032496,
+        "mid": 807848.8977178001,
+        "high": 3607325.275952925
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "deepseek/deepseek-v4-pro-20260813",
+      "display_name": "DeepSeek V4 Pro",
+      "origin": "CN",
+      "open_or_closed": "open",
+      "total_tokens": 86012187373,
+      "est_output_tokens": 17202437475,
+      "wh_per_output_token": {
+        "low": 0.0015,
+        "mid": 0.0035,
+        "high": 0.008
+      },
+      "energy_kwh": {
+        "low": 36125.1186972,
+        "mid": 108375.35609110001,
+        "high": 302762.89955519995
+      },
+      "energy_source": "ai_energy_score",
+      "energy_source_id": "E-DEEPSEEK-V4-PRO",
+      "region": "cn-north",
+      "carbon_intensity_gco2_kwh": 678.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-MEE-2022",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 26942.11352437176,
+        "mid": 91848.11428720725,
+        "high": 320226.2636015439
+      },
+      "co2_kg_embodied": {
+        "low": 7543.791786824094,
+        "mid": 35820.76457201083,
+        "high": 172922.1823448337
+      },
+      "co2_kg_total": {
+        "low": 34485.90531119586,
+        "mid": 127668.87885921808,
+        "high": 493148.4459463776
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 26942.11352437176,
+        "mid": 91848.11428720725,
+        "high": 320226.2636015439
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 103859.71625444999,
+        "mid": 547295.548260055,
+        "high": 2327489.7903305995
+      },
+      "flags": [
+        "FALLBACK_GRID_ANNUAL",
+        "ON_FRONTIER"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 1500.0,
+        "mid": 3500.0,
+        "high": 8000.0
+      },
+      "capability_index": 30.0,
+      "capability_source_id": "Q-AAII-V41",
+      "on_frontier": true,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": {
+        "low": 0,
+        "mid": 0,
+        "high": 0
+      },
+      "avoidable_co2_kg": {
+        "low": 0.0,
+        "mid": 0.0,
+        "high": 0.0
+      }
+    },
+    {
+      "slug": "google/gemini-3-flash-preview-20251217",
+      "display_name": "Gemini 3 Flash Preview",
+      "origin": "US",
+      "open_or_closed": "closed",
+      "total_tokens": 84568281607,
+      "est_output_tokens": 16913656321,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 47358.2376992,
+        "mid": 152222.906891,
+        "high": 446520.52688160003
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "us-east",
+      "carbon_intensity_gco2_kwh": 318.86310150839364,
+      "grid_source": "eia_live",
+      "grid_source_id": "GRID-EIA-PJM-HOURLY",
+      "pue": 1.1,
+      "co2_kg": {
+        "low": 16610.87401021251,
+        "mid": 53392.09503307646,
+        "high": 222111.11533826133
+      },
+      "co2_kg_embodied": {
+        "low": 4651.044722859503,
+        "mid": 20822.91706289982,
+        "high": 119940.00228266112
+      },
+      "co2_kg_total": {
+        "low": 21261.918733072012,
+        "mid": 74215.01209597629,
+        "high": 342051.11762092245
+      },
+      "renewable_match_pct": 100.0,
+      "co2_kg_market": {
+        "low": 1661.087401021251,
+        "mid": 5339.209503307647,
+        "high": 22211.111533826133
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 119816.341378976,
+        "mid": 676478.598223604,
+        "high": 3020711.364354024
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "CLOSED_MODEL_ASSUMED",
+        "MARKET_RESIDUAL_FLOOR",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "openai/gpt-6.1-terra-20261026",
+      "display_name": "openai/gpt-6.1-terra-20261026",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 83538285092,
+      "est_output_tokens": 16707657018,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 46781.439650800006,
+        "mid": 150368.913164,
+        "high": 441082.1452824
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 11681.325480804762,
+        "mid": 75184.456582,
+        "high": 466523.7634222889
+      },
+      "co2_kg_embodied": {
+        "low": 3270.7711346253336,
+        "mid": 29321.93806698,
+        "high": 251922.83224803602
+      },
+      "co2_kg_total": {
+        "low": 14952.096615430095,
+        "mid": 104506.39464898,
+        "high": 718446.5956703249
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 11681.325480804762,
+        "mid": 75184.456582,
+        "high": 466523.7634222889
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 134496.63899605002,
+        "mid": 759363.0114782,
+        "high": 3390818.9918584498
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "xiaomi/mimo-v2.6-pro-20260921",
+      "display_name": "xiaomi/mimo-v2.6-pro-20260921",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 83037571020,
+      "est_output_tokens": 16607514204,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 46501.0397712,
+        "mid": 149467.627836,
+        "high": 438438.3749856
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 11611.30963086864,
+        "mid": 74733.813918,
+        "high": 463727.5004547694
+      },
+      "co2_kg_embodied": {
+        "low": 3251.1666966432194,
+        "mid": 29146.187428020003,
+        "high": 250412.8502455755
+      },
+      "co2_kg_total": {
+        "low": 14862.47632751186,
+        "mid": 103880.00134602,
+        "high": 714140.3507003449
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 11611.30963086864,
+        "mid": 74733.813918,
+        "high": 463727.5004547694
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 133690.4893422,
+        "mid": 754811.5205718,
+        "high": 3370495.0077017997
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "minimax/minimax-m3-20260531",
+      "display_name": "MiniMax M3",
+      "origin": "CN",
+      "open_or_closed": "open",
+      "total_tokens": 71541655022,
+      "est_output_tokens": 14308331004,
+      "wh_per_output_token": {
+        "low": 0.0008,
+        "mid": 0.0015,
+        "high": 0.003
+      },
+      "energy_kwh": {
+        "low": 16025.33072464,
+        "mid": 38632.493711400006,
+        "high": 94434.98462819999
+      },
+      "energy_source": "ai_energy_score",
+      "energy_source_id": "E-MINIMAX-M3",
+      "region": "cn-east",
+      "carbon_intensity_gco2_kwh": 562.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-MEE-2022",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 9906.859453972447,
+        "mid": 27139.326832258506,
+        "high": 82793.0397232355
+      },
+      "co2_kg_embodied": {
+        "low": 2773.9206471122857,
+        "mid": 10584.337464580818,
+        "high": 44708.241450547175
+      },
+      "co2_kg_total": {
+        "low": 12680.780101084732,
+        "mid": 37723.66429683933,
+        "high": 127501.28117378269
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 9906.859453972447,
+        "mid": 27139.326832258506,
+        "high": 82793.0397232355
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 46072.82583333999,
+        "mid": 195094.09324257006,
+        "high": 725968.9443292874
+      },
+      "flags": [
+        "FALLBACK_GRID_ANNUAL",
+        "ON_FRONTIER"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 800.0,
+        "mid": 1500.0,
+        "high": 3000.0
+      },
+      "capability_index": 29.0,
+      "capability_source_id": "Q-AAII-V41",
+      "on_frontier": true,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": {
+        "low": 0,
+        "mid": 0,
+        "high": 0
+      },
+      "avoidable_co2_kg": {
+        "low": 0.0,
+        "mid": 0.0,
+        "high": 0.0
+      }
+    },
+    {
+      "slug": "deepseek/deepseek-v4-pro-20260423",
+      "display_name": "DeepSeek V4 Pro",
+      "origin": "CN",
+      "open_or_closed": "open",
+      "total_tokens": 70906255892,
+      "est_output_tokens": 14181251178,
+      "wh_per_output_token": {
+        "low": 0.0015,
+        "mid": 0.0035,
+        "high": 0.008
+      },
+      "energy_kwh": {
+        "low": 29780.6274741,
+        "mid": 89341.8824228,
+        "high": 249590.02073759996
+      },
+      "energy_source": "ai_energy_score",
+      "energy_source_id": "E-DEEPSEEK-V4-PRO",
+      "region": "cn-north",
+      "carbon_intensity_gco2_kwh": 678.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-MEE-2022",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 22210.391970183784,
+        "mid": 75717.245353323,
+        "high": 263986.37313374475
+      },
+      "co2_kg_embodied": {
+        "low": 6218.90975165146,
+        "mid": 29529.72568779597,
+        "high": 142552.64149222217
+      },
+      "co2_kg_total": {
+        "low": 28429.301721835243,
+        "mid": 105246.97104111897,
+        "high": 406539.0146259669
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 22210.391970183784,
+        "mid": 75717.245353323,
+        "high": 263986.37313374475
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 85619.3039880375,
+        "mid": 451176.50623514,
+        "high": 1918723.2844202996
+      },
+      "flags": [
+        "FALLBACK_GRID_ANNUAL",
+        "ON_FRONTIER"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 1500.0,
+        "mid": 3500.0,
+        "high": 8000.0
+      },
+      "capability_index": 30.0,
+      "capability_source_id": "Q-AAII-V41",
+      "on_frontier": true,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": {
+        "low": 0,
+        "mid": 0,
+        "high": 0
+      },
+      "avoidable_co2_kg": {
+        "low": 0.0,
+        "mid": 0.0,
+        "high": 0.0
+      }
+    },
+    {
+      "slug": "google/gemma-4-31b-it-20260402",
+      "display_name": "Gemma 4 31B",
+      "origin": "US",
+      "open_or_closed": "open",
+      "total_tokens": 67230372676,
+      "est_output_tokens": 13446074535,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 37649.0086982,
+        "mid": 121014.670816,
+        "high": 354976.3677276
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "us-east",
+      "carbon_intensity_gco2_kwh": 318.86310150839364,
+      "grid_source": "eia_live",
+      "grid_source_id": "GRID-EIA-PJM-HOURLY",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 13205.367650446999,
+        "mid": 48233.8915805088,
+        "high": 176574.63029825827
+      },
+      "co2_kg_embodied": {
+        "low": 3697.5029421251597,
+        "mid": 18811.217716398434,
+        "high": 95350.30036105948
+      },
+      "co2_kg_total": {
+        "low": 16902.87059257216,
+        "mid": 67045.10929690723,
+        "high": 271924.93065931776
+      },
+      "renewable_match_pct": 100.0,
+      "co2_kg_market": {
+        "low": 1320.5367650447,
+        "mid": 4823.389158050881,
+        "high": 17657.463029825827
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 108240.90000732499,
+        "mid": 611124.0876208,
+        "high": 2728880.826905925
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "MARKET_RESIDUAL_FLOOR",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "mistralai/mistral-nemo",
+      "display_name": "Mistral Nemo",
+      "origin": "EU",
+      "open_or_closed": "open",
+      "total_tokens": 61699848689,
+      "est_output_tokens": 12339969738,
+      "wh_per_output_token": {
+        "low": 0.0005,
+        "mid": 0.0012,
+        "high": 0.0025
+      },
+      "energy_kwh": {
+        "low": 8637.97881655,
+        "mid": 26654.334633839997,
+        "high": 67869.83355825001
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-SMALL",
+      "region": "europe-west",
+      "carbon_intensity_gco2_kwh": 230.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-EUROPE-WEST-230",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 2185.4086405871503,
+        "mid": 7663.121207229,
+        "high": 24351.696280700107
+      },
+      "co2_kg_embodied": {
+        "low": 611.9144193644022,
+        "mid": 2988.6172708193103,
+        "high": 13149.915991578058
+      },
+      "co2_kg_total": {
+        "low": 2797.3230599515528,
+        "mid": 10651.73847804831,
+        "high": 37501.612272278166
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 2185.4086405871503,
+        "mid": 7663.121207229,
+        "high": 24351.696280700107
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 24834.189097581246,
+        "mid": 134604.38990089198,
+        "high": 521749.3454790469
+      },
+      "flags": [
+        "FALLBACK_ENERGY_CLASS",
+        "FALLBACK_GRID_ANNUAL",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "energy_wh_per_mtok": {
+        "low": 500.0,
+        "mid": 1200.0,
+        "high": 2500.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "anthropic/claude-fable-5.2-20261109",
+      "display_name": "anthropic/claude-fable-5.2-20261109",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 59272156714,
+      "est_output_tokens": 11854431343,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 33192.4077602,
+        "mid": 106689.882086,
+        "high": 312956.98745159997
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 8288.144217721941,
+        "mid": 53344.94104299999,
+        "high": 331008.3464878083
+      },
+      "co2_kg_embodied": {
+        "low": 2320.6803809621438,
+        "mid": 20804.527006769997,
+        "high": 178744.5071034165
+      },
+      "co2_kg_total": {
+        "low": 10608.824598684085,
+        "mid": 74149.46804976999,
+        "high": 509752.85359122476
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 8288.144217721941,
+        "mid": 53344.94104299999,
+        "high": 331008.3464878083
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 95428.172310575,
+        "mid": 538783.9045343,
+        "high": 2405856.8410341744
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    },
+    {
+      "slug": "openai/gpt-6-luna-pro-20260922",
+      "display_name": "openai/gpt-6-luna-pro-20260922",
+      "origin": "OTHER",
+      "open_or_closed": "closed",
+      "total_tokens": 56721611052,
+      "est_output_tokens": 11344322210,
+      "wh_per_output_token": {
+        "low": 0.002,
+        "mid": 0.005,
+        "high": 0.012
+      },
+      "energy_kwh": {
+        "low": 31764.1021884,
+        "mid": 102098.899892,
+        "high": 299490.10635119997
+      },
+      "energy_source": "parameter_class_fallback",
+      "energy_source_id": "E-CLASS-LARGE",
+      "region": "default",
+      "carbon_intensity_gco2_kwh": 400.0,
+      "grid_source": "annual_factor",
+      "grid_source_id": "C-GRID-UNMAPPED-ANNUAL",
+      "pue": 1.25,
+      "co2_kg": {
+        "low": 7931.496316443479,
+        "mid": 51049.449946,
+        "high": 316764.69568553724
+      },
+      "co2_kg_embodied": {
+        "low": 2220.8189686041746,
+        "mid": 19909.28547894,
+        "high": 171052.9356701901
+      },
+      "co2_kg_total": {
+        "low": 10152.315285047654,
+        "mid": 70958.73542494001,
+        "high": 487817.6313557273
+      },
+      "renewable_match_pct": null,
+      "co2_kg_market": {
+        "low": 7931.496316443479,
+        "mid": 51049.449946,
+        "high": 316764.69568553724
+      },
+      "wue": 4.04,
+      "water_liters": {
+        "low": 91321.79379165,
+        "mid": 515599.44445460004,
+        "high": 2302330.19257485
+      },
+      "flags": [
+        "UNKNOWN_MODEL",
+        "FALLBACK_ENERGY_CLASS",
+        "UNMAPPED_SLUG",
+        "ASSUMED_REGION",
+        "FALLBACK_GRID_ANNUAL",
+        "CLOSED_MODEL_ASSUMED",
+        "FALLBACK_CAPABILITY",
+        "LOW_CONFIDENCE_GAP"
+      ],
+      "carbon_intensity_gco2_kwh_range": {
+        "low": 227.0,
+        "mid": 400.0,
+        "high": 678.0
+      },
+      "energy_wh_per_mtok": {
+        "low": 2000.0,
+        "mid": 5000.0,
+        "high": 12000.0
+      },
+      "capability_index": null,
+      "capability_source_id": null,
+      "on_frontier": false,
+      "frontier_reference_slug": null,
+      "rightsizing_gap_pct": null,
+      "avoidable_co2_kg": null
+    }
+  ],
+  "totals": {
+    "total_tokens": 31831709631445,
+    "uncovered_tokens": 1570079570884,
+    "modeled_traffic_fraction": 0.9506756128067657,
+    "precision": {
+      "energy_measured_fraction": 0.02620378955040004,
+      "energy_class_fallback_fraction": 0.9737962104496,
+      "grid_live_fraction": 0.0935246512102968,
+      "grid_annual_fallback_fraction": 0.9064753487897033,
+      "models_total": 50,
+      "models_measured": 5,
+      "grid_live_models": 9
+    },
+    "mapped_traffic_fraction": 0.5331269739271504,
+    "unmapped_tokens": 13291287029821,
+    "unmapped_traffic_fraction": 0.4175486388796153,
+    "unmapped_slugs": [
+      {
+        "slug": "tencent/hy4-flash-20261116",
+        "total_tokens": 6525998610115
+      },
+      {
+        "slug": "minimax/minimax-m3.1-flash-20261019",
+        "total_tokens": 629467831488
+      },
+      {
+        "slug": "moonshotai/kimi-k3.1-pro-20261023",
+        "total_tokens": 552090719315
+      },
+      {
+        "slug": "baidu/ernie-5.5-flash-preview-20261110:free",
+        "total_tokens": 498697933373
+      },
+      {
+        "slug": "meta/muse-spark-1.3-contributor-20260902",
+        "total_tokens": 463367170132
+      },
+      {
+        "slug": "tencent/hy4-20261104",
+        "total_tokens": 436910308228
+      },
+      {
+        "slug": "nvidia/nemotron-3.5-super-vl-20261015:free",
+        "total_tokens": 434600846046
+      },
+      {
+        "slug": "google/gemini-4-carbon-20261110",
+        "total_tokens": 416845171546
+      },
+      {
+        "slug": "xiaomi/mimo-v2.6-flash-20260921",
+        "total_tokens": 372573460159
+      },
+      {
+        "slug": "anthropic/claude-haiku-5.5-20261007",
+        "total_tokens": 334168140967
+      },
+      {
+        "slug": "typesafe/jev-1.13-20260917",
+        "total_tokens": 319967623427
+      },
+      {
+        "slug": "typesafe/jev-1.14-20261014",
+        "total_tokens": 258434226618
+      },
+      {
+        "slug": "openai/gpt-6.1-sol-20260929",
+        "total_tokens": 246414107082
+      },
+      {
+        "slug": "stepfun/step-5-preview-20261008",
+        "total_tokens": 190923635726
+      },
+      {
+        "slug": "nvidia/nemotron-3.5-lightning-20260807:free",
+        "total_tokens": 173675121531
+      },
+      {
+        "slug": "thinkingmachines/inkling-2-mini-20261120",
+        "total_tokens": 143929058769
+      },
+      {
+        "slug": "qwen/qwen3.8-flash-20260826",
+        "total_tokens": 137658642404
+      },
+      {
+        "slug": "upstage/solar-mini4-20260922",
+        "total_tokens": 132878198597
+      },
+      {
+        "slug": "openai/gpt-6.2-sol-20261117",
+        "total_tokens": 129988104319
+      },
+      {
+        "slug": "qwen/qwen3.6-35b-a3b-20260415",
+        "total_tokens": 114383761728
+      },
+      {
+        "slug": "google/gemini-4-neon-20261118",
+        "total_tokens": 113684478856
+      },
+      {
+        "slug": "qwen/qwen3.8-27b-20260814",
+        "total_tokens": 105946770522
+      },
+      {
+        "slug": "meta/muse-ember-20261109",
+        "total_tokens": 95802544393
+      },
+      {
+        "slug": "particle-ai/particle-1-20261027:free",
+        "total_tokens": 91438674626
+      },
+      {
+        "slug": "google/gemini-4-argon-20261013",
+        "total_tokens": 88872265976
+      },
+      {
+        "slug": "openai/gpt-6.1-terra-20261026",
+        "total_tokens": 83538285092
+      },
+      {
+        "slug": "xiaomi/mimo-v2.6-pro-20260921",
+        "total_tokens": 83037571020
+      },
+      {
+        "slug": "anthropic/claude-fable-5.2-20261109",
+        "total_tokens": 59272156714
+      },
+      {
+        "slug": "openai/gpt-6-luna-pro-20260922",
+        "total_tokens": 56721611052
+      }
+    ],
+    "est_output_tokens": 6052326012110,
+    "energy_kwh": {
+      "low": 11448332.037236638,
+      "mid": 42168246.40764028,
+      "high": 157496247.972847
+    },
+    "co2_kg": {
+      "low": 4232034.27793056,
+      "mid": 25069363.514296625,
+      "high": 158409652.6416159
+    },
+    "co2_kg_independent": {
+      "low": 17168087.66301184,
+      "mid": 25069363.514296625,
+      "high": 80011119.70235041
+    },
+    "co2_kg_embodied": {
+      "low": 1184969.597820557,
+      "mid": 9777051.770575684,
+      "high": 85541212.42647253
+    },
+    "co2_kg_total": {
+      "low": 5417003.875751117,
+      "mid": 34846415.284872316,
+      "high": 243950865.06808844
+    },
+    "co2_kg_market": {
+      "low": 3863379.7921048324,
+      "mid": 23828578.825844064,
+      "high": 153491389.60116002
+    },
+    "water_liters": {
+      "low": 32652072.103725042,
+      "mid": 211471065.50437656,
+      "high": 1204150039.328416
+    },
+    "by_origin": {
+      "CN": {
+        "co2_kg": {
+          "low": 1832106.3945299874,
+          "mid": 11247592.013471209,
+          "high": 76962043.83436707
+        },
+        "co2_kg_market": {
+          "low": 1832106.3945299874,
+          "mid": 11247592.013471209,
+          "high": 76962043.83436707
+        },
+        "water_liters": {
+          "low": 7070507.8799276585,
+          "mid": 67054428.68619443,
+          "high": 559504843.919581
+        }
+      },
+      "OTHER": {
+        "co2_kg": {
+          "low": 1858547.2479533905,
+          "mid": 11962158.3268365,
+          "high": 74225862.298891
+        },
+        "co2_kg_market": {
+          "low": 1858547.2479533905,
+          "mid": 11962158.3268365,
+          "high": 74225862.298891
+        },
+        "water_liters": {
+          "low": 21398972.118005607,
+          "mid": 120817799.10104868,
+          "high": 539493340.540357
+        }
+      },
+      "US": {
+        "co2_kg": {
+          "low": 539195.2268065944,
+          "mid": 1851950.052781689,
+          "high": 7197394.812077034
+        },
+        "co2_kg_market": {
+          "low": 170540.74098086747,
+          "mid": 611165.3643291252,
+          "high": 2279131.7716211462
+        },
+        "water_liters": {
+          "low": 4157757.9166941987,
+          "mid": 23464233.32723267,
+          "high": 104630105.52299926
+        }
+      },
+      "EU": {
+        "co2_kg": {
+          "low": 2185.4086405871503,
+          "mid": 7663.121207229,
+          "high": 24351.696280700107
+        },
+        "co2_kg_market": {
+          "low": 2185.4086405871503,
+          "mid": 7663.121207229,
+          "high": 24351.696280700107
+        },
+        "water_liters": {
+          "low": 24834.189097581246,
+          "mid": 134604.38990089198,
+          "high": 521749.3454790469
+        }
+      }
+    },
+    "by_open_closed": {
+      "open": {
+        "co2_kg": {
+          "low": 1982647.426917775,
+          "mid": 11796324.537620898,
+          "high": 78957706.50752892
+        },
+        "co2_kg_market": {
+          "low": 1965748.5838455027,
+          "mid": 11735332.434023641,
+          "high": 78742918.91874933
+        },
+        "water_liters": {
+          "low": 8311373.81161754,
+          "mid": 74044390.05389225,
+          "high": 590492310.3366095
+        }
+      },
+      "closed": {
+        "co2_kg": {
+          "low": 2249386.851012786,
+          "mid": 13273038.976675726,
+          "high": 79451946.13408689
+        },
+        "co2_kg_market": {
+          "low": 1897631.20825933,
+          "mid": 12093246.391820425,
+          "high": 74748470.68241058
+        },
+        "water_liters": {
+          "low": 24340698.292107508,
+          "mid": 137426675.45048442,
+          "high": 613657728.9918071
+        }
+      }
+    },
+    "fairness": {
+      "rank_stability": {
+        "by_co2": {
+          "top_n": 10,
+          "ranks_changed": 7,
+          "max_displacement": 6
+        },
+        "by_efficiency": {
+          "top_n": 10,
+          "ranks_changed": 7,
+          "max_displacement": 18
+        }
+      },
+      "unweighted": {
+        "co2_kg": {
+          "low": 84640.68555861119,
+          "mid": 501387.2702859325,
+          "high": 3168193.052832318
+        }
+      }
+    },
+    "tiers": [
+      [
+        "mistralai/mistral-nemo"
+      ],
+      [
+        "moonshotai/kimi-k3-20260715",
+        "anthropic/claude-sonnet-5.5-20260928",
+        "stepfun/step-5-preview-20261008",
+        "z-ai/glm-5.2-20260616",
+        "nvidia/nemotron-3.5-lightning-20260807:free",
+        "thinkingmachines/inkling-2-mini-20261120",
+        "qwen/qwen3.8-flash-20260826",
+        "upstage/solar-mini4-20260922",
+        "openai/gpt-6.2-sol-20261117",
+        "google/gemini-3.8-flash-20260902",
+        "qwen/qwen3.6-35b-a3b-20260415",
+        "google/gemini-4-neon-20261118",
+        "openai/gpt-5.6-luna-20260709",
+        "qwen/qwen3.8-27b-20260814",
+        "deepseek/deepseek-v4-pro-20260813",
+        "meta/muse-ember-20261109",
+        "particle-ai/particle-1-20261027:free",
+        "google/gemini-4-argon-20261013",
+        "deepseek/deepseek-v4-pro-20260423",
+        "openai/gpt-6.1-terra-20261026",
+        "xiaomi/mimo-v2.6-pro-20260921",
+        "google/gemini-3-flash-preview-20251217",
+        "anthropic/claude-fable-5.2-20261109",
+        "openai/gpt-6-luna-pro-20260922",
+        "google/gemma-4-31b-it-20260402",
+        "minimax/minimax-m3-20260531",
+        "google/gemma-4-26b-a4b-it-20260403"
+      ],
+      [
+        "deepseek/deepseek-v4.1-flash-20261017",
+        "tencent/hy4-flash-20261116",
+        "deepseek/deepseek-v4.1-flash-20260910",
+        "z-ai/glm-5.3-flash-20260826",
+        "z-ai/glm-5.3-20260816",
+        "minimax/minimax-m3.1-flash-20261019",
+        "moonshotai/kimi-k3.1-pro-20261023",
+        "openai/gpt-6-luna-20260922",
+        "nvidia/nemotron-3-ultra-550b-a55b-20260604:free",
+        "baidu/ernie-5.5-flash-preview-20261110:free",
+        "meta/muse-spark-1.3-contributor-20260902",
+        "anthropic/claude-opus-5.5-20260921",
+        "tencent/hy4-20261104",
+        "nvidia/nemotron-3.5-super-vl-20261015:free",
+        "google/gemini-4-carbon-20261110",
+        "xiaomi/mimo-v2.6-flash-20260921",
+        "deepseek/deepseek-v4-flash-20260731",
+        "anthropic/claude-haiku-5.5-20261007",
+        "typesafe/jev-1.13-20260917",
+        "deepseek/deepseek-v4-flash-20260423",
+        "typesafe/jev-1.14-20261014",
+        "openai/gpt-6.1-sol-20260929"
+      ]
+    ]
+  },
+  "fleet_rightsizing": {
+    "basis": "capability-matched substitution; region/grid/PUE held constant; operational CO2 only",
+    "avoidable_co2_kg": {
+      "low": 0.0,
+      "mid": 344463.567094188,
+      "high": 1891518.3396263358
+    },
+    "avoidable_pct_of_total": {
+      "low": 0.0,
+      "mid": 0.013740419332854078,
+      "high": 0.01194067601363715
+    },
+    "models_included": 2,
+    "models_excluded_low_confidence": 0,
+    "capability_index_version": "Artificial Analysis Intelligence Index v4.3.2",
+    "capability_index_accessed": "2026-10-24"
+  }
+}
